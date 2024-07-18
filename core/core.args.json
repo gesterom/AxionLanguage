@@ -1,0 +1,17 @@
+{
+  "FileVersion": 2,
+  "Id": "ec3883d4-3752-4b52-b4e8-238e181ccc00",
+  "Items": [
+    {
+      "Id": "6ac8691a-74dd-4dc4-aa6b-52e0baf6c418",
+      "Command": "examples",
+      "ExclusiveMode": true,
+      "Items": [
+        {
+          "Id": "fafa4185-1c5d-48a1-a773-e96cffa3de07",
+          "Command": "\"$(SolutionDir)examples\\example1.dog\""
+        }
+      ]
+    }
+  ]
+}

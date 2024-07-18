@@ -1,0 +1,63 @@
+function add(a,b){
+	a+b
+}
+
+type Person{
+	let name : string;
+	let age : int;
+}
+
+type vector( t : Type){
+	
+}
+
+procedure main(){
+	printf("hell of the world");
+	a == b;
+	a = a >> b;
+	b=c**-a;
+	b or a;
+	a+-c;
+	//a+-+-+-+-+-+-+-+-b;
+	//a+-+-+-+-+-+-+-+-(b);
+	//a+-+-+-+-+-(+-+-+-b);
+}
+
+procedure main2() {
+	/* comment */
+	/* inside 1
+		/* inside 2 */
+	*/
+	// Variable declarations
+	let a : int;
+	let b : float;
+	let c : bool;
+
+	// Basic assignment and arithmetic operations
+	a = 10;
+	b = 3.14;
+	c = a > b;
+
+	// Logical operations
+	if (a == 10 && b < 5.0) {
+		printf("Condition met: a is 10 and b is less than 5.0");
+	} else {
+		printf("Condition not met");
+	}
+
+	// Compound assignment
+	a += 5;
+	b *= 2.0;
+
+	// Complex expressions
+	let result : float = (a + b) / 3.0;
+
+	// Additional operators
+	a <<= 2;
+	a >>= 1;
+	c = !c;
+	let d = a | b;
+
+	// Printing results
+	printf("a = %d, b = %.2f, c = %b, result = %.2f, d = %d", a, b, c, result, d);
+}
