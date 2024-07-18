@@ -1,3 +1,8 @@
+#lol
+## namespace = main
+#         test     
+
+#memorize = 10
 function add
 (a,b,c)
 

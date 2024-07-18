@@ -599,10 +599,10 @@ struct Preambule {
 
 std::vector<Preambule> metaLexer(std::string filename) {
 	std::vector<Preambule> res;
+	CodeLocation loc(filename);
 	Preambule partial(filename);
 	std::map<CodeLocation, CodeLocation> file_scope_atributes;
 	std::ifstream file(filename);
-	CodeLocation loc(filename);
 	CodeLocation atributeNamePartial(filename);
 	CodeLocation line(filename);
 	int64_t parenthis = 0;
@@ -611,7 +611,7 @@ std::vector<Preambule> metaLexer(std::string filename) {
 	char next_ch = '\0';
 	enum class Mode
 	{
-		idle = 0,atribute_name,atribute_value,preambule,head,body,
+		idle = 0,atribute_name,atribute_value, file_atribute_name, file_atribute_value,preambule,head,body,
 	};
 	Mode mode = Mode::idle;
 	do{
@@ -621,19 +621,17 @@ std::vector<Preambule> metaLexer(std::string filename) {
 		switch (mode)
 		{
 		case Mode::idle:
-			if(next_ch == '#') {mode = Mode::atribute_name;loc+=ch;}
-			else if(not isSpace(ch)) { mode = Mode::preambule; loc = loc.moveStartToEnd(); loc+=ch; }
-			else if(not isSpace(next_ch)) {mode = Mode::preambule;loc+=ch;loc = loc.moveStartToEnd();}
-			else if(isSpace(ch)) loc += ch;
+			if(not isSpace(ch) and ch != '#') { mode = Mode::preambule; loc = loc.moveStartToEnd(); loc += ch; }
+			else if (not isSpace(next_ch) and ch != '#' and next_ch != '#') {mode = Mode::preambule;loc+=ch;loc = loc.moveStartToEnd();}
+			else if (ch == '#') { mode = Mode::atribute_name; loc += ch; loc = loc.moveStartToEnd(); }
+			else if (isSpace(ch)) loc += ch;
 			else assert(false);
 			break;
-		case Mode::atribute_name:
-			if (ch == '\n') {
-				if (loc.val()[0] == '#') {
-					file_scope_atributes.emplace(loc,loc.moveStartToEnd());
-				}
-				partial.atributes.emplace(loc, loc.moveStartToEnd());
-				loc+=ch;
+		case Mode::file_atribute_name:
+			if(last_ch == '#' and ch =='#') {loc+=ch; loc = loc.moveStartToEnd();}
+			else if (ch == '\n') {
+				file_scope_atributes.emplace(loc, loc.moveStartToEnd());
+				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = Mode::idle;
 			}
@@ -641,6 +639,41 @@ std::vector<Preambule> metaLexer(std::string filename) {
 				atributeNamePartial = loc;
 				loc += ch;
 				loc = loc.moveStartToEnd();
+				mode = Mode::file_atribute_value;
+			}
+			else {
+				loc += ch;
+			}
+			break;
+		case Mode::file_atribute_value:
+			if (ch == '\n') {
+				file_scope_atributes.emplace(atributeNamePartial, loc);
+				loc += ch;
+				loc = loc.moveStartToEnd();
+				mode = Mode::idle;
+			}
+			else {
+				loc += ch;
+			}
+			break;
+		case Mode::atribute_name:
+			if (loc.val() == "" and ch == '#')
+			{
+				loc += ch;
+				loc = loc.moveStartToEnd();
+				mode= Mode::file_atribute_name;
+			}
+			else if (ch == '\n') {
+				partial.atributes.emplace(loc, loc.moveStartToEnd());
+				loc += ch;
+				loc = loc.moveStartToEnd();
+				mode = Mode::idle;
+			}
+			else if (ch == '=') {
+				atributeNamePartial = loc;
+				loc += ch;
+				loc = loc.moveStartToEnd();
+				mode = Mode::atribute_value;
 			}
 			else{
 				loc+=ch;
@@ -648,9 +681,6 @@ std::vector<Preambule> metaLexer(std::string filename) {
 			break;
 		case Mode::atribute_value:
 			if (ch == '\n') {
-				if (atributeNamePartial.val()[0] == '#') {
-					file_scope_atributes.emplace(atributeNamePartial, loc);
-				}
 				partial.atributes.emplace(atributeNamePartial, loc);
 				loc += ch;
 				loc = loc.moveStartToEnd();
@@ -688,10 +718,14 @@ std::vector<Preambule> metaLexer(std::string filename) {
 			if(parenthis == -1) {
 				mode = Mode::idle;
 				partial.body = loc;
+				for (const auto& i : file_scope_atributes) {
+					partial.atributes.emplace(i);
+				}
 				res.push_back(partial); 
 				loc+=ch;
 				loc = loc.moveStartToEnd();
 				partial.lines.clear();
+				partial.atributes.clear();
 				line = loc;
 			}
 			else if (ch == '\n') {
@@ -720,6 +754,11 @@ int main(int argc,char** args)
 	auto a = metaLexer(args[1]);
 	for (const auto& [i, elem] : enumerate(a)) {
 		std::cout<<"--- === "<<std::setw(3)<<i<<" === ---"<<std::endl;
+		std::cout<<"Atributes:"<<std::endl;
+		for (const auto& [j, atr] : enumerate(elem.atributes)) {
+			std::cout<<"\t"<<std::setw(5)<<j<<": "<<atr.first.val()<<" = " << atr.second.val()<<std::endl;
+		}
+
 		std::cout<<"Preambule : " << std::setw(5) <<elem.preambule.start()<<" - "<< std::setw(5) << elem.preambule.end()<<" = " << elem.preambule.val() << std::endl;
 		std::cout << "Head : " << std::setw(5) << elem.head.start() << " - " << std::setw(5) << elem.head.end() << " = " << elem.head.val() << std::endl;
 		//std::cout << "Body : " << std::setw(5) << elem.body.start() << " - " << std::setw(5) << elem.body.end() << " = " << elem.body.val() << std::endl;
