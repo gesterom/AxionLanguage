@@ -26,6 +26,18 @@ bool isCharIdentifier(uint8_t ch) {
 		);
 }
 
+bool isSpace(uint8_t ch) {
+	return 
+		ch == 0x20/*space*/ or
+		ch == 0x09/*TAB*/ or
+		ch == 0x0A/*New Line*/ or
+		ch == 0x0B/*vertical tab*/ or
+		ch == 0x0D/*Carriage return*/ or
+		ch == 0x1C/*File separator*/ or
+		ch == 0x7F/*DEL*/
+		;
+}
+
 class CodeLocation {
 	std::string file_name;
 	struct CodeLocationPoint {
@@ -118,45 +130,45 @@ public:
 		this->end_pos.byte_number++;
 		
 		if (last_byte == '\r' and ch == '\n') { // windows newline
-			if (std::isspace(ch) and trim_copy(this->value) == "") {
+			if (isSpace(ch) and trim_copy(this->value) == "") {
 				this->start_pos.line++;
-				this->start_pos.position = 0;
-				this->start_pos.position_utf8 = 0;
+				this->start_pos.position = 1;
+				this->start_pos.position_utf8 = 1;
+				this->start_pos.byte_number++;
 			}
 			this->end_pos.line++;
-			this->end_pos.position = 0;
-			this->end_pos.position_utf8 = 0;
+			this->end_pos.position = 1;
+			this->end_pos.position_utf8 = 1;
 			this->lineComment = false;
 		}
 		else if (ch == '\n') {
-			if (std::isspace(ch) and trim_copy(this->value) == "") {
+			if (isSpace(ch) and trim_copy(this->value) == "") {
 				this->start_pos.line++;
-				this->start_pos.position = 0;
-				this->start_pos.position_utf8 = 0;
+				this->start_pos.position = 1;
+				this->start_pos.position_utf8 = 1;
+				this->start_pos.byte_number++;
 			}
 			this->end_pos.line++;
-			this->end_pos.position = 0;
-			this->end_pos.position_utf8 = 0;
+			this->end_pos.position = 1;
+			this->end_pos.position_utf8 = 1;
 			this->lineComment = false;
 		}
 		else {
-			if (std::isspace(ch) and trim_copy(this->value) == "") {
+			if (isSpace(ch) and trim_copy(this->value) == "") {
 				this->start_pos.position++;
-			}
-			this->end_pos.position++;
-		}
-
-		if ((ch & 0xC0) != 0x80) // check if byte is not continuation of utf8 character
-		{
-			if (std::isspace(ch) and trim_copy(this->value) == "") {
 				this->start_pos.character_number++;
 				this->start_pos.position_utf8++;
+				this->start_pos.byte_number++;
 			}
-			this->end_pos.character_number++;
-			this->end_pos.position_utf8++;
+			this->end_pos.position++;
+			if ((ch & 0xC0) != 0x80) // check if byte is not continuation of utf8 character
+			{
+				this->end_pos.character_number++;
+				this->end_pos.position_utf8++;
+			}
 		}
 		last_byte = ch;
-		//if(this->in_quote or not std::isspace(ch) or (this->comment() and ch != '\n'))
+		//if(this->in_quote or not isSpace(ch) or (this->comment() and ch != '\n'))
 		value += ch;
 		return *this;
 	}
@@ -188,12 +200,11 @@ public:
 			}
 			else {
 				res.start_pos.position++;
-			}
-
-			if ((ch & 0xC0) != 0x80) // Check if byte is not continuation of UTF-8 character
-			{
-				res.start_pos.character_number++;
-				res.start_pos.position_utf8++;
+				if ((ch & 0xC0) != 0x80) // Check if byte is not continuation of UTF-8 character
+				{
+					res.start_pos.character_number++;
+					res.start_pos.position_utf8++;
+				}
 			}
 		}
 		res.value = res.value.substr(n);
@@ -611,9 +622,9 @@ std::vector<Preambule> metaLexer(std::string filename) {
 		{
 		case Mode::idle:
 			if(next_ch == '#') {mode = Mode::atribute_name;loc+=ch;}
-			else if(not std::isspace(ch)) { mode = Mode::preambule; loc = loc.moveStartToEnd(); loc+=ch; }
-			else if(not std::isspace(next_ch)) {mode = Mode::preambule;loc+=ch;loc = loc.moveStartToEnd();}
-			else if(std::isspace(ch)) loc += ch;
+			else if(not isSpace(ch)) { mode = Mode::preambule; loc = loc.moveStartToEnd(); loc+=ch; }
+			else if(not isSpace(next_ch)) {mode = Mode::preambule;loc+=ch;loc = loc.moveStartToEnd();}
+			else if(isSpace(ch)) loc += ch;
 			else assert(false);
 			break;
 		case Mode::atribute_name:
