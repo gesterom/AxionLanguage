@@ -230,7 +230,7 @@ public:
 		return dot;
 	}
 	size_t size() const noexcept { return this->value.size(); }
-	std::string val() const noexcept { return this->value; }
+	std::string val() const noexcept { return trim_copy(ReplaceAll(this->value,"\n"," ")); }
 	std::string start() const noexcept { return std::to_string(start_pos.line) + ":" + std::to_string(start_pos.position_utf8); }
 	std::string end() const noexcept { return std::to_string(end_pos.line) + ":" + std::to_string(end_pos.position_utf8); }
 	bool operator<(const CodeLocation& other)const noexcept {
@@ -722,7 +722,7 @@ int main(int argc,char** args)
 		std::cout<<"--- === "<<std::setw(3)<<i<<" === ---"<<std::endl;
 		std::cout<<"Preambule : " << std::setw(5) <<elem.preambule.start()<<" - "<< std::setw(5) << elem.preambule.end()<<" = " << elem.preambule.val() << std::endl;
 		std::cout << "Head : " << std::setw(5) << elem.head.start() << " - " << std::setw(5) << elem.head.end() << " = " << elem.head.val() << std::endl;
-		std::cout << "Body : " << std::setw(5) << elem.body.start() << " - " << std::setw(5) << elem.body.end() << " = " << elem.body.val() << std::endl;
+		//std::cout << "Body : " << std::setw(5) << elem.body.start() << " - " << std::setw(5) << elem.body.end() << " = " << elem.body.val() << std::endl;
 		for (const auto& [j, line] : enumerate(elem.lines)) {
 			std::cout << std::setw((int)std::ceil(log10(elem.lines.size()))) << std::setw(5) << line.start() << " - " << std::setw(5) << line.end() << ":" << std::setw(30) << "(TODO) - " << line.val() << std::endl;
 		}
