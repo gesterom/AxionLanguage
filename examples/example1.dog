@@ -9,11 +9,10 @@ function add
 {
 	a+b*c
 }
-
+// lol 
 function add(a,b){
 	a+b
 }
-
 type Person{
 	let name : string;
 	let age : int;

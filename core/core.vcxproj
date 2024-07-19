@@ -70,6 +70,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -77,6 +93,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,6 +109,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +125,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,6 +141,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,11 +151,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="core.cpp" />
+    <ClCompile Include="Preambules\Function\src\Lexer.cpp" />
+    <ClCompile Include="Preambules\Procedure\Lexer.cpp" />
+    <ClCompile Include="Preambules\Type\Lexer.cpp" />
+    <ClCompile Include="src\CodeLocation.cpp" />
+    <ClCompile Include="src\core.cpp" />
+    <ClCompile Include="src\MetaLexer.cpp" />
+    <ClCompile Include="src\PreambuleDefinition.cpp" />
+    <ClCompile Include="src\PreambuleRepository.cpp" />
+    <ClCompile Include="src\StringUtility.cpp" />
+    <ClCompile Include="src\TODO.cpp" />
+    <ClCompile Include="src\Token.cpp" />
+    <ClCompile Include="src\VirtualFile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Enumerate.h" />
-    <ClInclude Include="StringUtility.h" />
+    <ClInclude Include="headers\CodeLocation.h" />
+    <ClInclude Include="headers\Enumerate.h" />
+    <ClInclude Include="headers\MetaLexer.h" />
+    <ClInclude Include="headers\PreambuleDefinition.h" />
+    <ClInclude Include="headers\PreambuleRepository.h" />
+    <ClInclude Include="headers\StringUtility.h" />
+    <ClInclude Include="headers\TODO.h" />
+    <ClInclude Include="headers\Token.h" />
+    <ClInclude Include="headers\VirtualFile.h" />
+    <ClInclude Include="Preambules\Function\Lexer.h" />
+    <ClInclude Include="Preambules\Procedure\Lexer.h" />
+    <ClInclude Include="Preambules\Procedure\OperatorDefinition.h" />
+    <ClInclude Include="Preambules\Type\Lexer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\examples\example1.dog">

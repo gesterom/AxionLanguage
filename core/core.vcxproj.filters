@@ -16,18 +16,107 @@
     <Filter Include="Examples">
       <UniqueIdentifier>{32c1355f-f18a-41b7-a09d-cef3257f1f96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Preambules">
+      <UniqueIdentifier>{da255820-814c-4286-9053-2428f0cd53d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Preambules\Function">
+      <UniqueIdentifier>{999e838f-fa92-4d8d-ae7e-de6119547125}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Preambules\Procedure">
+      <UniqueIdentifier>{1864396f-4eec-4d69-a51e-0dc45f43e109}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Preambules\Type">
+      <UniqueIdentifier>{2ab9116b-fc44-4208-be71-d3ba04bc3732}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Preambules\Function\Header">
+      <UniqueIdentifier>{51f82ce1-7dd6-41cb-98ac-6b90c71943eb}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="Preambules\Function\Src">
+      <UniqueIdentifier>{927995ed-09a9-49d0-ae64-afd31013eb31}</UniqueIdentifier>
+      <Extensions>*.cpp</Extensions>
+    </Filter>
+    <Filter Include="Preambules\Type\Header">
+      <UniqueIdentifier>{0901433a-cc6e-41b8-8ab0-012bef5d6e33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core.cpp">
+    <ClCompile Include="src\CodeLocation.cpp">
       <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StringUtility.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MetaLexer.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PreambuleDefinition.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PreambuleRepository.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TODO.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Token.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualFile.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="Preambules\Function\src\Lexer.cpp">
+      <Filter>Preambules\Function\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="Preambules\Type\Lexer.cpp">
+      <Filter>Preambules\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="Preambules\Procedure\Lexer.cpp">
+      <Filter>Preambules\Procedure</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Enumerate.h">
+    <ClInclude Include="Preambules\Procedure\OperatorDefinition.h">
+      <Filter>Preambules\Procedure</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Enumerate.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="StringUtility.h">
+    <ClInclude Include="headers\MetaLexer.h">
       <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PreambuleDefinition.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PreambuleRepository.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\StringUtility.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\TODO.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Token.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\VirtualFile.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\CodeLocation.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Preambules\Procedure\Lexer.h">
+      <Filter>Preambules\Procedure</Filter>
+    </ClInclude>
+    <ClInclude Include="Preambules\Function\Lexer.h">
+      <Filter>Preambules\Function\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Preambules\Type\Lexer.h">
+      <Filter>Preambules\Type\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
