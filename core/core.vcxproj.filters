@@ -53,10 +53,10 @@
     <ClCompile Include="src\MetaLexer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\PreambuleDefinition.cpp">
+    <ClCompile Include="src\PreambleDefinition.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\PreambuleRepository.cpp">
+    <ClCompile Include="src\PreambleRepository.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\TODO.cpp">
@@ -88,10 +88,10 @@
     <ClInclude Include="headers\MetaLexer.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="headers\PreambuleDefinition.h">
+    <ClInclude Include="headers\PreambleDefinition.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="headers\PreambuleRepository.h">
+    <ClInclude Include="headers\PreambleRepository.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="headers\StringUtility.h">

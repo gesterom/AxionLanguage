@@ -18,8 +18,10 @@ type Person{
 	let age : int;
 }
 
-type vector( t : Type){
-	
+type vector( t : Type ){
+	size : int;
+	capasity : int;
+	data : t[];
 }
 
 procedure main(){

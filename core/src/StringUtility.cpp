@@ -48,7 +48,7 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
 	}
 	return str;
 }
-inline bool validPreambuleChar(uint8_t ch) {
+inline bool validPreambleChar(uint8_t ch) {
 	return (
 		ch == '.' or
 		(ch >= '0' and ch <= '9') or
@@ -56,10 +56,10 @@ inline bool validPreambuleChar(uint8_t ch) {
 		(ch >= 'A' and ch <= 'Z')
 		);
 }
-bool validPreambuleName(const std::string& str) {
+bool validPreambleName(const std::string& str) {
 	bool res = true;
 	for (const auto& i : str) {
-		res = validPreambuleChar(i);
+		res = validPreambleChar(i);
 		if (res == false) return false;
 	}
 	return true;

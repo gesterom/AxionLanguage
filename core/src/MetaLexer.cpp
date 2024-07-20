@@ -2,11 +2,11 @@
 
 #include <format>
 
-#include "PreambuleDefinition.h"
+#include "PreambleDefinition.h"
 #include "TODO.h"
 #include "StringUtility.h"
 
-MetaLexer::MetaLexer(const PreambuleRepository& repo,std::string file_name) : loc(file_name), file(file_name), repo(repo) {}
+MetaLexer::MetaLexer(const PreambleRepository& repo,std::string file_name) : loc(file_name), file(file_name), repo(repo) {}
 
 std::optional<Token> MetaLexer::lex() {
 	CodeLocation line = loc;
@@ -20,7 +20,7 @@ std::optional<Token> MetaLexer::lex() {
 		case LexerMode::idle:
 			if (ch == '#') { mode = LexerMode::atribute_name; loc += ch; loc = loc.moveStartToEnd(); }
 			else if (ch == '/' and next_ch == '/') {mode = LexerMode::comment; loc = loc.moveStartToEnd();  loc += ch;}
-			else if (validPreambuleChar(ch)) { mode = LexerMode::preambule; loc = loc.moveStartToEnd(); loc += ch; }
+			else if (validPreambleChar(ch)) { mode = LexerMode::preamble; loc = loc.moveStartToEnd(); loc += ch; }
 			else if (isSpace(ch)) loc += ch;
 			else TODO("idle not recoginized character");
 			break;
@@ -110,8 +110,8 @@ std::optional<Token> MetaLexer::lex() {
 				loc += ch;
 			}
 			break;
-		case LexerMode::preambule:
-			if (validPreambuleChar(ch)) {
+		case LexerMode::preamble:
+			if (validPreambleChar(ch)) {
 				loc += ch;
 			}
 			else if (isSpace(ch)) {
@@ -119,22 +119,22 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				loc += ch;
 				mode = LexerMode::head;
-				preambuleIndex = repo.getPeambuleIndex(res.val());
-				return Token{ -1,Token::Type::preambule,res };
+				preambleIndex = repo.getPeambuleIndex(res.val());
+				return Token{ -1,Token::Type::preamble,res };
 			}
 			else {
 				TODO("Not valid preamble name");
 			}
 			break;
 		case LexerMode::head:{
-			ASSERT(repo.get(preambuleIndex)->lexer != nullptr, std::format("TODO {}",repo.get(preambuleIndex)->representation));
-			auto [res,mode_] = repo.get(preambuleIndex)->lexer->lexHead(loc,ch);
+			ASSERT(repo.get(preambleIndex)->lexer != nullptr, std::format("TODO {}",repo.get(preambleIndex)->representation));
+			auto [res,mode_] = repo.get(preambleIndex)->lexer->lexHead(loc,ch);
 			loc = loc.moveStartToEnd();
 			mode = mode_;
 			return res;
 			}break;
 		case LexerMode::body:{
-			auto [res, mode_] = repo.get(preambuleIndex)->lexer->lexBody(loc,ch);
+			auto [res, mode_] = repo.get(preambleIndex)->lexer->lexBody(loc,ch);
 			loc = loc.moveStartToEnd();
 			mode = mode_;
 			return res;

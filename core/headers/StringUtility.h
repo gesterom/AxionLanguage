@@ -24,8 +24,8 @@ std::string trim_copy(std::string s) ;
 std::string ReplaceAll(std::string str, const std::string& from, const std::string& to) ;
 
 //check if string constains only [a-zA-Z0-9] and dot
-bool validPreambuleName(const std::string& str) ;
-bool validPreambuleChar(uint8_t);
+bool validPreambleName(const std::string& str) ;
+bool validPreambleChar(uint8_t);
 
 // check if it is a ascii white space
 bool isSpace(uint8_t ch) ;

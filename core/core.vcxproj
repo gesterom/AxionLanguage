@@ -73,18 +73,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+    <IntDir>$(Configuration)\$(RelativeDir)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+    <IntDir>$(Configuration)\$(RelativeDir)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+    <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
+    <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -94,6 +100,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +134,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +151,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,14 +161,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Preambules\Function\src\Lexer.cpp" />
-    <ClCompile Include="Preambules\Procedure\Lexer.cpp" />
-    <ClCompile Include="Preambules\Type\Lexer.cpp" />
+    <ClCompile Include="Preambles\Function\Lexer.cpp" />
+    <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
+    <ClCompile Include="Preambles\Type\Lexer.cpp" />
     <ClCompile Include="src\CodeLocation.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\MetaLexer.cpp" />
-    <ClCompile Include="src\PreambuleDefinition.cpp" />
-    <ClCompile Include="src\PreambuleRepository.cpp" />
+    <ClCompile Include="src\PreambleDefinition.cpp" />
+    <ClCompile Include="src\PreambleRepository.cpp" />
     <ClCompile Include="src\StringUtility.cpp" />
     <ClCompile Include="src\TODO.cpp" />
     <ClCompile Include="src\Token.cpp" />
@@ -168,16 +178,16 @@
     <ClInclude Include="headers\CodeLocation.h" />
     <ClInclude Include="headers\Enumerate.h" />
     <ClInclude Include="headers\MetaLexer.h" />
-    <ClInclude Include="headers\PreambuleDefinition.h" />
-    <ClInclude Include="headers\PreambuleRepository.h" />
+    <ClInclude Include="headers\PreambleDefinition.h" />
+    <ClInclude Include="headers\PreambleRepository.h" />
     <ClInclude Include="headers\StringUtility.h" />
     <ClInclude Include="headers\TODO.h" />
     <ClInclude Include="headers\Token.h" />
     <ClInclude Include="headers\VirtualFile.h" />
-    <ClInclude Include="Preambules\Function\Lexer.h" />
-    <ClInclude Include="Preambules\Procedure\Lexer.h" />
-    <ClInclude Include="Preambules\Procedure\OperatorDefinition.h" />
-    <ClInclude Include="Preambules\Type\Lexer.h" />
+    <ClInclude Include="Preambles\Function\Lexer.h" />
+    <ClInclude Include="Preambles\Procedure\Lexer.h" />
+    <ClInclude Include="Preambles\Procedure\OperatorDefinition.h" />
+    <ClInclude Include="Preambles\Type\Lexer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\examples\example1.dog">

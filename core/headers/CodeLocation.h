@@ -8,25 +8,14 @@
 
 class CodeLocation {
 	std::string file_name;
-	struct CodeLocationPoint {
-		uint64_t position; // counted from beginig of line and from 1 and in bytes
-		uint64_t position_utf8; // counts utf-8 characters from begining of line starting on 1
-		uint64_t line; // counted lines and started on 1
-		uint64_t byte_number; // count bytes
-		uint64_t character_number; // counted by utf-8 characters from begining of file;
-		bool operator==(const CodeLocationPoint& other) const ;
-	};
+	using CodeLocationPoint = uint64_t;
 	CodeLocationPoint start_pos;// including
 	CodeLocationPoint end_pos;//excluding
 
 	uint8_t last_byte; // used mainly to check for \r\n on windows;
-	std::string value; // string representation
+	//std::string value; // string representation
 	std::shared_ptr<VirtualFile> file;
 public:
-	bool in_quote;
-	int64_t commentLevel;
-	bool lineComment;
-	bool comment() const noexcept ;
 	explicit CodeLocation(std::string filename) ;
 	std::string getFilename() const noexcept ;
 	CodeLocation(const CodeLocation& other) noexcept ;
