@@ -52,7 +52,7 @@ procedure main2() {
 	c = a > b;
 
 	// Logical operations
-	if (a == 10 && b < 5.0) {
+	if a == 10 && b < 5.0 and true or false{
 		printf("Condition met: a is 10 and b is less than 5.0");
 	} else {
 		printf("Condition not met");

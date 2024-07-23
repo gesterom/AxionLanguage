@@ -73,21 +73,7 @@ int main(int argc,char** args)
 	MetaLexer lexer(repo,args[1]);
 	uint64_t i = 0;
 	while (auto a = lexer.lex()) {
+		if (a->kind == Token::Type::comment and a->preamble_token == -1) continue;
 		std::cout<<++i<<" : (" <<repo.to_string(a->preamble_token)<<"/" << repo.to_string(a->preamble_token,a->kind) << ") " << (a->value) << " -> "<<a->value.start() << "-"<<a->value.end() << std::endl;
 	}
-	//auto a = metaLexer(args[1]);
-	//for (const auto& [i, elem] : enumerate(a)) {
-	//	std::cout<<"--- === "<<std::setw(3)<<i<<" === ---"<<std::endl;
-	//	std::cout<<"Atributes:"<<std::endl;
-	//	for (const auto& [j, atr] : enumerate(elem.atributes)) {
-	//		std::cout<<"\t"<<std::setw(5)<<j<<": "<<atr.first.val()<<" = " << atr.second.val()<<std::endl;
-	//	}
-
-	//	std::cout<<"Preamble : " << std::setw(5) <<elem.preamble.start()<<" - "<< std::setw(5) << elem.preamble.end()<<" = " << elem.preamble.val() << std::endl;
-	//	std::cout << "Head : " << std::setw(5) << elem.head.start() << " - " << std::setw(5) << elem.head.end() << " = " << elem.head.val() << std::endl;
-	//	//std::cout << "Body : " << std::setw(5) << elem.body.start() << " - " << std::setw(5) << elem.body.end() << " = " << elem.body.val() << std::endl;
-	//	for (const auto& [j, line] : enumerate(elem.lines)) {
-	//		std::cout << std::setw((int)std::ceil(log10(elem.lines.size()))) << std::setw(5) << line.start() << " - " << std::setw(5) << line.end() << ":" << std::setw(30) << "(TODO) - " << line.val() << std::endl;
-	//	}
-	//}
 }

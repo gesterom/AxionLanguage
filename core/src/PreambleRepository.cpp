@@ -2,8 +2,11 @@
 
 #include "Preambles/Function/Lexer.h"
 #include "Preambles/Type/Lexer.h"		
+#include "Preambles/Procedure/Lexer.h"
 
 #include "PreambleDefinition.h"
+
+#include "format"
 
 std::optional<Token> nop_lexer(int64_t preambleIndex, LexerMode& mode, CodeLocation& loc, std::istream& in) {
 	return std::nullopt;
@@ -54,9 +57,9 @@ PreambleRepository::PreambleRepository()
 			vec.at(vec.size() - 1)->lexer->setPreambleIndex(vec.size() - 1);
 	};
 
-	addPreamble(new PreambleDefinition{ "procedure",nullptr });
+	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer() });
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
-	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer()});
+	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
 	addPreamble(new PreambleDefinition{ "type.agent",nullptr }); //
 	addPreamble(new PreambleDefinition{ "script",nullptr }); // compile time procedur
@@ -83,15 +86,16 @@ PreambleDefinition* PreambleRepository::get(int64_t index) const
 	return vec[index];
 }
 
-int64_t PreambleRepository::getPeambuleIndex(std::string representation) const {
+int64_t PreambleRepository::getPeambuleIndex(CodeLocation representation) const {
 	int i = 0;
+
 	for (const auto& elem : vec) {
-		if (elem->representation == representation) {
+		if (elem->representation == representation.val()) {
 			return i;
 		}
 		i++;
 	}
-	TODO("preamble not found");
+	TODO(std::format("preamble '{}' not found ! in {} ",representation.val(),representation.start()));
 }
 
 PreambleRepository::~PreambleRepository()

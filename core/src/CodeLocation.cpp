@@ -196,7 +196,7 @@ uint8_t CodeLocation::look(int64_t n)
 
 bool CodeLocation::is_good() const noexcept
 {
-	return this->file->size() > this->end_pos;
+	return this->file->size() > this->end_pos+1;
 }
 
 std::ostream& operator<<(std::ostream& out, const CodeLocation& loc) {

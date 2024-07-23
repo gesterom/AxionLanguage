@@ -13,8 +13,8 @@ std::optional<Token> MetaLexer::lex() {
 	if (not loc.is_good()) return std::nullopt;
 	do {
 		last_ch = ch;
-		ch = loc.peek();
-		next_ch = loc.peek(2)[1];
+		ch = loc.look(0);
+		next_ch = loc.look(1);
 		switch (mode)
 		{
 		case LexerMode::idle:
@@ -119,7 +119,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				loc += ch;
 				mode = LexerMode::head;
-				preambleIndex = repo.getPeambuleIndex(res.val());
+				preambleIndex = repo.getPeambuleIndex(res);
 				return Token{ -1,Token::Type::preamble,res };
 			}
 			else {

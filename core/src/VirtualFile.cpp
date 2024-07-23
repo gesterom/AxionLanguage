@@ -16,11 +16,10 @@ VirtualFile::VirtualFile(std::string file_name)
 
 std::string VirtualFile::get(uint64_t start, uint64_t end)
 {
-	ASSERT(start >= 0 and start <= end, "start check");
-	ASSERT(end >= 0  and end < bytes.size(), "end check");
+	if(end <= start ) return "";
 	std::string res;
 	res.reserve(end-start);
-	for (uint64_t i = start; i < end; i++) {
+	for (uint64_t i = start; i < end and start < end and i < bytes.size(); i++) {
 		res+=bytes[i];
 	}
 	return res;
@@ -28,7 +27,7 @@ std::string VirtualFile::get(uint64_t start, uint64_t end)
 
 uint8_t VirtualFile::get(uint64_t offset)
 {
-	ASSERT(offset>=0 and offset < bytes.size(),"offset check");
+	if(offset<0 or offset >= bytes.size()) return 0xff;
 	return bytes[offset];
 }
 
