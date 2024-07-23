@@ -16,9 +16,10 @@ enum class FunctionTokenType
 Preamble::Function::Lexer::Lexer() {}
 void Preamble::Function::Lexer::reset(){}
 void Preamble::Function::Lexer::setPreambleIndex(int64_t x) { this->preambleIndex = x;}
-std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexHead(CodeLocation& loc, uint8_t ch){
+std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexHead(CodeLocation& loc){
 	uint8_t last_ch = '\0';
-	uint8_t next_ch = loc.peek(2)[1];
+	uint8_t ch = loc.look(0);
+	uint8_t next_ch = loc.look(1);
 	do {		
 		if (ch == '{') {
 			auto res = loc += ch;
@@ -59,9 +60,10 @@ std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexHead(Co
 	}while(loc.is_good());
 	return { std::nullopt,LexerMode::idle };
 }
-std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexBody(CodeLocation& loc, uint8_t ch){
+std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexBody(CodeLocation& loc){
 	uint8_t last_ch = '\0';
-	uint8_t next_ch = loc.peek(2)[1];
+	uint8_t ch = loc.look(0);
+	uint8_t next_ch = loc.look(1);
 	do {
 		if (ch == '}') {
 			auto res = loc += ch;

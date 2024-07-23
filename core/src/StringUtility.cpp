@@ -88,3 +88,9 @@ bool isCharIdentifier(uint8_t ch) {
 		(ch == '_') // underscore
 		);
 }
+
+std::string to_lowercase(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return str;
+}

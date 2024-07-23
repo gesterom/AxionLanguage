@@ -128,13 +128,13 @@ std::optional<Token> MetaLexer::lex() {
 			break;
 		case LexerMode::head:{
 			ASSERT(repo.get(preambleIndex)->lexer != nullptr, std::format("TODO {}",repo.get(preambleIndex)->representation));
-			auto [res,mode_] = repo.get(preambleIndex)->lexer->lexHead(loc,ch);
+			auto [res,mode_] = repo.get(preambleIndex)->lexer->lexHead(loc);
 			loc = loc.moveStartToEnd();
 			mode = mode_;
 			return res;
 			}break;
 		case LexerMode::body:{
-			auto [res, mode_] = repo.get(preambleIndex)->lexer->lexBody(loc,ch);
+			auto [res, mode_] = repo.get(preambleIndex)->lexer->lexBody(loc);
 			loc = loc.moveStartToEnd();
 			mode = mode_;
 			return res;

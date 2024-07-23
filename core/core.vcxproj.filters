@@ -28,17 +28,6 @@
     <Filter Include="Preambules\Type">
       <UniqueIdentifier>{2ab9116b-fc44-4208-be71-d3ba04bc3732}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Preambules\Function\Header">
-      <UniqueIdentifier>{51f82ce1-7dd6-41cb-98ac-6b90c71943eb}</UniqueIdentifier>
-      <Extensions>*.h</Extensions>
-    </Filter>
-    <Filter Include="Preambules\Function\Src">
-      <UniqueIdentifier>{927995ed-09a9-49d0-ae64-afd31013eb31}</UniqueIdentifier>
-      <Extensions>*.cpp</Extensions>
-    </Filter>
-    <Filter Include="Preambules\Type\Header">
-      <UniqueIdentifier>{0901433a-cc6e-41b8-8ab0-012bef5d6e33}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CodeLocation.cpp">
@@ -68,20 +57,17 @@
     <ClCompile Include="src\VirtualFile.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="Preambules\Function\src\Lexer.cpp">
-      <Filter>Preambules\Function\Src</Filter>
+    <ClCompile Include="Preambles\Function\Lexer.cpp">
+      <Filter>Preambules\Function</Filter>
     </ClCompile>
-    <ClCompile Include="Preambules\Type\Lexer.cpp">
-      <Filter>Preambules\Type</Filter>
-    </ClCompile>
-    <ClCompile Include="Preambules\Procedure\Lexer.cpp">
+    <ClCompile Include="Preambles\Procedure\Lexer.cpp">
       <Filter>Preambules\Procedure</Filter>
+    </ClCompile>
+    <ClCompile Include="Preambles\Type\Lexer.cpp">
+      <Filter>Preambules\Type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Preambules\Procedure\OperatorDefinition.h">
-      <Filter>Preambules\Procedure</Filter>
-    </ClInclude>
     <ClInclude Include="headers\Enumerate.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
@@ -109,14 +95,17 @@
     <ClInclude Include="headers\CodeLocation.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="Preambules\Procedure\Lexer.h">
+    <ClInclude Include="Preambles\Function\Lexer.h">
+      <Filter>Preambules\Function</Filter>
+    </ClInclude>
+    <ClInclude Include="Preambles\Procedure\Lexer.h">
       <Filter>Preambules\Procedure</Filter>
     </ClInclude>
-    <ClInclude Include="Preambules\Function\Lexer.h">
-      <Filter>Preambules\Function\Header</Filter>
+    <ClInclude Include="Preambles\Type\Lexer.h">
+      <Filter>Preambules\Type</Filter>
     </ClInclude>
-    <ClInclude Include="Preambules\Type\Lexer.h">
-      <Filter>Preambules\Type\Header</Filter>
+    <ClInclude Include="Preambles\Procedure\OperatorDefinition.h">
+      <Filter>Preambules\Procedure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -36,6 +36,7 @@ public:
 	std::string get(int64_t);
 	uint8_t peek();
 	std::string peek(int64_t);
+	uint8_t look(int64_t);
 	bool is_good() const noexcept;
 };
 

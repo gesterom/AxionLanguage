@@ -32,3 +32,5 @@ bool isSpace(uint8_t ch) ;
 
 //check ch is [a-zA-Z0-9_]
 bool isCharIdentifier(uint8_t ch) ;
+
+std::string to_lowercase(std::string);

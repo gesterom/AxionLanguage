@@ -189,6 +189,11 @@ std::string CodeLocation::peek(int64_t n)
 	return this->file->get(this->end_pos,this->end_pos+n);
 }
 
+uint8_t CodeLocation::look(int64_t n)
+{
+	return this->file->get(end_pos+n);
+}
+
 bool CodeLocation::is_good() const noexcept
 {
 	return this->file->size() > this->end_pos;

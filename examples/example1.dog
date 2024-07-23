@@ -19,9 +19,9 @@ type Person{
 }
 
 type vector( t : Type ){
-	size : int;
-	capasity : int;
-	data : t[];
+	let size : int;
+	let capasity : int;
+	let data : t[];
 }
 
 procedure main(){
