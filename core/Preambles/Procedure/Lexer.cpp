@@ -22,58 +22,56 @@ void Preamble::Procedure::Lexer::reset() {
 void Preamble::Procedure::Lexer::setPreambleIndex(int64_t x) {
 	this->preambleIndex = x;
 }
-std::pair<std::optional<Token>, LexerMode> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
+std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
-	uint8_t ch = loc.look(0);
-	uint8_t next_ch = loc.look(1);
+	uint8_t ch = '\0';
+	uint8_t next_ch = '\0';
 	do {
-		if (ch == '{') {
+		last_ch = ch;
+		ch = loc.look(0);
+		next_ch = loc.look(1);
+		if (ch == ':') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{ -1,Token::Type::parenthesis,res }, LexerMode::body };
-		}
-		else if (ch == ':') {
-			auto res = loc += ch;
-			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)ProcedureTokenType::colon,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)ProcedureTokenType::colon,res};
 		}
 		else if (ch == ',') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)ProcedureTokenType::comma,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)ProcedureTokenType::comma,res};
 		}
 		else if ((ch == '(' or ch == ')')) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res};
 		}
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)ProcedureTokenType::id,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)ProcedureTokenType::id,res};
 		}
 		else {
 			loc += ch;
 		}
-		last_ch = ch;
-		ch = loc.peek();
-		next_ch = loc.peek(2)[1];
 	} while (loc.is_good());
-	return { std::nullopt,LexerMode::idle };
+	return std::nullopt;
 }
-std::pair<std::optional<Token>, LexerMode> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
-	uint8_t last_ch = '\0';
-	uint8_t ch = loc.look(0);
-	uint8_t next_ch = loc.look(1);
+std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	bool inQoute = false;
+	uint8_t last_ch = '\0';
+	uint8_t ch = '\0';
+	uint8_t next_ch = '\0';
 	do {
+		last_ch = ch;
+		ch = loc.look(0);
+		next_ch = loc.look(1);
 		if (inQoute) {
 			if(last_ch != '\\' and ch == '"') {
 				auto res = loc;
 				loc+=ch;
 				loc = loc.moveStartToEnd();
 				inQoute = false;
-				return { Token{ preambleIndex,(Token::Type)ProcedureTokenType::string_literal,res }, LexerMode::body };
+				return Token{ preambleIndex,(Token::Type)ProcedureTokenType::string_literal,res };
 			}
 			else {
 				loc+=ch;
@@ -81,38 +79,31 @@ std::pair<std::optional<Token>, LexerMode> Preamble::Procedure::Lexer::lexBody(C
 		}
 		else {
 			if (ch == '}') {
-				if (paramCount <= 0) {
-					auto res = loc += ch;
-					loc = loc.moveStartToEnd();
-					return { Token{ -1,Token::Type::parenthesis,res }, LexerMode::idle };
-				}
-				else {
-					paramCount--;
-					auto res = loc += ch;
-					loc = loc.moveStartToEnd();
-					return { Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res}, LexerMode::body };
-				}
+				paramCount--;
+				auto res = loc += ch;
+				loc = loc.moveStartToEnd();
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res};
 			}
 			else if (ch == '{') {
 				paramCount++;
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
-				return { Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res}, LexerMode::body };
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res};
 			}
 			else if ((ch == '(' or ch == ')' or ch == '[' or ch == ']') and loc.val() == "") {
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
-				return { Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res},LexerMode::body };
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res};
 			}
 			else if (ch == ';') {
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
-				return { Token{preambleIndex,(Token::Type)ProcedureTokenType::semicolon,res},LexerMode::body };
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::semicolon,res};
 			}
 			else if (ch == ':') {
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
-				return { Token{preambleIndex,(Token::Type)ProcedureTokenType::colon,res},LexerMode::body };
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::colon,res};
 			}
 			else if (ch == '"') {
 				inQoute= true;
@@ -123,19 +114,16 @@ std::pair<std::optional<Token>, LexerMode> Preamble::Procedure::Lexer::lexBody(C
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
 				if (to_lowercase(res.val()) == "let") {
-					return { Token{preambleIndex,(Token::Type)ProcedureTokenType::keyword,res},LexerMode::body };
+					return Token{preambleIndex,(Token::Type)ProcedureTokenType::keyword,res};
 				}
-				return { Token{preambleIndex,(Token::Type)ProcedureTokenType::id,res},LexerMode::body };
+				return Token{preambleIndex,(Token::Type)ProcedureTokenType::id,res};
 			}
 			else {
 				loc += ch;
 			}
 		}
-		last_ch = ch;
-		ch = loc.peek();
-		next_ch = loc.peek(2)[1];
 	} while (loc.is_good());
-	return { std::nullopt,LexerMode::idle };
+	return std::nullopt;
 }
 std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {
 	switch ((ProcedureTokenType)kind) {

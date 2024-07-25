@@ -36,10 +36,19 @@ procedure main(){
 	//a+-+-+-+-+-(+-+-+-b);
 }
 
+procedure foo( /*ala ma kota*/){}
+
+procedure bazz{/*}*/}
+procedure bar//{
+{
+	task;
+}
+
 procedure main2() {
 	/* comment */
 	/* inside 1
-		/* inside 2 */
+		/* inside 2 */ {}
+		}{
 	*/
 	// Variable declarations
 	let a : int;

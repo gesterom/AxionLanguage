@@ -5,6 +5,7 @@
 VirtualFile::VirtualFile(std::string file_name)
 {
 	std::ifstream file(file_name);
+	if (not file.good()) exit(1);
 	file.seekg(0,std::ios::end);
 	uint64_t size = file.tellg();
 	file.seekg(0, std::ios::beg);

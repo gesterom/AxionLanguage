@@ -37,7 +37,8 @@ std::string meta_to_string(Token::Type t)
 	case Token::atribute_value: return "atribute_value";
 	case Token::parenthesis: return "parenthesis";
 	case Token::comment: return "comment";
-	default: return "invalid";
+	case Token::string_literal: return "string_literal";
+	default: return "<invalid>";
 	}
 }
 

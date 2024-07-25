@@ -2,31 +2,40 @@
 
 #include "StringUtility.h"
 
+#include <algorithm>
+
+#include "TODO.h"
+
 //bool CodeLocation::comment() const noexcept { return commentLevel > 0 or lineComment; }
 
 CodeLocation::CodeLocation(std::string filename) {
 		this->file_name = filename;
-		//this->start_pos.position = 1;
-		//this->start_pos.position_utf8 = 1;
-		//this->start_pos.line = 1;
 		this->start_pos = 0;
-		//this->start_pos.character_number = 0;
-		//this->end_pos.position = 1;
-		//this->end_pos.position_utf8 = 1;
-		//this->end_pos.line = 1;
 		this->end_pos = 0;
-		//this->end_pos.character_number = 0;
 		this->last_byte = '\0';
 		this->file = std::make_shared<VirtualFile>(filename);
+		this->limit_start = 0;
+		this->limit_end = file->size();
 	}
+CodeLocation CodeLocation::asLimiter() const noexcept
+{
+	CodeLocation res = *this;
+	res.limit_start = this->start_pos;
+	res.limit_end = this->end_pos;
+	res.end_pos = this->start_pos;
+	return res;
+}
+
 std::string CodeLocation::getFilename() const noexcept { return this->file_name; }
+
 CodeLocation::CodeLocation(const CodeLocation& other) noexcept {
 		this->file_name = other.file_name;
 		this->start_pos = other.start_pos;
 		this->end_pos = other.end_pos;
 		this->last_byte = other.last_byte;
-		//this->value = other.value;
 		this->file = other.file;
+		this->limit_start = other.limit_start;
+		this->limit_end = other.limit_end;
 }
 
 CodeLocation CodeLocation::operator=(const CodeLocation& other) noexcept {
@@ -34,8 +43,9 @@ CodeLocation CodeLocation::operator=(const CodeLocation& other) noexcept {
 		this->start_pos = other.start_pos;
 		this->end_pos = other.end_pos;
 		this->last_byte = other.last_byte;
-		//this->value = other.value;
 		this->file = other.file;
+		this->limit_start = other.limit_start;
+		this->limit_end = other.limit_end;
 		return *this;
 }
 
@@ -44,8 +54,9 @@ CodeLocation::CodeLocation(CodeLocation&& other) noexcept {
 	this->start_pos = other.start_pos;
 	this->end_pos = other.end_pos;
 	this->last_byte = other.last_byte;
-	//this->value = other.value;
 	this->file = other.file;
+	this->limit_start = other.limit_start;
+	this->limit_end = other.limit_end;
 }
 
 CodeLocation CodeLocation::operator=(CodeLocation&& other) noexcept {
@@ -53,8 +64,9 @@ CodeLocation CodeLocation::operator=(CodeLocation&& other) noexcept {
 	this->start_pos = other.start_pos;
 	this->end_pos = other.end_pos;
 	this->last_byte = other.last_byte;
-	//this->value = other.value;
 	this->file = other.file;
+	this->limit_start = other.limit_start;
+	this->limit_end = other.limit_end;
 	return *this;
 }
 
@@ -83,16 +95,6 @@ CodeLocation CodeLocation::substr(uint64_t n) const noexcept {
 	CodeLocation res = *this;
 	res.end_pos = res.start_pos+n;
 	return res;
-}
-
-bool CodeLocation::isDouble() const noexcept {
-	bool dot = false;
-	for (const auto& i : this->val()) {
-		if (i == '.' and not dot) dot = true;
-		else if (i == '.' and dot) return false;
-		else if (not std::isdigit(i) and not isCharIdentifier(i)) return false;
-	}
-	return dot;
 }
 
 size_t CodeLocation::size() const noexcept { return end_pos - start_pos; }
@@ -169,7 +171,7 @@ uint8_t CodeLocation::get()
 	return res;
 }
 
-std::string CodeLocation::get(int64_t n)
+std::string CodeLocation::get(uint64_t n)
 {
 	std::string res;
 	res.reserve(n);
@@ -181,21 +183,27 @@ std::string CodeLocation::get(int64_t n)
 
 uint8_t CodeLocation::peek()
 {
+	if(end_pos>=this->limit_end) return 0xff;
+	if(end_pos<this->limit_start) return 0xff;
 	return this->file->get(end_pos);
 }
 
-std::string CodeLocation::peek(int64_t n)
+std::string CodeLocation::peek(uint64_t n)
 {
-	return this->file->get(this->end_pos,this->end_pos+n);
+	ASSERT(this->end_pos + n > this->end_pos,"dont look back");
+	return this->file->get(this->end_pos,std::min((uint64_t)(this->end_pos+n),this->limit_end));
 }
 
 uint8_t CodeLocation::look(int64_t n)
 {
+	if (end_pos + n >= limit_end) return 0xff;
+	if (end_pos + n < limit_start) return 0xff;
 	return this->file->get(end_pos+n);
 }
 
 bool CodeLocation::is_good() const noexcept
 {
+	if (this->end_pos>=limit_end) return false;
 	return this->file->size() > this->end_pos+1;
 }
 

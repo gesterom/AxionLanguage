@@ -7,6 +7,7 @@ struct Token {
 		error = -1,
 		unknown,
 		preamble,
+		string_literal,
 		file_scope_atribute_name,
 		file_scope_atribute_value,
 		atribute_name,

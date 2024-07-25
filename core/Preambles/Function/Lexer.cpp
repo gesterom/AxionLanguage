@@ -16,69 +16,62 @@ enum class FunctionTokenType
 Preamble::Function::Lexer::Lexer() {}
 void Preamble::Function::Lexer::reset(){}
 void Preamble::Function::Lexer::setPreambleIndex(int64_t x) { this->preambleIndex = x;}
-std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexHead(CodeLocation& loc){
+std::optional<Token> Preamble::Function::Lexer::lexHead(CodeLocation& loc){
 	uint8_t last_ch = '\0';
-	uint8_t ch = loc.look(0);
-	uint8_t next_ch = loc.look(1);
-	do {		
-		if (ch == '{') {
+	uint8_t ch = '\0';
+	uint8_t next_ch = '\0';
+	do {
+		last_ch = ch;
+		ch = loc.look(0);
+		next_ch = loc.look(1);
+		if (next_ch == '(' and loc.val() != "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{ -1,Token::Type::parenthesis,res }, LexerMode::body };
-		}
-		else if (next_ch == '(' and loc.val() != "") {
-			auto res = loc += ch;
-			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::id,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::id,res};
 		}
 		else if ( (ch == '(' or ch == ')') and loc.val() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::parenthesis,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::parenthesis,res};
 		}
 		else if (ch == ',' and loc.val() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::comma,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::comma,res};
 		}
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc+=ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::id,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::id,res};
 		}
 		else if ( not isCharIdentifier(ch) and isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::op,res},LexerMode::head };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::op,res};
 		}
 		else {
 			loc+=ch;
 		}
-		last_ch = ch;
-		ch = loc.peek();
-		next_ch = loc.peek(2)[1];
 	}while(loc.is_good());
-	return { std::nullopt,LexerMode::idle };
+	return std::nullopt;
 }
-std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexBody(CodeLocation& loc){
+std::optional<Token> Preamble::Function::Lexer::lexBody(CodeLocation& loc){
 	uint8_t last_ch = '\0';
-	uint8_t ch = loc.look(0);
-	uint8_t next_ch = loc.look(1);
+	uint8_t ch = '\0';
+	uint8_t next_ch = '\0';
 	do {
-		if (ch == '}') {
+		last_ch = ch;
+		ch = loc.look(0);
+		next_ch = loc.look(1);
+		if (next_ch == '(' and loc.val() != "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{ -1,Token::Type::parenthesis,res }, LexerMode::idle };
-		}
-		else if (next_ch == '(' and loc.val() != "") {
-			auto res = loc += ch;
-			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::id,res},LexerMode::body };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::id,res};
 		}
 		else if ((ch == '(' or ch == ')') and loc.val() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::parenthesis,res},LexerMode::body };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::parenthesis,res};
 		}
 		else if (next_ch == ',' and loc.val() != "") {
 			auto res = loc += ch;
@@ -88,26 +81,23 @@ std::pair<std::optional<Token>, LexerMode> Preamble::Function::Lexer::lexBody(Co
 		else if (ch == ',' and loc.val() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::comma,res},LexerMode::body };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::comma,res};
 		}
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::id,res},LexerMode::body };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::id,res};
 		}
 		else if (not isSpace(ch) and not isCharIdentifier(ch) and isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return { Token{preambleIndex,(Token::Type)FunctionTokenType::op,res},LexerMode::body };
+			return Token{preambleIndex,(Token::Type)FunctionTokenType::op,res};
 		}
 		else {
 			loc += ch;
 		}
-		last_ch = ch;
-		ch = loc.peek();
-		next_ch = loc.peek(2)[1];
 	} while (loc.is_good());
-	return { std::nullopt,LexerMode::idle };
+	return std::nullopt;
 }
 std::string Preamble::Function::Lexer::to_string(Token::Type kind) const{
 	switch ((FunctionTokenType)kind) {
