@@ -109,8 +109,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\examples\example1.dog">
-      <Filter>Examples</Filter>
-    </None>
+    <None Include="..\examples\example1.dog" />
   </ItemGroup>
 </Project>

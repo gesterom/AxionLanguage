@@ -1,10 +1,10 @@
 #pragma once
 
-#include <optional>
-#include "Token.h"
-#include "MetaLexer.h"
 #include "CodeLocation.h"
+#include "MetaLexer.h"
 #include "PreambleDefinition.h"
+#include "Token.h"
+#include <optional>
 
 namespace Preamble {
 	namespace Type {

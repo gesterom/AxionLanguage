@@ -1,0 +1,25 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!-- Define properties -->
+	<PropertyGroup>
+		<CerberusCompilerPath>$(SolutionDir)x64\Debug\cerberus.exe</CerberusCompilerPath>
+		<OutputBinary>$(OutDir)example.exe</OutputBinary>
+	</PropertyGroup>
+
+	<!-- Define custom build steps -->
+	<Target Name="CompileCerberus">
+		<Message Text="Compiling %(CerberusSourceFile.FullPath) using cerberus..." Importance="high" />
+		<Exec Command="&quot;$(CerberusCompilerPath)&quot; %(CerberusSourceFile.FullPath) -o &quot;$(OutputBinary)&quot;" />
+	</Target>
+
+  <!-- Hook into the build process -->
+	<Target Name="Build">
+		<Exec Command="echo &quot;Hay from Build&quot;" />
+		<CallTarget Targets="CompileCerberus" />
+	</Target>
+	<Target Name="Rebuild">
+		<Exec Command="echo &quot;Hay from Reuild&quot;" />
+		<CallTarget Targets="CompileCerberus" />
+	</Target>
+
+</Project>

@@ -1,8 +1,8 @@
 #include "PreambleRepository.h"
 
 #include "Preambles/Function/Lexer.h"
-#include "Preambles/Type/Lexer.h"		
 #include "Preambles/Procedure/Lexer.h"
+#include "Preambles/Type/Lexer.h"		
 
 #include "PreambleDefinition.h"
 
@@ -52,20 +52,20 @@ std::string PreambleRepository::to_string(Token::PreambleType pre, Token::Type t
 
 PreambleRepository::PreambleRepository()
 {
-	auto addPreamble = [&](PreambleDefinition* pd){
+	auto addPreamble = [&](PreambleDefinition* pd) {
 		vec.push_back(pd);
-		if(vec.at(vec.size() - 1)->lexer != nullptr)
+		if (vec.at(vec.size() - 1)->lexer != nullptr)
 			vec.at(vec.size() - 1)->lexer->setPreambleIndex(vec.size() - 1);
-	};
+		};
 
 	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer() });
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
 	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
+	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
+	addPreamble(new PreambleDefinition{ "type.alias",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
-	addPreamble(new PreambleDefinition{ "type.agent",nullptr }); //
-	addPreamble(new PreambleDefinition{ "script",nullptr }); // compile time procedur
-	addPreamble(new PreambleDefinition{ "script.compile",nullptr }); // compile time procedur
-	addPreamble(new PreambleDefinition{ "compile",nullptr }); // runed when compilin
+	addPreamble(new PreambleDefinition{ "build",nullptr }); // runed when compiling
+	addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
 	addPreamble(new PreambleDefinition{ "sql",nullptr }); // sql scrip
 	addPreamble(new PreambleDefinition{ "sql.query",nullptr }); // sql quer
 	addPreamble(new PreambleDefinition{ "sql.migration",nullptr });
@@ -83,7 +83,7 @@ std::vector<PreambleDefinition*> PreambleRepository::get() const
 PreambleDefinition* PreambleRepository::get(int64_t index) const
 {
 	ASSERT(vec.size() < 100000, "TOO large");
-	ASSERT(index >= 0 && index < (int64_t)vec.size(),"out of bound");
+	ASSERT(index >= 0 && index < (int64_t)vec.size(), "out of bound");
 	return vec[index];
 }
 
@@ -96,7 +96,7 @@ int64_t PreambleRepository::getPeambuleIndex(CodeLocation representation) const 
 		}
 		i++;
 	}
-	TODO(std::format("preamble '{}' not found ! in {} ",representation.val(),representation.start()));
+	TODO(std::format("preamble '{}' not found ! in {} ", representation.val(), representation.start()));
 }
 
 PreambleRepository::~PreambleRepository()

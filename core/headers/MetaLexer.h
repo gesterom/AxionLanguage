@@ -1,16 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <fstream>
-#include <optional>
-#include "Enumerate.h"
 #include "CodeLocation.h"
-#include "Token.h"
 #include "PreambleRepository.h"
+#include "Token.h"
+#include <optional>
 
 enum class LexerMode
 {
-	idle = 0, error_recovery,comment,string_literal,multilineComment, atribute_name, atribute_value, file_atribute_name, file_atribute_value, preamble, head,head_specific, body,body_specific,emit_body_closing_bracker
+	idle = 0, error_recovery, comment, string_literal, multilineComment, atribute_name, atribute_value, file_atribute_name, file_atribute_value, preamble, head, head_specific, body, body_specific, emit_body_closing_bracker
 };
 
 class MetaLexer {
@@ -32,6 +29,6 @@ class MetaLexer {
 	uint8_t start_string_lieral = '\0';
 
 public:
-	MetaLexer(const PreambleRepository& repo,std::string file_name) ;
+	MetaLexer(const PreambleRepository& repo, std::string file_name);
 	std::optional<Token> lex();
 };

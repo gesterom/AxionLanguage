@@ -3,16 +3,16 @@
 #include <format>
 
 #include "PreambleDefinition.h"
-#include "TODO.h"
 #include "StringUtility.h"
+#include "TODO.h"
 
-MetaLexer::MetaLexer(const PreambleRepository& repo,std::string file_name) : loc(file_name),tempLoc(loc), repo(repo) {}
+MetaLexer::MetaLexer(const PreambleRepository& repo, std::string file_name) : loc(file_name), tempLoc(loc), repo(repo) {}
 
 std::optional<Token> MetaLexer::lex() {
 	CodeLocation line = loc;
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	if (not loc.is_good()) return std::nullopt;
+	if (not loc.is_good() and not tempLoc.is_good()) return std::nullopt;
 	do {
 		last_ch = ch;
 		ch = loc.look(0);
@@ -21,7 +21,7 @@ std::optional<Token> MetaLexer::lex() {
 		{
 		case LexerMode::idle:
 			if (ch == '#') { mode = LexerMode::atribute_name; loc += ch; loc = loc.moveStartToEnd(); }
-			else if (ch == '/' and next_ch == '/') {mode = LexerMode::comment; loc = loc.moveStartToEnd();  loc += ch;}
+			else if (ch == '/' and next_ch == '/') { mode = LexerMode::comment; loc = loc.moveStartToEnd();  loc += ch; }
 			else if (ch == '/' and next_ch == '*') { mode = LexerMode::comment; loc = loc.moveStartToEnd();  loc += ch; }
 			else if (validPreambleChar(ch)) { mode = LexerMode::preamble; loc = loc.moveStartToEnd(); loc += ch; }
 			else if (isSpace(ch)) loc += ch;
@@ -31,15 +31,15 @@ std::optional<Token> MetaLexer::lex() {
 			TODO("implement error recovery (search for known preamble) ");
 			break;
 		case LexerMode::comment:
-			if(ch == '\n') {
+			if (ch == '\n') {
 				auto res = loc;
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = afterComment;
-				return Token{ -1,Token::Type::comment,res};
+				return Token{ -1,Token::Type::comment,res };
 			}
 			else {
-				loc+=ch;
+				loc += ch;
 			}
 			break;
 		case LexerMode::multilineComment:
@@ -67,20 +67,20 @@ std::optional<Token> MetaLexer::lex() {
 			}
 			else if (ch == start_string_lieral) {
 				auto res = loc;
-				loc+=ch;
+				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = afterComment;
 				return Token{ -1,Token::Type::string_literal,res };
 			}
 			else {
-				loc+=ch;
+				loc += ch;
 			}
 			break;
-		case LexerMode::emit_body_closing_bracker:{
+		case LexerMode::emit_body_closing_bracker: {
 			auto res = loc += ch;
 			mode = afterComment;
 			return Token{ -1,Token::Type::parenthesis,res };
-			}break;
+		}break;
 		case LexerMode::file_atribute_name:
 			if (last_ch == '#' and ch == '#') { loc += ch; loc = loc.moveStartToEnd(); }
 			else if (ch == '\n') {
@@ -178,7 +178,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				return Token{ -1,Token::Type::error,res };
 			}
-			else if(ch == '{') {
+			else if (ch == '{') {
 				this->tempLoc = loc.asLimiter();
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::head_specific;
@@ -188,7 +188,7 @@ std::optional<Token> MetaLexer::lex() {
 				mode = LexerMode::error_recovery;
 			}
 			else if (ch == '"') {
-				loc+=ch;
+				loc += ch;
 				loc = loc.moveStartToEnd();
 				start_string_lieral = '"';
 				mode = LexerMode::head_specific;
@@ -218,16 +218,16 @@ std::optional<Token> MetaLexer::lex() {
 				afterComment = LexerMode::head;
 			}
 			else {
-				loc+=ch;
+				loc += ch;
 			}
 			break;
-		case LexerMode::head_specific:{
+		case LexerMode::head_specific: {
 			auto res = repo.get(preambleIndex)->lexer->lexHead(tempLoc);
 			if (res != std::nullopt) return res;
 			auto res2 = loc;
 			loc = loc.moveStartToEnd();
 			mode = nextMode;
-			}break;
+		}break;
 		case LexerMode::body:
 			if (repo.get(preambleIndex)->lexer == nullptr) {
 				auto res = loc;
@@ -254,7 +254,7 @@ std::optional<Token> MetaLexer::lex() {
 				nextMode = LexerMode::string_literal;
 				afterComment = LexerMode::body;
 			}
-			else if (ch == '{' and loc.size() == 0 ) {
+			else if (ch == '{' and loc.size() == 0) {
 				this->parentisisCounter++;
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
@@ -274,7 +274,8 @@ std::optional<Token> MetaLexer::lex() {
 					mode = LexerMode::body_specific;
 					nextMode = LexerMode::emit_body_closing_bracker;
 					afterComment = LexerMode::idle;
-				}else
+				}
+				else
 					loc += ch;
 			}
 			else if (ch == '/' and next_ch == '/') {
@@ -298,9 +299,9 @@ std::optional<Token> MetaLexer::lex() {
 			auto res = repo.get(preambleIndex)->lexer->lexBody(tempLoc);
 			if (res != std::nullopt) return res;
 			mode = nextMode;
-			}break;
+		}break;
 		default:
-			TODO( "unexpectet internal error ? ");
+			TODO("unexpectet internal error ? ");
 			break;
 		}
 	} while (loc.is_good() or tempLoc.is_good());

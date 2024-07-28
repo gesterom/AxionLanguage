@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject>
+  <ItemGroup>
+	  <Filter Include="Source Files">
+	  <Extensions>dog</Extensions>
+	  </Filter>
+  </ItemGroup>
+  <ItemGroup>   
+	<CerberusSourceFile Include = "example1.dog">
+		<Filter>Pliki źródłowe</Filter>
+	</CerberusSourceFile>
+    <ClCompile Include="src\CodeLocation.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+  </ItemGroup>	
+  
+</VisualStudioProject>

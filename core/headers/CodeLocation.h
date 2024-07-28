@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-#include <ostream>
 #include <fstream>
+#include <ostream>
+#include <string>
 
 #include "VirtualFile.h"
 
@@ -19,22 +19,22 @@ class CodeLocation {
 	uint64_t limit_end = 0;
 
 public:
-	explicit CodeLocation(std::string filename) ;
-	CodeLocation asLimiter() const noexcept ;
-	std::string getFilename() const noexcept ;
-	CodeLocation(const CodeLocation& other) noexcept ;
-	CodeLocation operator=(const CodeLocation& other) noexcept ;
-	CodeLocation(CodeLocation&& other) noexcept ;
-	CodeLocation operator=(CodeLocation&& other) noexcept ;
-	CodeLocation operator+=(char ch) noexcept ;
-	CodeLocation moveStartToEnd() const noexcept ;
-	CodeLocation move(uint64_t n) const noexcept ;
-	CodeLocation substr(uint64_t n) const noexcept ;
-	size_t size() const noexcept ;
-	std::string val() const noexcept ;
-	std::string start() const noexcept ;
-	std::string end() const noexcept ;
-	bool operator<(const CodeLocation& other) const noexcept ;
+	explicit CodeLocation(std::string filename);
+	CodeLocation asLimiter() const noexcept;
+	std::string getFilename() const noexcept;
+	CodeLocation(const CodeLocation& other) noexcept;
+	CodeLocation operator=(const CodeLocation& other) noexcept;
+	CodeLocation(CodeLocation&& other) noexcept;
+	CodeLocation operator=(CodeLocation&& other) noexcept;
+	CodeLocation operator+=(char ch) noexcept;
+	CodeLocation moveStartToEnd() const noexcept;
+	CodeLocation move(uint64_t n) const noexcept;
+	CodeLocation substr(uint64_t n) const noexcept;
+	size_t size() const noexcept;
+	std::string val() const noexcept;
+	std::string start() const noexcept;
+	std::string end() const noexcept;
+	bool operator<(const CodeLocation& other) const noexcept;
 	uint8_t get();
 	std::string get(uint64_t);
 	uint8_t peek();
