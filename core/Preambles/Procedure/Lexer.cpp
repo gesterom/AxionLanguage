@@ -65,6 +65,13 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	bool dot = false;
 	bool numberStarted = false;
 	CodeLocation number(loc);
+
+	auto returnLeftOvers = [&](){
+		auto res = loc;
+		loc = loc.moveStartToEnd();
+		return Token{ preambleIndex,(Token::Type)ProcedureTokenType::id,res };
+	};
+
 	while(loc.is_good()) {
 		last_ch = ch;
 		ch = loc.look(0).value();
@@ -87,24 +94,33 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			}
 		}
 		else if (ch == '(' or ch == ')' or ch == '[' or ch == ']') {
+			if (not loc.empty()) return returnLeftOvers();
+
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res };
 		}
 		else if (ch == ';') {
+			if(not loc.empty()) return returnLeftOvers();
+
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::semicolon,res };
 		}
 		else if (ch == ',') {
+			if (not loc.empty()) return returnLeftOvers();
+			
+			
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::comma,res };
 		}
 		else if (ch == ':') {
+			if (not loc.empty()) return returnLeftOvers();
+
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
