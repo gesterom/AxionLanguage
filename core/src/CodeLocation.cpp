@@ -23,6 +23,7 @@ CodeLocation CodeLocation::asLimiter() const noexcept
 	res.limit_start = this->start_pos;
 	res.limit_end = this->end_pos;
 	res.end_pos = this->start_pos;
+	res.start_pos = this->start_pos;
 	return res;
 }
 
@@ -101,6 +102,10 @@ size_t CodeLocation::size() const noexcept { return end_pos - start_pos; }
 
 std::string CodeLocation::val() const noexcept { return file->get(start_pos, end_pos); }
 
+bool CodeLocation::empty() const noexcept {
+	return this->start_pos == this->end_pos;
+}
+
 std::string CodeLocation::start() const noexcept { 	// Increment the byte number for start_pos
 	uint64_t line = 1;
 	uint64_t position = 1;
@@ -164,27 +169,10 @@ bool CodeLocation::operator<(const CodeLocation& other)const noexcept {
 	return this->val() < other.val();
 }
 
-uint8_t CodeLocation::get()
+std::optional<uint8_t> CodeLocation::peek()
 {
-	auto res = this->peek();
-	this->operator+=(res);
-	return res;
-}
-
-std::string CodeLocation::get(uint64_t n)
-{
-	std::string res;
-	res.reserve(n);
-	for (int i = 0; i < n; i++) {
-		res.push_back(this->get());
-	}
-	return res;
-}
-
-uint8_t CodeLocation::peek()
-{
-	if (end_pos >= this->limit_end) return 0xff;
-	if (end_pos < this->limit_start) return 0xff;
+	if (end_pos >= this->limit_end) return std::nullopt;
+	if (end_pos < this->limit_start) return std::nullopt;
 	return this->file->get(end_pos);
 }
 
@@ -194,10 +182,10 @@ std::string CodeLocation::peek(uint64_t n)
 	return this->file->get(this->end_pos, std::min((uint64_t)(this->end_pos + n), this->limit_end));
 }
 
-uint8_t CodeLocation::look(int64_t n)
+std::optional<uint8_t> CodeLocation::look(int64_t n)
 {
-	if (end_pos + n >= limit_end) return 0xff;
-	if (end_pos + n < limit_start) return 0xff;
+	if (end_pos + n >= limit_end) return std::nullopt;
+	if (end_pos + n < limit_start) return std::nullopt;
 	return this->file->get(end_pos + n);
 }
 

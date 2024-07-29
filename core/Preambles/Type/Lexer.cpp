@@ -23,10 +23,10 @@ void Preamble::Type::Lexer::setPreambleIndex(int64_t x) {
 std::optional<Token> Preamble::Type::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
-	do {
+	std::optional<uint8_t> next_ch = '\0';
+	while(loc.is_good()) {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if ((ch == '(' or ch == ')') and loc.val() == "") {
 			auto res = loc += ch;
@@ -46,16 +46,16 @@ std::optional<Token> Preamble::Type::Lexer::lexHead(CodeLocation& loc) {
 		else {
 			loc += ch;
 		}
-	} while (loc.is_good());
+	}
 	return std::nullopt;
 }
 std::optional<Token> Preamble::Type::Lexer::lexBody(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
+	std::optional<uint8_t> next_ch = '\0';
 	do {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if ((ch == '(' or ch == ')' or ch == '[' or ch == ']') and loc.val() == "") {
 			auto res = loc += ch;

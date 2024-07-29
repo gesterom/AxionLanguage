@@ -27,10 +27,10 @@ void Preamble::Procedure::Lexer::setPreambleIndex(int64_t x) {
 std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
-	do {
+	std::optional<uint8_t> next_ch = '\0';
+	while(loc.is_good()) {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if (ch == ':') {
 			auto res = loc += ch;
@@ -55,69 +55,70 @@ std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 		else {
 			loc += ch;
 		}
-	} while (loc.is_good());
+	}
 	return std::nullopt;
 }
 std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
+	std::optional<uint8_t> next_ch = '\0';
 	bool dot = false;
+	bool numberStarted = false;
 	CodeLocation number(loc);
-	do {
+	while(loc.is_good()) {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
-		if ((ch == '(' or ch == ')' or ch == '[' or ch == ']') and loc.val() == "") {
+		if ((isDigit(ch) or (ch == '.' and not dot))) {
+			if (ch == '.') {
+				dot = true;
+			}
+			numberStarted = true;
+			loc += ch;
+		}
+		else if (numberStarted and (isSpace(ch) or not isDigit(ch))) {
+			auto res = loc;
+			loc = loc.moveStartToEnd();
+			if (dot) {
+				return Token{ preambleIndex, (Token::Type)ProcedureTokenType::double_literal, res };
+			}
+			else {
+				return Token{ preambleIndex, (Token::Type)ProcedureTokenType::integer_literal, res };
+			}
+		}
+		else if (ch == '(' or ch == ')' or ch == '[' or ch == ']') {
+			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res };
 		}
 		else if (ch == ';') {
+			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::semicolon,res };
 		}
 		else if (ch == ',') {
+			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::comma,res };
 		}
 		else if (ch == ':') {
+			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::colon,res };
 		}
-		else if (isSpace(ch))
-		{
-			loc += ch;
-		}
-		else if ((isdigit(ch) or ch == '.') and ((not isdigit(next_ch) and next_ch != '.') or isspace(next_ch))) {
-			if (ch == '.') dot = true;
-			if (dot) {
-				auto res = loc += ch;;
-				loc = loc.moveStartToEnd();
-				return Token{ preambleIndex,(Token::Type)ProcedureTokenType::double_literal,res };
-			}
-			else {
-				auto res = loc += ch;;
-				loc = loc.moveStartToEnd();
-				return Token{ preambleIndex,(Token::Type)ProcedureTokenType::integer_literal,res };
-			}
-		}
-		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
+		else if (not isSpace(ch) and (isSpace(next_ch) or not isCharIdentifier(next_ch))) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			if (to_lowercase(res.val()) == "let") {
-				return Token{ preambleIndex,(Token::Type)ProcedureTokenType::keyword,res };
-			}
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::id,res };
+			return Token{ preambleIndex, (Token::Type)ProcedureTokenType::id, res };
 		}
 		else {
-			if (ch == '.') dot = true;
 			loc += ch;
 		}
-	} while (loc.is_good());
+	}
 	return std::nullopt;
 }
 std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {

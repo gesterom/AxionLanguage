@@ -48,7 +48,8 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
 	}
 	return str;
 }
-inline bool validPreambleChar(uint8_t ch) {
+
+bool validPreambleChar(uint8_t ch) {
 	return (
 		ch == '.' or
 		(ch >= '0' and ch <= '9') or
@@ -56,6 +57,13 @@ inline bool validPreambleChar(uint8_t ch) {
 		(ch >= 'A' and ch <= 'Z')
 		);
 }
+
+bool validPreambleChar(std::optional<uint8_t> ch) {
+	if (ch.has_value())
+		return validPreambleChar(ch.value());
+	return false;
+}
+
 bool validPreambleName(const std::string& str) {
 	bool res = true;
 	for (const auto& i : str) {
@@ -77,6 +85,31 @@ bool isSpace(uint8_t ch) {
 		;
 }
 
+bool isSpace(std::optional<uint8_t> ch) {
+	if(ch.has_value()) return isSpace(ch.value());
+	return false;
+}
+
+bool isDigit(uint8_t ch)
+{
+	return (ch>='0' and ch<='9');
+}
+
+bool isHexDigit(uint8_t ch) {
+	return isDigit(ch) or (ch>='a' and ch<='f') or (ch>='A' and ch <='F');
+}
+
+bool isHexDigit(std::optional<uint8_t> ch) {
+	if (ch.has_value()) return isHexDigit(ch.value());
+	return false;
+}
+
+bool isDigit(std::optional<uint8_t> ch)
+{
+	if (ch.has_value()) return isDigit(ch.value());
+	return false;
+}
+
 bool isCharIdentifier(uint8_t ch) {
 	return (
 		(ch >= 'a' and ch <= 'z') // lowercase
@@ -87,6 +120,12 @@ bool isCharIdentifier(uint8_t ch) {
 		or
 		(ch == '_') // underscore
 		);
+}
+
+bool isCharIdentifier(std::optional<uint8_t> ch) {
+	if(ch.has_value())
+		return isCharIdentifier(ch.value());
+	return false;
 }
 
 std::string to_lowercase(std::string str) {

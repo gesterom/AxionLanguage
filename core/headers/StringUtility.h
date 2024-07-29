@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 //trim from start
 void ltrim(std::string& s);
@@ -26,11 +27,20 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
 //check if string constains only [a-zA-Z0-9] and dot
 bool validPreambleName(const std::string& str);
 bool validPreambleChar(uint8_t);
+bool validPreambleChar(std::optional<uint8_t>);
 
 // check if it is a ascii white space
 bool isSpace(uint8_t ch);
+bool isSpace(std::optional<uint8_t> ch);
+
+bool isDigit(uint8_t ch);
+bool isDigit(std::optional<uint8_t> ch);
+
+bool isHexDigit(uint8_t ch);
+bool isHexDigit(std::optional<uint8_t> ch);
 
 //check ch is [a-zA-Z0-9_]
 bool isCharIdentifier(uint8_t ch);
+bool isCharIdentifier(std::optional<uint8_t> ch);
 
 std::string to_lowercase(std::string);

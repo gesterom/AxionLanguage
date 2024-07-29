@@ -19,10 +19,10 @@ void Preamble::Function::Lexer::setPreambleIndex(int64_t x) { this->preambleInde
 std::optional<Token> Preamble::Function::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
-	do {
+	std::optional<uint8_t> next_ch = '\0';
+	while(loc.is_good()) {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if (next_ch == '(' and loc.val() != "") {
 			auto res = loc += ch;
@@ -44,24 +44,19 @@ std::optional<Token> Preamble::Function::Lexer::lexHead(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			return Token{ preambleIndex,(Token::Type)FunctionTokenType::id,res };
 		}
-		else if (not isCharIdentifier(ch) and isCharIdentifier(next_ch)) {
-			auto res = loc += ch;
-			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)FunctionTokenType::op,res };
-		}
 		else {
 			loc += ch;
 		}
-	} while (loc.is_good());
+	}
 	return std::nullopt;
 }
 std::optional<Token> Preamble::Function::Lexer::lexBody(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
-	uint8_t next_ch = '\0';
+	std::optional<uint8_t> next_ch = '\0';
 	do {
 		last_ch = ch;
-		ch = loc.look(0);
+		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if (next_ch == '(' and loc.val() != "") {
 			auto res = loc += ch;

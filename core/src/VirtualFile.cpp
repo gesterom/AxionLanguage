@@ -29,6 +29,7 @@ std::string VirtualFile::get(uint64_t start, uint64_t end)
 
 uint8_t VirtualFile::get(uint64_t offset)
 {
+	ASSERT(not (offset < 0 or offset >= bytes.size()),"out of bound v-file");
 	if (offset < 0 or offset >= bytes.size()) return 0xff;
 	return bytes[offset];
 }

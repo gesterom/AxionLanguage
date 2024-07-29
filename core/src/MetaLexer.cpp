@@ -12,11 +12,12 @@ std::optional<Token> MetaLexer::lex() {
 	CodeLocation line = loc;
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
+	std::optional<uint8_t> next_ch = '\0';
 	if (not loc.is_good() and not tempLoc.is_good()) return std::nullopt;
 	do {
 		last_ch = ch;
-		ch = loc.look(0);
-		uint8_t next_ch = loc.look(1);
+		ch = loc.look(0).value();
+		next_ch = loc.look(1);
 		switch (mode)
 		{
 		case LexerMode::idle:
@@ -188,6 +189,7 @@ std::optional<Token> MetaLexer::lex() {
 				mode = LexerMode::error_recovery;
 			}
 			else if (ch == '"') {
+				this->tempLoc = loc.asLimiter();
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				start_string_lieral = '"';
@@ -196,6 +198,7 @@ std::optional<Token> MetaLexer::lex() {
 				afterComment = LexerMode::head;
 			}
 			else if (ch == '\'') {
+				this->tempLoc = loc.asLimiter();
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				start_string_lieral = '\'';

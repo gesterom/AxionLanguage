@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <optional>
 #include <ostream>
 #include <string>
 
@@ -35,11 +36,10 @@ public:
 	std::string start() const noexcept;
 	std::string end() const noexcept;
 	bool operator<(const CodeLocation& other) const noexcept;
-	uint8_t get();
-	std::string get(uint64_t);
-	uint8_t peek();
+	bool empty() const noexcept;
+	std::optional<uint8_t> peek();
 	std::string peek(uint64_t);
-	uint8_t look(int64_t);
+	std::optional<uint8_t> look(int64_t);
 	bool is_good() const noexcept;
 };
 
