@@ -66,7 +66,7 @@ procedure main2() {
 	} else {
 		printf("Condition not met");
 	}
-	let oracleandhercules = 15;
+	let oracleandhercules=15;
 	// Compound assignment
 	a += 5;
 	b *= 2.0;

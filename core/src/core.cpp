@@ -13,10 +13,16 @@
 #include <vector>
 
 #include "CodeLocation.h"
-#include "Enumerate.h"
 #include "MetaLexer.h"
-#include "PreambleDefinition.h"
-#include "StringUtility.h"
+
+struct cliArgs {
+	struct cliArg {
+		uint8_t short_name;
+		std::string longName;
+		std::optional<std::string> default_value;
+		std::optional<std::string> description;
+	};
+};
 
 int main(int argc, char** args)
 {
@@ -24,7 +30,6 @@ int main(int argc, char** args)
 	for (int i = 0; i < argc; i++) {
 		std::cout << i << " : " << args[i] << std::endl;
 	}
-	//std::ifstream file(args[1]);
 	PreambleRepository repo;
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
 		MetaLexer lexer(repo, args[file_count]);

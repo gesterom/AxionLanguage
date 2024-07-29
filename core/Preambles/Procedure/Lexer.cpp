@@ -1,5 +1,8 @@
 #include "Preambles/Procedure/Lexer.h"
 
+#include <algorithm>
+
+#include "Preambles/Procedure/OperatorDefinition.h"
 #include "StringUtility.h"
 
 enum class ProcedureTokenType {
@@ -13,6 +16,7 @@ enum class ProcedureTokenType {
 	string_literal,
 	integer_literal,
 	double_literal,
+	operator_t,
 };
 
 Preamble::Procedure::Lexer::Lexer() {
@@ -58,6 +62,17 @@ std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 	}
 	return std::nullopt;
 }
+
+std::vector<std::string> produceRepresentationList(const std::vector<OperatorDefinition>& ops) {
+	std::vector<std::string> res;
+	for (const auto& op : operators) {
+		for (const auto& rep : op.representation)
+			res.push_back(rep);
+	}
+	std::sort(res.begin(),res.end(),[](auto a, auto b){return a.size() > b.size();});
+	return res;
+}
+
 std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
@@ -76,6 +91,23 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
+		if (loc.empty() and not isSpace(ch)) {
+			static std::vector<std::string> representationList;
+			if (representationList.size() == 0) {
+				representationList = produceRepresentationList(operators);
+			}
+			for(auto rep :representationList){
+				if(isCharIdentifier(loc.look(rep.size())) and isCharIdentifier(rep[rep.size()-1])) continue;
+				if (rep == loc.peek(rep.size())) {
+					for (int i = 0; i < rep.size(); i++) {
+						loc+=loc.look(0).value();
+					}
+					auto res = loc;
+					loc = loc.moveStartToEnd();
+					return Token{ preambleIndex, (Token::Type)ProcedureTokenType::operator_t, res };
+				}
+			}
+		}
 		if ((isDigit(ch) or (ch == '.' and not dot))) {
 			if (ch == '.') {
 				dot = true;
@@ -149,6 +181,7 @@ std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {
 	case ProcedureTokenType::double_literal: return "double_literal";
 	case ProcedureTokenType::integer_literal: return "integer_literal";
 	case ProcedureTokenType::string_literal: return "string_literal";
+	case ProcedureTokenType::operator_t: return "operator_t";
 	default: return "<unknown>";
 	}
 }

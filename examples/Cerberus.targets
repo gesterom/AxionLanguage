@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<CerberusCompilerPath>$(SolutionDir)x64\Debug\cerberus.exe</CerberusCompilerPath>
 		<OutputBinary>$(OutDir)example.exe</OutputBinary>
+		<OutputType>Exe</OutputType>
 	</PropertyGroup>
 
 	<!-- Define custom build steps -->
@@ -12,13 +13,13 @@
 		<Exec Command="&quot;$(CerberusCompilerPath)&quot; %(CerberusSourceFile.FullPath) -o &quot;$(OutputBinary)&quot;" />
 	</Target>
 
-  <!-- Hook into the build process -->
-	<Target Name="Build">
-		<Exec Command="echo &quot;Hay from Build&quot;" />
+	<!-- Hook into the build process -->
+	<Target Name="Build" Outputs="$(TargetPath)">
+		<Message Text="Hay from Reuild" />
 		<CallTarget Targets="CompileCerberus" />
 	</Target>
-	<Target Name="Rebuild">
-		<Exec Command="echo &quot;Hay from Reuild&quot;" />
+	<Target Name="Rebuild" Outputs="$(TargetPath)">
+		<Message Text="Hay from Reuild" />
 		<CallTarget Targets="CompileCerberus" />
 	</Target>
 

@@ -32,8 +32,9 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <ImportGroup Label="PropertySheets" />
   <ItemGroup>
-    <CerberusSourceFile Include="$(ProjectDir)example1.dog" />
+    <None Include="$(ProjectDir)example1.dog" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="Cerberus.targets" />
