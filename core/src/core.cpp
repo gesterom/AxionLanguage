@@ -26,12 +26,12 @@ int main(int argc, char** args)
 	}
 	//std::ifstream file(args[1]);
 	PreambleRepository repo;
-	//for (int file_count = 1; file_count < argc; file_count++) {// FIXME -o makes output 
-	MetaLexer lexer(repo, args[1/*file_count*/]);
-	uint64_t i = 0;
-	while (auto a = lexer.lex()) {
-		if (a->kind == Token::Type::comment and a->preamble_token == -1) continue;
-		std::cout << ++i << " : (" << repo.to_string(a->preamble_token) << "/" << repo.to_string(a->preamble_token, a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
+	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
+		MetaLexer lexer(repo, args[file_count]);
+		uint64_t i = 0;
+		while (auto a = lexer.lex()) {
+			if (a->kind == Token::Type::comment and a->preamble_token == -1) continue;
+			std::cout << ++i << " : (" << repo.to_string(a->preamble_token) << "/" << repo.to_string(a->preamble_token, a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
+		}
 	}
-	//}
 }
