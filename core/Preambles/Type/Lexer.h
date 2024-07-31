@@ -12,7 +12,7 @@ namespace Preamble {
 			int64_t preambleIndex = -2;
 		public:
 			Lexer();
-			virtual void reset() override;
+			//virtual void reset() override;
 			virtual void setPreambleIndex(int64_t x) override;
 			virtual std::optional<Token> lexHead(CodeLocation& loc) override;
 			virtual std::optional<Token> lexBody(CodeLocation& loc) override;

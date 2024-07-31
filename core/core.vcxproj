@@ -169,6 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
     <ClCompile Include="Preambles\Type\Lexer.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="headers\TODO.h" />
     <ClInclude Include="headers\Token.h" />
     <ClInclude Include="headers\VirtualFile.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="Preambles\Function\Lexer.h" />
     <ClInclude Include="Preambles\Procedure\Lexer.h" />
     <ClInclude Include="Preambles\Procedure\OperatorDefinition.h" />

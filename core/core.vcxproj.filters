@@ -66,6 +66,9 @@
     <ClCompile Include="Preambles\Type\Lexer.cpp">
       <Filter>Preambules\Type</Filter>
     </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>Preambules\Procedure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Enumerate.h">
@@ -105,6 +108,9 @@
       <Filter>Preambules\Type</Filter>
     </ClInclude>
     <ClInclude Include="Preambles\Procedure\OperatorDefinition.h">
+      <Filter>Preambules\Procedure</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
       <Filter>Preambules\Procedure</Filter>
     </ClInclude>
   </ItemGroup>

@@ -14,7 +14,7 @@ enum class FunctionTokenType
 	else_keyword,
 };
 Preamble::Function::Lexer::Lexer() {}
-void Preamble::Function::Lexer::reset() {}
+//void Preamble::Function::Lexer::reset() {}
 void Preamble::Function::Lexer::setPreambleIndex(int64_t x) { this->preambleIndex = x; }
 std::optional<Token> Preamble::Function::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';

@@ -22,9 +22,9 @@ enum class ProcedureTokenType {
 Preamble::Procedure::Lexer::Lexer() {
 
 }
-void Preamble::Procedure::Lexer::reset() {
+//void Preamble::Procedure::Lexer::reset() {}
 
-}
+
 void Preamble::Procedure::Lexer::setPreambleIndex(int64_t x) {
 	this->preambleIndex = x;
 }

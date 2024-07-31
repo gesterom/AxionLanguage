@@ -14,12 +14,12 @@ enum class TypeTokenType {
 Preamble::Type::Lexer::Lexer() {
 
 }
-void Preamble::Type::Lexer::reset() {
+//void Preamble::Type::Lexer::reset() {}
 
-}
 void Preamble::Type::Lexer::setPreambleIndex(int64_t x) {
 	this->preambleIndex = x;
 }
+
 std::optional<Token> Preamble::Type::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
