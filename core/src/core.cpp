@@ -41,6 +41,15 @@ struct cliArgs {
 // 
 // 
 
+// stages : next stage only if no errors in preavius
+//
+// 1. lex input file
+// 2. parse input file
+// 3. find build preambule
+// 4. intrprete/execute build function
+//
+
+
 int main(int argc, char** args)
 {
 	if (argc < 2) return -1;

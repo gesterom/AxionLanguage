@@ -66,7 +66,7 @@ PreambleRepository::PreambleRepository()
 	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.alias",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
-	addPreamble(new PreambleDefinition{ "build",nullptr }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
+	addPreamble(new PreambleDefinition{ "build",new Preamble::Procedure::Lexer(),new Preamble::Procedure::Parser() }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
 	//addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
 	addPreamble(new PreambleDefinition{ "sql",nullptr }); // sql scrip
 	addPreamble(new PreambleDefinition{ "sql.query",nullptr }); // sql quer

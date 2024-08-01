@@ -84,3 +84,7 @@ procedure main2() {
 	// Printing results
 	printf("a = %d, b = %.2f, c = %b, result = %.2f, d = %d", a, b, c, result, d);
 }
+
+build all{
+	
+}
