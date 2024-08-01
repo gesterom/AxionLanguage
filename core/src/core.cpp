@@ -1,19 +1,16 @@
 // core.cpp : Ten plik zawiera funkcję „main”. W nim rozpoczyna się i kończy wykonywanie programu.
 //
 
-#include <cassert>
-#include <fstream>
-#include <functional>
-#include <iomanip>
 #include <iostream>
-#include <map>
 #include <optional>
 #include <string>
-#include <type_traits>
+#include<format>
 #include <vector>
 
 #include "CodeLocation.h"
 #include "MetaLexer.h"
+
+#include "Preambles/Procedure/Parser.h"
 
 struct cliArgs {
 	struct cliArg {
@@ -56,9 +53,47 @@ int main(int argc, char** args)
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
 		MetaLexer lexer(repo, args[file_count]);
 		uint64_t i = 0;
+		std::vector<Token> head;
+		bool addToHead = false;
+		std::vector<Token> body;
+		bool addToBody = false;
+		int paramCount = 0;
+		bool skip = false;
 		while (auto a = lexer.lex()) {
-			if (a->kind == Token::Type::comment and a->preamble_token == -1) continue;
-			std::cout << ++i << " : (" << repo.to_string(a->preamble_token) << "/" << repo.to_string(a->preamble_token, a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
+			if (a->kind == Token::Type::comment) continue;
+			if(skip == true and a->kind == Token::Type::preamble) skip = false;
+			if(skip)std::cout<<"Error Recovery: ";
+			std::cout<<std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}#{} ",repo.prambleName(a->kind),repo.to_string(a->kind),a->value.val(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
+			//std::cout <<"\t\t\t" << ++i << " : (" << repo.prambleName(a->kind) << "/" << repo.to_string(a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
+			if (addToHead) {
+				if (a.value().value == "{") {
+					addToBody = true;
+					addToHead = false;
+				}else
+					head.push_back(a.value());
+			}
+			if (a.value().value == "}" and paramCount == 0 and not addToBody) skip = true;
+			if (addToBody) {
+				body.push_back(a.value());
+
+				if (a.value().value == "{") paramCount++;
+				if (a.value().value == "}") paramCount--;
+
+				if (paramCount == 0) {
+					auto p = new Preamble::Procedure::Parser();
+					auto h = TokenStream(head, repo);
+					auto b = TokenStream(body, repo);
+					p->parse(h,b);
+					delete p;
+					addToBody = false;
+					head.clear();
+					body.clear();
+				}
+			}
+			if (a->kind == Token::Type::preamble and a->value == "procedure") {
+				addToHead = true;
+			}
 		}
 	}
+	
 }

@@ -44,3 +44,4 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& out, const CodeLocation& loc);
+bool operator==(const CodeLocation& loc,std::string);

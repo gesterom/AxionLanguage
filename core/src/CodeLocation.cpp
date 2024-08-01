@@ -199,3 +199,8 @@ std::ostream& operator<<(std::ostream& out, const CodeLocation& loc) {
 	out << loc.val();
 	return out;
 }
+
+bool operator==(const CodeLocation& loc, std::string str)
+{
+	return loc.val() == str;
+}

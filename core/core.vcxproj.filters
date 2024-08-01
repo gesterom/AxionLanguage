@@ -66,8 +66,11 @@
     <ClCompile Include="Preambles\Type\Lexer.cpp">
       <Filter>Preambules\Type</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.cpp">
+    <ClCompile Include="Preambles\Procedure\Parser.cpp">
       <Filter>Preambules\Procedure</Filter>
+    </ClCompile>
+    <ClCompile Include="TokenStream.cpp">
+      <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,8 +113,11 @@
     <ClInclude Include="Preambles\Procedure\OperatorDefinition.h">
       <Filter>Preambules\Procedure</Filter>
     </ClInclude>
-    <ClInclude Include="Parser.h">
+    <ClInclude Include="Preambles\Procedure\Parser.h">
       <Filter>Preambules\Procedure</Filter>
+    </ClInclude>
+    <ClInclude Include="TokenStream.h">
+      <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,7 +16,7 @@ class MetaLexer {
 	LexerMode nextMode = LexerMode::idle;
 	LexerMode afterComment = LexerMode::idle;
 	int64_t commentLevel = 0;
-	int64_t preambleIndex = -1;
+	int32_t preambleIndex = -1;
 
 	const PreambleRepository& repo;
 

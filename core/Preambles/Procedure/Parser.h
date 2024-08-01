@@ -5,8 +5,9 @@
 namespace Preamble {
 	namespace Procedure {
 		class Parser : public IParser {
-			virtual void parse(const std::vector<Token>& head, const std::vector<Token>& body);
-			virtual ~Parser();
+			public:
+				virtual TODODefineType parse(TokenStream& head, TokenStream& body);
+				virtual ~Parser();
 		};
 	}
 }

@@ -2,7 +2,6 @@
 
 #include <string>	
 #include <vector>
-
 #include "Token.h"
 
 class PreambleDefinition;
@@ -12,9 +11,9 @@ class PreambleRepository {
 public:
 	PreambleRepository();
 	std::vector<PreambleDefinition*> get() const;
-	PreambleDefinition* get(int64_t index) const;
-	int64_t getPeambuleIndex(CodeLocation representation) const;
-	std::string to_string(Token::PreambleType t) const;
-	std::string to_string(Token::PreambleType pre, Token::Type t) const;
+	PreambleDefinition* get(int32_t index) const;
+	int32_t getPeambuleIndex(CodeLocation representation) const;
+	std::string to_string(Token::Type t) const;
+	std::string prambleName(Token::Type pre) const;
 	~PreambleRepository();
 };

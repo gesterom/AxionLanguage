@@ -3,54 +3,83 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>	
 
 #include "CodeLocation.h"
 #include "MetaLexer.h"
 #include "TODO.h"
 #include "Token.h"
+#include "TokenStream.h"	
 
 class ILexer {
 public:
 	//virtual void reset() = 0;
-	virtual void setPreambleIndex(int64_t x) = 0;
+	virtual void setPreambleIndex(int32_t x) = 0;
 	virtual std::optional<Token> lexHead(CodeLocation& loc) = 0;
 	virtual std::optional<Token> lexBody(CodeLocation& loc) = 0;
 	virtual std::string to_string(Token::Type kind) const = 0;
 	virtual ~ILexer() noexcept {}
 };
 
-// operatotrs on steatements for examle if expresion statement else statement 
-// 
-// statement := `if` bool_expresion statement [`else` statement]
-// statement := `while` bool_expresion statement
-// statement := `for` iterator_expresion statement
-// statement := `do` statement `while` bool_expresion `;`
-// statement := expresion `;`
-// statement := `{` [statement..] `}`
-// statement := `twice` statement
-// 
-// {} = blok kodu = statement with list of statements
-// expresion = literal,operation, atom.atom is a operation on atoms
-// expresion := expresion infix_op expresion
-// expresion := prefix_op expresion
-// expresion := expresion sufix_op
-// expresion := `ifx` bool_expresion `then` expresion `else` expresion
-// expresion := `send` message_expresion `to` agent_expresion
-// expresion := `goto` label_atom
-// 
-
 //type.implicit_cast TypeFrom -> TypeTo
+//type.explicit_cast TypeFrom -> TypeTo (used in "exp as atom" expresion/operator)
 /* 
 {
 
 }
 */
 
+struct SyntaxDefinitionSteamtemnt {
+	std::string constractionName;
+	struct Type {
+		enum {
+			keyword,
+			expresion,
+			statement
+		} kind;
+		uint64_t requiredConstruction; // -1 means any
+	};
+	std::vector<Type> vec;
+};
+
+std::vector<SyntaxDefinitionSteamtemnt> stmtDefs = {
+	SyntaxDefinitionSteamtemnt{"if",{SyntaxDefinitionSteamtemnt::Type{SyntaxDefinitionSteamtemnt::Type::keyword,(uint64_t)-1}}}
+};
+
+// `if` exp `:` stmt `else` stmt
+
+struct SyntaxExpresion {
+	struct Type {
+		enum {
+			keyword,
+			expresion,
+		} kind;
+		std::string keyword_val_or_expresion_type;
+	};
+	std::vector<Type> vec;
+	std::string constractionName;
+};
+
+using IndexInNodeArray = uint64_t;
+
+struct SteatementNode {
+	std::string nodeName; //nodeKind
+	std::vector<IndexInNodeArray> children;
+};
+
+struct ExpresionNode { 
+	std::string nodeName; //nodeKind
+	std::vector<IndexInNodeArray> children;
+};
+
+std::vector<ExpresionNode> expressions;
+std::vector<SteatementNode> steatements;
+std::vector<std::string> keywords;
 
 class IParser {
 	public:
 	using TODODefineType = void;
-	virtual TODODefineType parse(const std::vector<Token>& head,const std::vector<Token>& body) = 0;
+	virtual TODODefineType parse(TokenStream& head,TokenStream& body) = 0;
 	virtual ~IParser() noexcept {}
 };
 
@@ -62,8 +91,8 @@ public:
 	IParser* parser = nullptr;
 	~PreambleDefinition() noexcept {
 		//if (lexer != nullptr)
-			delete lexer;
+		delete lexer;
 		//if (parser != nullptr)
-			delete parser;
+		delete parser;
 	}
 };

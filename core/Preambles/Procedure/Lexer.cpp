@@ -5,27 +5,13 @@
 #include "Preambles/Procedure/OperatorDefinition.h"
 #include "StringUtility.h"
 
-enum class ProcedureTokenType {
-	unknown,
-	id,
-	keyword,
-	comma,
-	colon,
-	semicolon,
-	parenthesis,
-	string_literal,
-	integer_literal,
-	double_literal,
-	operator_t,
-};
-
 Preamble::Procedure::Lexer::Lexer() {
 
 }
 //void Preamble::Procedure::Lexer::reset() {}
 
 
-void Preamble::Procedure::Lexer::setPreambleIndex(int64_t x) {
+void Preamble::Procedure::Lexer::setPreambleIndex(int32_t x) {
 	this->preambleIndex = x;
 }
 std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
@@ -39,22 +25,22 @@ std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 		if (ch == ':') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::colon,res };
+			return createToken((Token::Type)ProcedureTokenType::colon,res );
 		}
 		else if (ch == ',') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::comma,res };
+			return createToken((Token::Type)ProcedureTokenType::comma,res );
 		}
 		else if ((ch == '(' or ch == ')')) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res };
+			return createToken(Token::Type::parenthesis,res );
 		}
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::id,res };
+			return createToken(Token::Type::atom,res );
 		}
 		else {
 			loc += ch;
@@ -84,7 +70,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	auto returnLeftOvers = [&](){
 		auto res = loc;
 		loc = loc.moveStartToEnd();
-		return Token{ preambleIndex,(Token::Type)ProcedureTokenType::id,res };
+		return createToken(Token::Type::atom,res );
 	};
 
 	while(loc.is_good()) {
@@ -104,7 +90,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 					}
 					auto res = loc;
 					loc = loc.moveStartToEnd();
-					return Token{ preambleIndex, (Token::Type)ProcedureTokenType::operator_t, res };
+					return createToken((Token::Type)ProcedureTokenType::operator_t, res );
 				}
 			}
 		}
@@ -119,10 +105,10 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			auto res = loc;
 			loc = loc.moveStartToEnd();
 			if (dot) {
-				return Token{ preambleIndex, (Token::Type)ProcedureTokenType::double_literal, res };
+				return createToken( (Token::Type)ProcedureTokenType::double_literal, res );
 			}
 			else {
-				return Token{ preambleIndex, (Token::Type)ProcedureTokenType::integer_literal, res };
+				return createToken( (Token::Type)ProcedureTokenType::integer_literal, res );
 			}
 		}
 		else if (ch == '(' or ch == ')' or ch == '[' or ch == ']') {
@@ -131,7 +117,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::parenthesis,res };
+			return createToken(Token::Type::parenthesis,res );
 		}
 		else if (ch == ';') {
 			if(not loc.empty()) return returnLeftOvers();
@@ -139,7 +125,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::semicolon,res };
+			return createToken((Token::Type)ProcedureTokenType::semicolon,res );
 		}
 		else if (ch == ',') {
 			if (not loc.empty()) return returnLeftOvers();
@@ -148,7 +134,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::comma,res };
+			return createToken((Token::Type)ProcedureTokenType::comma,res );
 		}
 		else if (ch == ':') {
 			if (not loc.empty()) return returnLeftOvers();
@@ -156,12 +142,12 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex,(Token::Type)ProcedureTokenType::colon,res };
+			return createToken((Token::Type)ProcedureTokenType::colon,res );
 		}
 		else if (not isSpace(ch) and (isSpace(next_ch) or not isCharIdentifier(next_ch))) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return Token{ preambleIndex, (Token::Type)ProcedureTokenType::id, res };
+			return createToken(Token::Type::atom, res );
 		}
 		else {
 			loc += ch;
@@ -171,16 +157,12 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 }
 std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {
 	switch ((ProcedureTokenType)kind) {
-	case ProcedureTokenType::unknown: return "unknown";
-	case ProcedureTokenType::id: return "id";
 	case ProcedureTokenType::colon: return "colon";
 	case ProcedureTokenType::comma: return "comma";
 	case ProcedureTokenType::semicolon: return "semicolon";
-	case ProcedureTokenType::parenthesis: return "parenthesis";
 	case ProcedureTokenType::keyword: return "keyword";
 	case ProcedureTokenType::double_literal: return "double_literal";
 	case ProcedureTokenType::integer_literal: return "integer_literal";
-	case ProcedureTokenType::string_literal: return "string_literal";
 	case ProcedureTokenType::operator_t: return "operator_t";
 	default: return "<unknown>";
 	}

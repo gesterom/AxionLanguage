@@ -4,6 +4,8 @@
 #include "Preambles/Procedure/Lexer.h"
 #include "Preambles/Type/Lexer.h"		
 
+#include "Preambles/Procedure/Parser.h"
+
 #include "PreambleDefinition.h"
 
 #include "format"
@@ -12,15 +14,12 @@ std::optional<Token> nop_lexer(int64_t preambleIndex, LexerMode& mode, CodeLocat
 	return std::nullopt;
 }
 
-std::string unknow_to_string(Token::Type t) {
-	return "<Unknow>";
-}
 
-std::string PreambleRepository::to_string(Token::PreambleType t) const
+std::string PreambleRepository::prambleName(Token::Type pre) const
 {
-	if (t < 0) return "<Meta>";
+	if (pre <= Token::count) return "<Meta>";
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
-	else if (t < (int64_t)(vec.size() - 1 % 100000)) return vec.at(t)->representation;
+	else if (getPreamble(pre) < (int64_t)(vec.size() - 1 % 100000)) return vec.at( getPreamble(pre) )->representation;
 	return "<Incorect Preamble Index>";
 }
 
@@ -38,15 +37,17 @@ std::string meta_to_string(Token::Type t)
 	case Token::parenthesis: return "parenthesis";
 	case Token::comment: return "comment";
 	case Token::string_literal: return "string_literal";
+	case Token::atom: return "atom";
+	case Token::count: return "Invalid :\"Count\"";
 	default: return "<invalid>";
 	}
 }
 
-std::string PreambleRepository::to_string(Token::PreambleType pre, Token::Type t) const
+std::string PreambleRepository::to_string(Token::Type t) const
 {
-	if (pre < 0) return meta_to_string((Token::Type)t);
+	if (t <= Token::count) return meta_to_string(t);
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
-	else if (pre < (int64_t)(vec.size() - 1 % 100000)) return vec.at(pre)->lexer->to_string(t);
+	else if (getPreamble(t) < (int64_t)(vec.size() - 1 % 100000)) return vec.at(getPreamble(t))->lexer->to_string(t);
 	return "<Incorect Preamble Index>";
 }
 
@@ -55,17 +56,18 @@ PreambleRepository::PreambleRepository()
 	auto addPreamble = [&](PreambleDefinition* pd) {
 		vec.push_back(pd);
 		if (vec.at(vec.size() - 1)->lexer != nullptr)
-			vec.at(vec.size() - 1)->lexer->setPreambleIndex(vec.size() - 1);
+			vec.at(vec.size() - 1)->lexer->setPreambleIndex((int32_t)vec.size() - 1);
 		};
 
-	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer() });
+	addPreamble(new PreambleDefinition{ "<Meta>"});
+	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(),new Preamble::Procedure::Parser()});
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
 	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.alias",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
-	addPreamble(new PreambleDefinition{ "build",nullptr }); // runed when compiling
-	addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
+	addPreamble(new PreambleDefinition{ "build",nullptr }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
+	//addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
 	addPreamble(new PreambleDefinition{ "sql",nullptr }); // sql scrip
 	addPreamble(new PreambleDefinition{ "sql.query",nullptr }); // sql quer
 	addPreamble(new PreambleDefinition{ "sql.migration",nullptr });
@@ -80,14 +82,14 @@ std::vector<PreambleDefinition*> PreambleRepository::get() const
 	return res;
 }
 
-PreambleDefinition* PreambleRepository::get(int64_t index) const
+PreambleDefinition* PreambleRepository::get(int32_t index) const
 {
 	ASSERT(vec.size() < 100000, "TOO large");
 	ASSERT(index >= 0 && index < (int64_t)vec.size(), "out of bound");
 	return vec[index];
 }
 
-int64_t PreambleRepository::getPeambuleIndex(CodeLocation representation) const {
+int32_t PreambleRepository::getPeambuleIndex(CodeLocation representation) const {
 	int i = 0;
 
 	for (const auto& elem : vec) {
