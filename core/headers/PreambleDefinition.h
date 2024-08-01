@@ -42,10 +42,6 @@ struct SyntaxDefinitionSteamtemnt {
 	std::vector<Type> vec;
 };
 
-std::vector<SyntaxDefinitionSteamtemnt> stmtDefs = {
-	SyntaxDefinitionSteamtemnt{"if",{SyntaxDefinitionSteamtemnt::Type{SyntaxDefinitionSteamtemnt::Type::keyword,(uint64_t)-1}}}
-};
-
 // `if` exp `:` stmt `else` stmt
 
 struct SyntaxExpresion {
@@ -71,10 +67,6 @@ struct ExpresionNode {
 	std::string nodeName; //nodeKind
 	std::vector<IndexInNodeArray> children;
 };
-
-std::vector<ExpresionNode> expressions;
-std::vector<SteatementNode> steatements;
-std::vector<std::string> keywords;
 
 class IParser {
 	public:
