@@ -7,11 +7,11 @@ Axion is(will be) multi-paradigmed, self-hosted, general-purpose programming lan
 
 ### Bootstrab axion compiler
 ```bash
-$ msbuild Axion.sln # probably i just use VS 2022
+$ msbuild Axion.sln
 ```
 
 ### `Compile` axion source code 
-```
-	axion <file_name.axn> 
+```bash
+$ axion <file_name.axn> 
 ```
 
