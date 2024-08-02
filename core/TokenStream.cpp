@@ -28,11 +28,11 @@ bool TokenStream::consume(int64_t n)
 	return pointer>= internal.size();
 }
 
-std::optional<ErrorT> TokenStream::require(Token::Type kind)
+Result<Token, ErrorT> TokenStream::require(Token::Type kind)
 {
 	auto token = this->peak();
 	if (not token.has_value()) return ErrorT{ internal.end()->value,"Internal Stream ended","Internal Stream to early" };
-	if (token.value().kind == kind) { pointer++; return std::nullopt; }
+	if (token.value().kind == kind) { pointer++; return token.value(); }
 	return ErrorT{
 		token.value().value,
 		std::format("Expected : {} get : {}",repo.to_string(kind),repo.to_string(token.value().kind)),
@@ -40,11 +40,11 @@ std::optional<ErrorT> TokenStream::require(Token::Type kind)
 	};
 }
 
-std::optional<ErrorT> TokenStream::require(Token::Type kind, std::string val)
+Result<Token, ErrorT> TokenStream::require(Token::Type kind, std::string val)
 {
 	auto token = this->peak();
 	if (not token.has_value()) return ErrorT{ internal.back().value, "Internal Stream ended","Internal Stream to early"};
-	if (token.value().kind == kind and token.value().value == val) { pointer++; return std::nullopt; }
+	if (token.value().kind == kind and token.value().value == val) { pointer++; return token.value(); }
 	return ErrorT{ token.value().value,
 		std::format("Expected : {} get : {}", repo.to_string(kind), repo.to_string(token.value().kind)),
 		"TODO Long errors"
@@ -61,20 +61,20 @@ std::optional<ErrorT> TokenStream::requireEmpty()
 	};
 }
 
-bool TokenStream::optional(Token::Type kind)
+std::optional<Token> TokenStream::optional(Token::Type kind)
 {
 	auto token = this->peak();
-	if (not token.has_value()) return false;
-	if (token.value().kind == kind) { pointer++; return true;}
-	return false;
+	if (not token.has_value()) return std::nullopt;
+	if (token.value().kind == kind) { pointer++; return token.value();}
+	return std::nullopt;
 }
 
-bool TokenStream::optional(Token::Type kind, std::string val)
+std::optional<Token> TokenStream::optional(Token::Type kind, std::string val)
 {
 	auto token = this->peak();
-	if (not token.has_value()) return false;
-	if (token.value().kind == kind and token.value().value == val) { pointer++; return true; }
-	return false;
+	if (not token.has_value()) return std::nullopt;
+	if (token.value().kind == kind and token.value().value == val) { pointer++; return token.value(); }
+	return std::nullopt;
 }
 
 bool TokenStream::check(Token::Type kind) const noexcept

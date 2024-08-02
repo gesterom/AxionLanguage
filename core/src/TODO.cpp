@@ -1,7 +1,13 @@
 #include "TODO.h"
 
+#include "CallStackTrace.h"
+
 [[noreturn]]
 void _TODO(std::string file, int64_t line, std::string function, const std::string& str) {
+	std::cout<<"> CallStack !!!"<<std::endl;
+	for (auto i : getCallStack()) {
+		std::cout<<" > "<< i <<std::endl;
+	}
 	std::cout<<std::endl;
 	std::cout<<std::endl;
 	std::cout << " /$$$$$$$$ /$$$$$$  /$$$$$$$   /$$$$$$ " << std::endl;
@@ -22,6 +28,10 @@ void _TODO(std::string file, int64_t line, std::string function, const std::stri
 void _assert(std::string file, int64_t line, std::string function,std::string cond_str, bool cond, const std::string& str)
 {
 	if(cond)  return;
+	std::cout << "> CallStack !!!" << std::endl;
+	for (auto i : getCallStack()) {
+		std::cout << " > " << i << std::endl;
+	}
 	std::cout << std::endl;
 	std::cout << std::endl;
 	std::cout<<"  /$$$$$$   /$$$$$$   /$$$$$$  /$$$$$$$$ /$$$$$$$  /$$$$$$$$"<<std::endl;

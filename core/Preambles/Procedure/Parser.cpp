@@ -29,45 +29,83 @@
 
 // foo(x : Int)->int
 
- using namespace Preamble::Procedure;
+using namespace Preamble::Procedure;
 
 
- void printError(const std::optional<ErrorT>& err) {
-	 if (err.has_value()) {
-		 std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.val() << " = " << err.value().oneLinerError << std::endl;
-	 }
- }
+void printError(const std::optional<ErrorT>& err) {
+	if (err.has_value()) {
+		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.val() << " = " << err.value().oneLinerError << std::endl;
+	}
+}
 
- void requireType(TokenStream& head) {
-	 printError(head.require(Token::Type::atom));
- }
+Result<Ast::NodeIndex, ErrorT> requireType(TokenStream& head, Ast& ast) {
+	auto a = head.require(Token::Type::atom);
+	Ast::Node res;
+	if (head.optional(Token::Type::parenthesis, "(")) {
+		while (not head.check(Token::Type::parenthesis, ")") and head.peak().has_value()) {
+			res.children.push_back(ast.newLeaf(head.peak().value()));
+			head.consume();
+		}
+		return ast.newNode(res);
+	}
+	else {
+		if (a) {
+			return ast.newLeaf(a);
+		}
+		else {
+			printError(a);
+			return (ErrorT)a;
+		}
+	}
+}
 
-int parseHead(TokenStream& head){
+Result<Ast::NodeIndex, ErrorT> requireId(TokenStream& head, Ast& ast) {
+	auto a = head.require(Token::Type::atom);
+	if (a) {
+		return ast.newLeaf(a);
+	}
+	else {
+		printError(a);
+		return (ErrorT)a;
+	}
+}
+
+Ast::NodeIndex parseHead(TokenStream& head, Ast& ast) {
 	std::vector<ErrorT> errors;
-	printError(head.require(Token::Type::atom));
-	printError(head.require(Token::Type::parenthesis,"("));
+	Ast::Node res;
+	res.kind = 1;
+	res.children.push_back(requireId(head, ast));
+	if (auto t = head.require(Token::Type::parenthesis, "(")){
+		res.children.push_back(ast.newLeaf(t));
+	}
+	else {
+		return Ast::ErrorNode;
+	}
 	if(head.check(Token::Type::atom)){
 		do {
-			printError(head.require(Token::Type::atom));
-			printError(head.require((Token::Type)ProcedureTokenType::colon));
-			requireType(head);
+			res.children.push_back(ast.newLeaf(head.require(Token::Type::atom)));
+			head.require((Token::Type)ProcedureTokenType::colon);
+			res.children.push_back(requireType(head,ast));
 		}while(head.optional((Token::Type)ProcedureTokenType::comma));
 	}
-	printError(head.require(Token::Type::parenthesis, ")"));
+	res.children.push_back(ast.newLeaf(head.require(Token::Type::parenthesis, ")")));
 	if (head.optional((Token::Type)ProcedureTokenType::operator_t,"->")) {
-		requireType(head);
+		res.children.push_back(requireType(head,ast));
 	}
-	printError(head.requireEmpty());
-	return 0;
-}
-int parseBody(TokenStream& body){
-	return 0;
+	head.requireEmpty();
+	return ast.newNode(res);
 }
 
-IParser::TODODefineType Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
+Ast::NodeIndex parseBody(TokenStream& body,Ast& ast){
+	return Ast::ErrorNode;
+}
+
+Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
 {
-	auto h = parseHead(head);
-	auto b = parseBody(body);
+	Ast res;
+	res.headNode = parseHead(head,res).second;
+	res.bodyNode = parseBody(body,res).second;
+	return res;
 }
 
 Preamble::Procedure::Parser::~Parser()

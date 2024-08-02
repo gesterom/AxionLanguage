@@ -30,13 +30,9 @@ struct Token {
 	};
 	//using PreambleType = int32_t;
 	//PreambleType preamble_token = -1; // index in preamble array, when -1 then it is meta token
-	union{
-		Type kind;
-		struct {
-			int32_t preamble_token;
-			int32_t TypeIndex;
-		};
-	};
+
+	Type kind;
+
 	//combine preamble_token and kind into one
 	CodeLocation value;
 
@@ -50,7 +46,7 @@ struct Token {
 
 int32_t getPreamble(Token::Type k);
 int32_t getTokenType(Token::Type k);
-int64_t createTokenType(int32_t pre,int32_t k);
+Token::Type createTokenType(int32_t pre,int32_t k);
 
 
 

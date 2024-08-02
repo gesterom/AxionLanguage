@@ -85,6 +85,10 @@ procedure main2() {
 	printf("a = %d, b = %.2f, c = %b, result = %.2f, d = %d", a, b, c, result, d);
 }
 
+procedure addToList(list : vector(int) , a : int){
+	return list;
+}
+
 build all{
 	
 }

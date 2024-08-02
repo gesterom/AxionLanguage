@@ -228,7 +228,7 @@ std::optional<Token> MetaLexer::lex() {
 			auto res = repo.get(preambleIndex)->lexer->lexHead(tempLoc);
 			if (res != std::nullopt) { 
 				if (res.value().kind > Token::Type::count) 
-					res.value().preamble_token = preambleIndex;
+					res.value().kind = createTokenType(preambleIndex,getTokenType(res.value().kind));
 				return res; 
 			}
 			auto res2 = loc;
@@ -306,7 +306,7 @@ std::optional<Token> MetaLexer::lex() {
 			auto res = repo.get(preambleIndex)->lexer->lexBody(tempLoc);
 			if (res != std::nullopt) {
 				if(res.value().kind > Token::Type::count) 
-					res.value().preamble_token = preambleIndex; 
+					res.value().kind = createTokenType(preambleIndex, getTokenType(res.value().kind));
 				return res;
 			}
 			mode = nextMode;

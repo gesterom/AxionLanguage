@@ -10,7 +10,7 @@ int32_t getTokenType(Token::Type k)
 	return 0xFFFFFFFF & k;
 }
 
-int64_t createTokenType(int32_t pre, int32_t k)
+Token::Type createTokenType(int32_t pre, int32_t k)
 {
-	return ((int64_t)pre<<32) | ((int64_t)k);
+	return (Token::Type)(((int64_t)pre<<32) | ((int64_t)k));
 }

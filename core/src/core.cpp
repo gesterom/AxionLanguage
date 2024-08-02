@@ -92,7 +92,17 @@ int main(int argc, char** args)
 					auto p = new Preamble::Procedure::Parser();
 					auto h = TokenStream(head, repo);
 					auto b = TokenStream(body, repo);
-					p->parse(h,b);
+					auto ast = p->parse(h,b);
+					for (auto i : ast.leafs) {
+						std::cout<<"Leaf("<< i.value <<")" << std::endl;
+					}
+					for (const auto& i : ast.nodes) {
+						std::cout<<"Kind("<<i.kind<<") ";
+						for (const auto& j : i.children) {
+							std::cout<<"{" << j.first << " "<<j.second<<"} ";
+						}
+						std::cout<<std::endl;
+					}
 					delete p;
 					addToBody = false;
 					head.clear();

@@ -169,6 +169,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AST.cpp" />
+    <ClCompile Include="CallStackTrace.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Parser.cpp" />
@@ -185,6 +187,8 @@
     <ClCompile Include="TokenStream.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AST.h" />
+    <ClInclude Include="CallStackTrace.h" />
     <ClInclude Include="headers\CodeLocation.h" />
     <ClInclude Include="headers\Enumerate.h" />
     <ClInclude Include="headers\MetaLexer.h" />

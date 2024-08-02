@@ -21,3 +21,7 @@
 [[noreturn]]
 void _TODO(std::string file,int64_t line,std::string function,const std::string& str) ;
 void _assert(std::string file, int64_t line, std::string function,std::string cond_str,bool cond, const std::string& str);
+
+
+
+#pragma comment(lib, "dbghelp.lib")
