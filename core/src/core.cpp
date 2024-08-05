@@ -1,16 +1,17 @@
 // core.cpp : Ten plik zawiera funkcję „main”. W nim rozpoczyna się i kończy wykonywanie programu.
 //
 
+#include<format>
 #include <iostream>
 #include <optional>
 #include <string>
-#include<format>
 #include <vector>
 
 #include "CodeLocation.h"
 #include "MetaLexer.h"
 
 #include "Preambles/Procedure/Parser.h"
+#include <Enumerate.h>
 
 struct cliArgs {
 	struct cliArg {
@@ -68,17 +69,21 @@ int main(int argc, char** args)
 		bool addToBody = false;
 		int paramCount = 0;
 		bool skip = false;
+		CodeLocation preamble = CodeLocation::null();
 		while (auto a = lexer.lex()) {
 			if (a->kind == Token::Type::comment) continue;
-			if(skip == true and a->kind == Token::Type::preamble) skip = false;
-			if(skip)std::cout<<"Error Recovery: ";
-			std::cout<<std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}#{} ",repo.prambleName(a->kind),repo.to_string(a->kind),a->value.val(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
+			if (skip == true and a->kind == Token::Type::preamble) skip = false;
+			if (skip)std::cout << "Error Recovery: ";
+			if (a->kind == Token::Type::preamble) std::cout << std::endl;
+			if (a->kind == Token::Type::preamble) preamble = a->value;
+			std::cout << std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}#{} ", repo.prambleName(a.value()), repo.to_string(a.value()), a->value.val(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
 			//std::cout <<"\t\t\t" << ++i << " : (" << repo.prambleName(a->kind) << "/" << repo.to_string(a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
 			if (addToHead) {
 				if (a.value().value == "{") {
 					addToBody = true;
 					addToHead = false;
-				}else
+				}
+				else
 					head.push_back(a.value());
 			}
 			if (a.value().value == "}" and paramCount == 0 and not addToBody) skip = true;
@@ -90,18 +95,18 @@ int main(int argc, char** args)
 
 				if (paramCount == 0) {
 					auto p = new Preamble::Procedure::Parser();
-					auto h = TokenStream(head, repo);
-					auto b = TokenStream(body, repo);
-					auto ast = p->parse(h,b);
-					for (auto i : ast.leafs) {
-						std::cout<<"Leaf("<< i.value <<")" << std::endl;
-					}
-					for (const auto& i : ast.nodes) {
-						std::cout<<"Kind("<<i.kind<<") ";
-						for (const auto& j : i.children) {
-							std::cout<<"{" << j.first << " "<<j.second<<"} ";
+					auto h = TokenStream(repo.getPeambuleIndex(preamble), head, repo);
+					auto b = TokenStream(repo.getPeambuleIndex(preamble), body, repo);
+					auto ast = p->parse(h, b);
+					std::cout << "Head : " << ast.headNode << std::endl;
+					std::cout << "Body : " << ast.bodyNode << std::endl;
+					for (const auto& [i, n] : enumerate(ast.nodes)) {
+						std::cout << "[" << i << "] Kind(" << p->NodeKind_toString(n.kind) << ") ";
+						for (const auto& j : n.children) {
+							if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
+							else std::cout << j << " ";
 						}
-						std::cout<<std::endl;
+						std::cout << std::endl;
 					}
 					delete p;
 					addToBody = false;
@@ -114,5 +119,5 @@ int main(int argc, char** args)
 			}
 		}
 	}
-	
+
 }

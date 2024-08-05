@@ -13,7 +13,7 @@
 //#define createToken(x,y) Token{ (x),(y) }
 
 struct Token {
-	enum Type : int64_t
+	enum Type : int32_t
 	{
 		error = 0,
 		unknown = 1,
@@ -26,11 +26,12 @@ struct Token {
 		parenthesis = 8,
 		comment = 9,
 		atom = 10,
-		count = 0xFFFFFFFF
+		count = 0xff
 	};
 	//using PreambleType = int32_t;
 	//PreambleType preamble_token = -1; // index in preamble array, when -1 then it is meta token
 
+	uint32_t preambleIndex; // valid if kind > count
 	Type kind;
 
 	//combine preamble_token and kind into one
@@ -43,10 +44,6 @@ struct Token {
 	#endif // createToken
 
 };
-
-int32_t getPreamble(Token::Type k);
-int32_t getTokenType(Token::Type k);
-Token::Type createTokenType(int32_t pre,int32_t k);
 
 
 

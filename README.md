@@ -1,5 +1,7 @@
 # Axion 0.0.2
 
+** THIS SOFTWARE IS UNFINISHED **
+
 ## About
 Axion is(will be) multi-paradigmed, self-hosted, general-purpose programming language.
 

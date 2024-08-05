@@ -6,7 +6,7 @@
 #include "StringUtility.h"
 
 Preamble::Procedure::Lexer::Lexer() {
-
+	std::sort(lexerOperators.begin(), lexerOperators.end(), [](auto a, auto b) {return a.first.size() > b.first.size(); });
 }
 //void Preamble::Procedure::Lexer::reset() {}
 
@@ -18,45 +18,35 @@ std::optional<Token> Preamble::Procedure::Lexer::lexHead(CodeLocation& loc) {
 	uint8_t last_ch = '\0';
 	uint8_t ch = '\0';
 	std::optional<uint8_t> next_ch = '\0';
-	while(loc.is_good()) {
+	while (loc.is_good()) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if (ch == ':') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken((Token::Type)ProcedureTokenType::colon,res );
+			return createToken((Token::Type)ProcedureTokenType::colon, res);
 		}
 		else if (ch == ',') {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken((Token::Type)ProcedureTokenType::comma,res );
+			return createToken((Token::Type)ProcedureTokenType::comma, res);
 		}
 		else if ((ch == '(' or ch == ')')) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken(Token::Type::parenthesis,res );
+			return createToken(Token::Type::parenthesis, res);
 		}
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken(Token::Type::atom,res );
+			return createToken(Token::Type::atom, res);
 		}
 		else {
 			loc += ch;
 		}
 	}
 	return std::nullopt;
-}
-
-std::vector<std::string> produceRepresentationList(const std::vector<OperatorDefinition>& ops) {
-	std::vector<std::string> res;
-	for (const auto& op : operators) {
-		for (const auto& rep : op.representation)
-			res.push_back(rep);
-	}
-	std::sort(res.begin(),res.end(),[](auto a, auto b){return a.size() > b.size();});
-	return res;
 }
 
 std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
@@ -67,30 +57,24 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 	bool numberStarted = false;
 	CodeLocation number(loc);
 
-	auto returnLeftOvers = [&](){
+	auto returnLeftOvers = [&]() {
 		auto res = loc;
 		loc = loc.moveStartToEnd();
-		return createToken(Token::Type::atom,res );
-	};
+		return createToken(Token::Type::atom, res);
+		};
 
-	while(loc.is_good()) {
+	while (loc.is_good()) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
 		if (loc.empty() and not isSpace(ch)) {
-			static std::vector<std::string> representationList;
-			if (representationList.size() == 0) {
-				representationList = produceRepresentationList(operators);
-			}
-			for(auto rep :representationList){
-				if(isCharIdentifier(loc.look(rep.size())) and isCharIdentifier(rep[rep.size()-1])) continue;
-				if (rep == loc.peek(rep.size())) {
-					for (int i = 0; i < rep.size(); i++) {
-						loc+=loc.look(0).value();
-					}
+			for (auto rep : lexerOperators) {
+				if (isCharIdentifier(loc.look(rep.first.size())) and isCharIdentifier(rep.first[rep.first.size() - 1])) continue; // if lastsymbol of operator is CharIndentifiere valible nad next is also then we have atom and not a operator ex. (let orphan = 3;)
+				if (rep.first == loc.peek(rep.first.size())) {
+					loc.consume(rep.first.size());
 					auto res = loc;
 					loc = loc.moveStartToEnd();
-					return createToken((Token::Type)ProcedureTokenType::operator_t, res );
+					return createToken((Token::Type)rep.second, res);
 				}
 			}
 		}
@@ -105,10 +89,10 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			auto res = loc;
 			loc = loc.moveStartToEnd();
 			if (dot) {
-				return createToken( (Token::Type)ProcedureTokenType::double_literal, res );
+				return createToken((Token::Type)ProcedureTokenType::double_literal, res);
 			}
 			else {
-				return createToken( (Token::Type)ProcedureTokenType::integer_literal, res );
+				return createToken((Token::Type)ProcedureTokenType::integer_literal, res);
 			}
 		}
 		else if (ch == '(' or ch == ')' or ch == '[' or ch == ']') {
@@ -117,24 +101,24 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken(Token::Type::parenthesis,res );
+			return createToken(Token::Type::parenthesis, res);
 		}
 		else if (ch == ';') {
-			if(not loc.empty()) return returnLeftOvers();
+			if (not loc.empty()) return returnLeftOvers();
 
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken((Token::Type)ProcedureTokenType::semicolon,res );
+			return createToken((Token::Type)ProcedureTokenType::semicolon, res);
 		}
 		else if (ch == ',') {
 			if (not loc.empty()) return returnLeftOvers();
-			
-			
+
+
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken((Token::Type)ProcedureTokenType::comma,res );
+			return createToken((Token::Type)ProcedureTokenType::comma, res);
 		}
 		else if (ch == ':') {
 			if (not loc.empty()) return returnLeftOvers();
@@ -142,12 +126,12 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 			loc = loc.moveStartToEnd();
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken((Token::Type)ProcedureTokenType::colon,res );
+			return createToken((Token::Type)ProcedureTokenType::colon, res);
 		}
 		else if (not isSpace(ch) and (isSpace(next_ch) or not isCharIdentifier(next_ch))) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			return createToken(Token::Type::atom, res );
+			return createToken(Token::Type::atom, res);
 		}
 		else {
 			loc += ch;

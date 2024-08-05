@@ -78,6 +78,9 @@
     <ClCompile Include="CallStackTrace.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="Preambles\Procedure\OperatorDefinition.cpp">
+      <Filter>Preambules\Procedure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Enumerate.h">

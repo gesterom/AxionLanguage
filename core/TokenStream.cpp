@@ -3,9 +3,10 @@
 #include "TODO.h"
 #include <format>
 
-TokenStream::TokenStream(std::vector<Token> vec, PreambleRepository& repo) : repo(repo), internal(vec)
+TokenStream::TokenStream(PreamleIndex index,std::vector<Token> vec, PreambleRepository& repo) : repo(repo), internal(vec), preambleIndex(index)
 {
 	ASSERT(vec.size() != 0,"Fuck anyone");
+	this->preambleIndex = index;
 }
 
 bool TokenStream::is_good() const noexcept
@@ -35,7 +36,7 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind)
 	if (token.value().kind == kind) { pointer++; return token.value(); }
 	return ErrorT{
 		token.value().value,
-		std::format("Expected : {} get : {}",repo.to_string(kind),repo.to_string(token.value().kind)),
+		std::format("Expected : {} get : {}",repo.to_string(this->preambleIndex,kind),repo.to_string(token.value())),
 		"TODO Long errors"
 	};
 }
@@ -46,7 +47,7 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind, std::string val)
 	if (not token.has_value()) return ErrorT{ internal.back().value, "Internal Stream ended","Internal Stream to early"};
 	if (token.value().kind == kind and token.value().value == val) { pointer++; return token.value(); }
 	return ErrorT{ token.value().value,
-		std::format("Expected : {} get : {}", repo.to_string(kind), repo.to_string(token.value().kind)),
+		std::format("Expected : {} get : {}", repo.to_string(this->preambleIndex,kind), repo.to_string(token.value())),
 		"TODO Long errors"
 	};
 }
@@ -56,7 +57,7 @@ std::optional<ErrorT> TokenStream::requireEmpty()
 	auto token = this->peak();
 	if(not token.has_value()) return std::nullopt;
 	return ErrorT{ token.value().value,
-		std::format("Expected end of Stream get : {} {}",repo.to_string(token->kind),token->value.val() ),
+		std::format("Expected end of Stream get : {}:{} \"{}\"",repo.prambleName(token.value()),repo.to_string(token.value()),token->value.val()),
 		"TODO Long errors"
 	};
 }

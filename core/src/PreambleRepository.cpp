@@ -9,18 +9,24 @@
 #include "PreambleDefinition.h"
 
 #include "format"
+#include <Enumerate.h>
 
 std::optional<Token> nop_lexer(int64_t preambleIndex, LexerMode& mode, CodeLocation& loc, std::istream& in) {
 	return std::nullopt;
 }
 
 
-std::string PreambleRepository::prambleName(Token::Type pre) const
+std::string PreambleRepository::prambleName(Token pre) const
 {
-	if (pre <= Token::count) return "<Meta>";
+	if (pre.kind <= Token::count) return "<Meta>";
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
-	else if (getPreamble(pre) < (int64_t)(vec.size() - 1 % 100000)) return vec.at( getPreamble(pre) )->representation;
+	else if (pre.preambleIndex < (int64_t)(vec.size() - 1 % 100000)) return vec.at(pre.preambleIndex)->representation;
 	return "<Incorect Preamble Index>";
+}
+
+std::string PreambleRepository::NodeKind(PreamleIndex preambleIndex, uint64_t n) const
+{
+	return this->vec.at(preambleIndex)->parser->NodeKind_toString(n);
 }
 
 std::string meta_to_string(Token::Type t)
@@ -43,11 +49,25 @@ std::string meta_to_string(Token::Type t)
 	}
 }
 
-std::string PreambleRepository::to_string(Token::Type t) const
+std::string PreambleRepository::to_string(Token t) const
 {
-	if (t <= Token::count) return meta_to_string(t);
+	if (t.kind <= Token::count) return meta_to_string(t.kind);
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
-	else if (getPreamble(t) < (int64_t)(vec.size() - 1 % 100000)) return vec.at(getPreamble(t))->lexer->to_string(t);
+	else if (t.preambleIndex < (int64_t)(vec.size() % 100000)) {
+		ASSERT(vec.at(t.preambleIndex)->lexer != nullptr, "Internal Error : Lexer shoude be init");
+		return vec.at(t.preambleIndex)->lexer->to_string(t.kind);
+	}
+	return "<Incorect Preamble Index>";
+}
+
+std::string PreambleRepository::to_string(PreamleIndex preambleIndex, Token::Type type) const
+{
+	if (type <= Token::count) return meta_to_string(type);
+	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
+	else if (preambleIndex < (int64_t)(vec.size() % 100000)) {
+		ASSERT(vec.at(preambleIndex)->lexer != nullptr, "Internal Error : Lexer shoude be init");
+		return vec.at(preambleIndex)->lexer->to_string(type);
+	}
 	return "<Incorect Preamble Index>";
 }
 
@@ -59,8 +79,9 @@ PreambleRepository::PreambleRepository()
 			vec.at(vec.size() - 1)->lexer->setPreambleIndex((int32_t)vec.size() - 1);
 		};
 
-	addPreamble(new PreambleDefinition{ "<Meta>"});
-	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(),new Preamble::Procedure::Parser()});
+	addPreamble(new PreambleDefinition{ "<Meta>" });
+	addPreamble(new PreambleDefinition{ "extension" }); // load something like type or agents or sal // extends syntax of core language
+	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(),new Preamble::Procedure::Parser() });
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
 	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
@@ -82,21 +103,19 @@ std::vector<PreambleDefinition*> PreambleRepository::get() const
 	return res;
 }
 
-PreambleDefinition* PreambleRepository::get(int32_t index) const
+PreambleDefinition* PreambleRepository::get(PreamleIndex index) const
 {
 	ASSERT(vec.size() < 100000, "TOO large");
 	ASSERT(index >= 0 && index < (int64_t)vec.size(), "out of bound");
 	return vec[index];
 }
 
-int32_t PreambleRepository::getPeambuleIndex(CodeLocation representation) const {
-	int i = 0;
+PreamleIndex PreambleRepository::getPeambuleIndex(CodeLocation representation) const {
 
-	for (const auto& elem : vec) {
-		if (elem->representation == representation.val()) {
+	for (int32_t i = 0; i < vec.size(); i++) {
+		if (vec.at(i)->representation == representation) {
 			return i;
 		}
-		i++;
 	}
 	TODO(std::format("preamble '{}' not found ! in {} ", representation.val(), representation.start()));
 }

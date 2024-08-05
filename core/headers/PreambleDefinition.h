@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>	
 
+#include "AST.h"
 #include "CodeLocation.h"
 #include "MetaLexer.h"
 #include "TODO.h"
 #include "Token.h"
 #include "TokenStream.h"	
-#include "AST.h"
 
 class ILexer {
 public:
@@ -24,15 +24,16 @@ public:
 
 //type.implicit_cast TypeFrom -> TypeTo
 //type.explicit_cast TypeFrom -> TypeTo (used in "exp as atom" expresion/operator)
-/* 
+/*
 {
 
 }
 */
 
 class IParser {
-	public:
-	virtual Ast parse(TokenStream& head,TokenStream& body) = 0;
+public:
+	virtual Ast parse(TokenStream& head, TokenStream& body) = 0;
+	virtual std::string NodeKind_toString(uint64_t n) const = 0;
 	virtual ~IParser() noexcept {}
 };
 

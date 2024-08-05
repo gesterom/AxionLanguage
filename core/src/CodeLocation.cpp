@@ -8,6 +8,24 @@
 
 //bool CodeLocation::comment() const noexcept { return commentLevel > 0 or lineComment; }
 
+CodeLocation CodeLocation::null() noexcept
+{
+   return CodeLocation{};
+}
+
+CodeLocation::CodeLocation() {
+	this->file_name = "";
+	this->start_pos = 0;
+	this->end_pos = 0;
+	this->last_byte = '\0';
+	this->file = nullptr;
+	this->limit_start = 0;
+	this->limit_end = 0;
+#ifdef DEBUG
+	this->visual = "";
+#endif // DEBUG
+}
+
 CodeLocation::CodeLocation(std::string filename) {
 	this->file_name = filename;
 	this->start_pos = 0;
@@ -16,6 +34,9 @@ CodeLocation::CodeLocation(std::string filename) {
 	this->file = std::make_shared<VirtualFile>(filename);
 	this->limit_start = 0;
 	this->limit_end = file->size();
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 }
 CodeLocation CodeLocation::asLimiter() const noexcept
 {
@@ -24,6 +45,9 @@ CodeLocation CodeLocation::asLimiter() const noexcept
 	res.limit_end = this->end_pos;
 	res.end_pos = this->start_pos;
 	res.start_pos = this->start_pos;
+#ifdef DEBUG
+	res.visual = res.val();
+#endif // DEBUG
 	return res;
 }
 
@@ -37,6 +61,9 @@ CodeLocation::CodeLocation(const CodeLocation& other) noexcept {
 	this->file = other.file;
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 }
 
 CodeLocation CodeLocation::operator=(const CodeLocation& other) noexcept {
@@ -47,6 +74,9 @@ CodeLocation CodeLocation::operator=(const CodeLocation& other) noexcept {
 	this->file = other.file;
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 	return *this;
 }
 
@@ -58,6 +88,9 @@ CodeLocation::CodeLocation(CodeLocation&& other) noexcept {
 	this->file = other.file;
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 }
 
 CodeLocation CodeLocation::operator=(CodeLocation&& other) noexcept {
@@ -68,6 +101,9 @@ CodeLocation CodeLocation::operator=(CodeLocation&& other) noexcept {
 	this->file = other.file;
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 	return *this;
 }
 
@@ -76,6 +112,26 @@ CodeLocation CodeLocation::operator+=(char ch) noexcept {
 		this->start_pos++;
 	}
 	this->end_pos++;
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
+
+	return *this;
+}
+
+CodeLocation CodeLocation::consume(int64_t n) noexcept
+{
+	int i = 0;
+	for (i = 0; isSpace(this->look(0)) and i < n; i++) {
+		this->start_pos++;
+		this->end_pos++;
+	}
+	if (i < n) {
+		this->end_pos += (n - i);
+	}
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 	return *this;
 }
 
@@ -83,18 +139,27 @@ CodeLocation CodeLocation::moveStartToEnd() const noexcept {
 	CodeLocation res = *this;
 	res.start_pos = res.end_pos;
 	//res.value = "";
+#ifdef DEBUG
+	res.visual = res.val();
+#endif // DEBUG
 	return res;
 }
 
 CodeLocation CodeLocation::move(uint64_t n) const noexcept {
 	CodeLocation res = *this;
 	res.start_pos = std::min(start_pos + n, end_pos);
+#ifdef DEBUG
+	this->visual = this->val();
+#endif // DEBUG
 	return res;
 }
 
 CodeLocation CodeLocation::substr(uint64_t n) const noexcept {
 	CodeLocation res = *this;
 	res.end_pos = res.start_pos + n;
+#ifdef DEBUG
+	res.visual = res.val();
+#endif // DEBUG
 	return res;
 }
 
@@ -169,20 +234,20 @@ bool CodeLocation::operator<(const CodeLocation& other)const noexcept {
 	return this->val() < other.val();
 }
 
-std::optional<uint8_t> CodeLocation::peek()
+std::optional<uint8_t> CodeLocation::peek() const
 {
 	if (end_pos >= this->limit_end) return std::nullopt;
 	if (end_pos < this->limit_start) return std::nullopt;
 	return this->file->get(end_pos);
 }
 
-std::string CodeLocation::peek(uint64_t n)
+std::string CodeLocation::peek(uint64_t n) const
 {
 	ASSERT(this->end_pos + n > this->end_pos, "dont look back");
 	return this->file->get(this->end_pos, std::min((uint64_t)(this->end_pos + n), this->limit_end));
 }
 
-std::optional<uint8_t> CodeLocation::look(int64_t n)
+std::optional<uint8_t> CodeLocation::look(int64_t n) const
 {
 	if (end_pos + n >= limit_end) return std::nullopt;
 	if (end_pos + n < limit_start) return std::nullopt;

@@ -18,8 +18,12 @@ class CodeLocation {
 	std::shared_ptr<VirtualFile> file;
 	uint64_t limit_start = 0;
 	uint64_t limit_end = 0;
-
+#ifdef DEBUG
+	mutable std::string visual;
+#endif // DEBUG
+	explicit CodeLocation();
 public:
+	static CodeLocation null() noexcept;
 	explicit CodeLocation(std::string filename);
 	CodeLocation asLimiter() const noexcept;
 	std::string getFilename() const noexcept;
@@ -28,6 +32,7 @@ public:
 	CodeLocation(CodeLocation&& other) noexcept;
 	CodeLocation operator=(CodeLocation&& other) noexcept;
 	CodeLocation operator+=(char ch) noexcept;
+	CodeLocation consume(int64_t) noexcept;
 	CodeLocation moveStartToEnd() const noexcept;
 	CodeLocation move(uint64_t n) const noexcept;
 	CodeLocation substr(uint64_t n) const noexcept;
@@ -37,11 +42,11 @@ public:
 	std::string end() const noexcept;
 	bool operator<(const CodeLocation& other) const noexcept;
 	bool empty() const noexcept;
-	std::optional<uint8_t> peek();
-	std::string peek(uint64_t);
-	std::optional<uint8_t> look(int64_t);
+	std::optional<uint8_t> peek() const;
+	std::string peek(uint64_t) const;
+	std::optional<uint8_t> look(int64_t) const;
 	bool is_good() const noexcept;
 };
 
 std::ostream& operator<<(std::ostream& out, const CodeLocation& loc);
-bool operator==(const CodeLocation& loc,std::string);
+bool operator==(const CodeLocation& loc, std::string);

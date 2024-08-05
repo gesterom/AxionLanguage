@@ -8,7 +8,7 @@
 
 namespace Preamble {
 	namespace Function {
-		
+
 		enum class FunctionTokenType : int64_t
 		{
 			parenthesis = Token::count + 1,

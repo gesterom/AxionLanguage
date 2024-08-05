@@ -5,16 +5,6 @@
 namespace Preamble {
 	namespace Procedure {
 
-		enum class ProcedureTokenType : int64_t {
-			keyword = Token::count+1,
-			comma,
-			colon,
-			semicolon,
-			integer_literal,
-			double_literal,
-			operator_t,
-		};
-		
 		class Lexer : public ILexer {
 			int32_t preambleIndex = -2;
 			int64_t paramCount = 0;
