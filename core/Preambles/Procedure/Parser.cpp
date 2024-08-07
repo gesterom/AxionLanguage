@@ -164,6 +164,15 @@ struct SyntaxProduction {
 	std::vector<std::string> seq;
 };
 
+struct OperatorOutput {
+	Token representation;
+	uint32_t priority;
+	bool leftAcosivity;
+	bool prefix;
+	bool infix;
+	bool sufix;
+};
+
 //exp := 
 // [ ] prefixop exp // prefix > infix
 // [ ] exp sufixop // sufix > infix 
@@ -174,7 +183,7 @@ struct SyntaxProduction {
 // [v] exp[exp] -> array_acess
 // [ ] atom
 // [ ] literal
-// [ ] operator
+// [ ] prefix_operator
 // [v] `empty` 
 // 
 // primary primary => error
@@ -187,37 +196,94 @@ Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::expression;
+	std::vector<Ast::NodeIndex> output;
+
 	bool lastOneIsOperatorOrEmpty = true;
 	while (true) {
 		if (lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { // brackets
-			parseExpresion(head,ast);
+			auto e = parseExpresion(head,ast);
+			if(e) output.push_back(e);
 			auto t =  head.require(Token::Type::parenthesis,")");
 			if (not t) return (ErrorT)t;
+			lastOneIsOperatorOrEmpty = true;
+			continue;
 		}
 		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
+			Ast::Node temp;
+			temp.kind = (uint64_t)NodeKinds::expression_list;
 			do{
-				parseExpresion(head, ast);
+				auto a = parseExpresion(head, ast);
+				if(a) temp.children.push_back(a);
+				else break;
 			}while(head.optional((Token::Type)ProcedureTokenType::comma));
 			auto t = head.require(Token::Type::parenthesis, ")");
 			if (not t) return (ErrorT)t;
+			auto args = newNode(ast, temp);
+			auto func = output[output.size()-1];
+			output.pop_back();
+			Ast::Node funcCall;
+			funcCall.kind = (uint64_t)NodeKinds::function_call;
+			funcCall.children.push_back(func);
+			funcCall.children.push_back(args);
+			output.push_back(newNode(ast,funcCall));
+			lastOneIsOperatorOrEmpty = true;
+			continue;
 		}
 		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "{")) { //constructor
+			Ast::Node temp;
+			temp.kind = (uint64_t)NodeKinds::expression_list;
 			do {
-				parseExpresion(head, ast);
+				auto a = parseExpresion(head, ast);
+				if (a) temp.children.push_back(a);
+				else break;
 			} while (head.optional((Token::Type)ProcedureTokenType::comma));
 			auto t = head.require(Token::Type::parenthesis, "}");
 			if (not t) return (ErrorT)t;
+			auto args = newNode(ast, temp);
+			auto func = output[output.size() - 1];
+			output.pop_back();
+			Ast::Node constructor;
+			constructor.kind = (uint64_t)NodeKinds::Object_construct;
+			constructor.children.push_back(func);
+			constructor.children.push_back(args);
+			output.push_back(newNode(ast, constructor));
+			lastOneIsOperatorOrEmpty = true;
+			continue;
 		}
 		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "[")) { //array acess
+			Ast::Node temp;
+			temp.kind = (uint64_t)NodeKinds::expression_list;
 			do {
-				parseExpresion(head, ast);
+				auto a = parseExpresion(head, ast);
+				if (a) temp.children.push_back(a);
+				else break;
 			} while (head.optional((Token::Type)ProcedureTokenType::comma));
 			auto t = head.require(Token::Type::parenthesis, "]");
 			if(not t) return (ErrorT)t;
+			auto args = newNode(ast, temp);
+			auto func = output[output.size() - 1];
+			output.pop_back();
+			Ast::Node array_acess;
+			array_acess.kind = (uint64_t)NodeKinds::array_acess;
+			array_acess.children.push_back(func);
+			array_acess.children.push_back(args);
+			output.push_back(newNode(ast, array_acess));
+			lastOneIsOperatorOrEmpty=true;
+			continue;
+		}
+		else if (auto t = head.optional(Token::Type::atom)) {
+			Ast::Node temp;
+			temp.kind = (uint64_t)NodeKinds::expression;
+			temp.children.emplace_back(newLeaf(ast,t.value()));
+			output.emplace_back(newNode(ast,temp));
+			lastOneIsOperatorOrEmpty=false;
+			continue;
 		}
 		break;//if token not handled stop parsing expression
 	}
-
+	if (output.size() > 0) {
+		return (Ast::NodeIndex)output[0];
+	}
 	return newNode(ast, res);
 	//std::vector<Ast::NodeIndex> output;
 	//std::vector<Preamble::Procedure::Operator> stack;
@@ -341,6 +407,7 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 		case Preamble::Procedure::NodeKinds::const_mod: return "const_mod";
 		case Preamble::Procedure::NodeKinds::mut_mod: return "mut_mod";
 		case Preamble::Procedure::NodeKinds::expression: return "expression";
+		case Preamble::Procedure::NodeKinds::expression_list: return "expression_list";
 	}
 	UNREACHABLE("Switch case not exausted");
 }

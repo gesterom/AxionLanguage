@@ -39,6 +39,7 @@ namespace Preamble {
 			const_mod,
 			mut_mod,
 			expression,
+			expression_list,
 		};
 
 		class Parser : public IParser {

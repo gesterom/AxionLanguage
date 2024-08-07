@@ -78,7 +78,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 				}
 			}
 		}
-		if ((isDigit(ch) or (ch == '.' and not dot))) {
+		if (loc == "" and (isDigit(ch) or (ch == '.' and not dot))) {
 			if (ch == '.') {
 				dot = true;
 			}
@@ -149,6 +149,7 @@ std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {
 	case ProcedureTokenType::double_literal: return "double_literal";
 	case ProcedureTokenType::integer_literal: return "integer_literal";
 	case ProcedureTokenType::operator_t: return "operator_t";
+	case ProcedureTokenType::dot: return "dot";
 	default: return "<unknown>";
 	}
 }
