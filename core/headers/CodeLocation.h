@@ -37,7 +37,7 @@ public:
 	CodeLocation move(uint64_t n) const noexcept;
 	CodeLocation substr(uint64_t n) const noexcept;
 	size_t size() const noexcept;
-	std::string val() const noexcept;
+	std::string to_string() const noexcept;
 	std::string start() const noexcept;
 	std::string end() const noexcept;
 	bool operator<(const CodeLocation& other) const noexcept;

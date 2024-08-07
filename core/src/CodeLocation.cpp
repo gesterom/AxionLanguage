@@ -10,7 +10,7 @@
 
 CodeLocation CodeLocation::null() noexcept
 {
-   return CodeLocation{};
+	return CodeLocation{};
 }
 
 CodeLocation::CodeLocation() {
@@ -35,7 +35,7 @@ CodeLocation::CodeLocation(std::string filename) {
 	this->limit_start = 0;
 	this->limit_end = file->size();
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 }
 CodeLocation CodeLocation::asLimiter() const noexcept
@@ -46,7 +46,7 @@ CodeLocation CodeLocation::asLimiter() const noexcept
 	res.end_pos = this->start_pos;
 	res.start_pos = this->start_pos;
 #ifdef DEBUG
-	res.visual = res.val();
+	res.visual = res.to_string();
 #endif // DEBUG
 	return res;
 }
@@ -62,7 +62,7 @@ CodeLocation::CodeLocation(const CodeLocation& other) noexcept {
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 }
 
@@ -75,7 +75,7 @@ CodeLocation CodeLocation::operator=(const CodeLocation& other) noexcept {
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 	return *this;
 }
@@ -89,7 +89,7 @@ CodeLocation::CodeLocation(CodeLocation&& other) noexcept {
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 }
 
@@ -102,7 +102,7 @@ CodeLocation CodeLocation::operator=(CodeLocation&& other) noexcept {
 	this->limit_start = other.limit_start;
 	this->limit_end = other.limit_end;
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 	return *this;
 }
@@ -113,7 +113,7 @@ CodeLocation CodeLocation::operator+=(char ch) noexcept {
 	}
 	this->end_pos++;
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 
 	return *this;
@@ -130,7 +130,7 @@ CodeLocation CodeLocation::consume(int64_t n) noexcept
 		this->end_pos += (n - i);
 	}
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 	return *this;
 }
@@ -140,7 +140,7 @@ CodeLocation CodeLocation::moveStartToEnd() const noexcept {
 	res.start_pos = res.end_pos;
 	//res.value = "";
 #ifdef DEBUG
-	res.visual = res.val();
+	res.visual = res.to_string();
 #endif // DEBUG
 	return res;
 }
@@ -149,7 +149,7 @@ CodeLocation CodeLocation::move(uint64_t n) const noexcept {
 	CodeLocation res = *this;
 	res.start_pos = std::min(start_pos + n, end_pos);
 #ifdef DEBUG
-	this->visual = this->val();
+	this->visual = this->to_string();
 #endif // DEBUG
 	return res;
 }
@@ -158,14 +158,14 @@ CodeLocation CodeLocation::substr(uint64_t n) const noexcept {
 	CodeLocation res = *this;
 	res.end_pos = res.start_pos + n;
 #ifdef DEBUG
-	res.visual = res.val();
+	res.visual = res.to_string();
 #endif // DEBUG
 	return res;
 }
 
 size_t CodeLocation::size() const noexcept { return end_pos - start_pos; }
 
-std::string CodeLocation::val() const noexcept { return file->get(start_pos, end_pos); }
+std::string CodeLocation::to_string() const noexcept { return file->get(start_pos, end_pos); }
 
 bool CodeLocation::empty() const noexcept {
 	return this->start_pos == this->end_pos;
@@ -231,7 +231,7 @@ std::string CodeLocation::end() const noexcept {
 }
 
 bool CodeLocation::operator<(const CodeLocation& other)const noexcept {
-	return this->val() < other.val();
+	return this->to_string() < other.to_string();
 }
 
 std::optional<uint8_t> CodeLocation::peek() const
@@ -261,11 +261,11 @@ bool CodeLocation::is_good() const noexcept
 }
 
 std::ostream& operator<<(std::ostream& out, const CodeLocation& loc) {
-	out << loc.val();
+	out << loc.to_string();
 	return out;
 }
 
 bool operator==(const CodeLocation& loc, std::string str)
 {
-	return loc.val() == str;
+	return loc.to_string() == str;
 }

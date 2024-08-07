@@ -131,6 +131,7 @@ std::optional<Token> Preamble::Procedure::Lexer::lexBody(CodeLocation& loc) {
 		else if (not isSpace(ch) and (isSpace(next_ch) or not isCharIdentifier(next_ch))) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
+			if (res == "true" or res == "false") return createToken((Token::Type)ProcedureTokenType::bool_literal, res);
 			return createToken(Token::Type::atom, res);
 		}
 		else {

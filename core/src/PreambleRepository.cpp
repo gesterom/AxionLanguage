@@ -117,7 +117,7 @@ PreamleIndex PreambleRepository::getPeambuleIndex(CodeLocation representation) c
 			return i;
 		}
 	}
-	TODO(std::format("preamble '{}' not found ! in {} ", representation.val(), representation.start()));
+	TODO(std::format("preamble '{}' not found ! in {} ", representation.to_string(), representation.start()));
 }
 
 PreambleRepository::~PreambleRepository()

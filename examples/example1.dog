@@ -90,5 +90,6 @@ procedure addToList(list : vector(int) , a : int){
 }
 
 build all{
-	
+	compile(example1.dog)
+	compile(example2.dog)
 }

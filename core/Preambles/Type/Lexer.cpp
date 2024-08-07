@@ -20,7 +20,7 @@ std::optional<Token> Preamble::Type::Lexer::lexHead(CodeLocation& loc) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
-		if ((ch == '(' or ch == ')') and loc.val() == "") {
+		if ((ch == '(' or ch == ')') and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken(Token::Type::parenthesis,res );
@@ -49,7 +49,7 @@ std::optional<Token> Preamble::Type::Lexer::lexBody(CodeLocation& loc) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
-		if ((ch == '(' or ch == ')' or ch == '[' or ch == ']') and loc.val() == "") {
+		if ((ch == '(' or ch == ')' or ch == '[' or ch == ']') and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken(Token::Type::parenthesis,res );
@@ -67,7 +67,7 @@ std::optional<Token> Preamble::Type::Lexer::lexBody(CodeLocation& loc) {
 		else if (isCharIdentifier(ch) and not isCharIdentifier(next_ch)) {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
-			if (to_lowercase(res.val()) == "let") {
+			if (to_lowercase(res.to_string()) == "let") {
 				return createToken((Token::Type)TypeTokenType::keyword,res );
 			}
 			return createToken(Token::Type::atom,res );

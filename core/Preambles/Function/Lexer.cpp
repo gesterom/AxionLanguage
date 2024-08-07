@@ -13,17 +13,17 @@ std::optional<Token> Preamble::Function::Lexer::lexHead(CodeLocation& loc) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
-		if (next_ch == '(' and loc.val() != "") {
+		if (next_ch == '(' and loc.to_string() != "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken(Token::Type::atom,res );
 		}
-		else if ((ch == '(' or ch == ')') and loc.val() == "") {
+		else if ((ch == '(' or ch == ')') and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken((Token::Type)FunctionTokenType::parenthesis,res );
 		}
-		else if (ch == ',' and loc.val() == "") {
+		else if (ch == ',' and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken((Token::Type)FunctionTokenType::comma,res );
@@ -47,22 +47,22 @@ std::optional<Token> Preamble::Function::Lexer::lexBody(CodeLocation& loc) {
 		last_ch = ch;
 		ch = loc.look(0).value();
 		next_ch = loc.look(1);
-		if (next_ch == '(' and loc.val() != "") {
+		if (next_ch == '(' and loc.to_string() != "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken(Token::atom,res );
 		}
-		else if ((ch == '(' or ch == ')') and loc.val() == "") {
+		else if ((ch == '(' or ch == ')') and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken(Token::Type::parenthesis,res );
 		}
-		else if (next_ch == ',' and loc.val() != "") {
+		else if (next_ch == ',' and loc.to_string() != "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			ASSERT(false, "FUCK");
 		}
-		else if (ch == ',' and loc.val() == "") {
+		else if (ch == ',' and loc.to_string() == "") {
 			auto res = loc += ch;
 			loc = loc.moveStartToEnd();
 			return createToken((Token::Type)FunctionTokenType::comma,res );

@@ -5,6 +5,18 @@
 namespace Preamble {
 	namespace Procedure {
 
+		struct Operator {
+			Token token;
+			uint32_t presedence;
+			bool leftAssociativity;
+			enum class Type {
+				prefix,
+				infix,
+				postfix
+			};
+			Type type;
+		};
+
 		enum class NodeKinds : uint64_t {
 			namespace_path = 1,
 			name,
@@ -13,7 +25,20 @@ namespace Preamble {
 			type,
 			square_bracket,
 			bracket,
-			curly_bracket
+			curly_bracket,
+			prefix_operator,
+			infix_operator,
+			postfix_operator,
+			function_call,
+			array_acess,
+			Object_construct,
+			varible_declaration,
+			for_loop,
+			if_branch,
+			while_loop,
+			const_mod,
+			mut_mod,
+			expression,
 		};
 
 		class Parser : public IParser {

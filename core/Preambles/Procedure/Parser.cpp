@@ -3,6 +3,8 @@
 #include "Preambles/Procedure/Lexer.h"
 #include "Preambles/Procedure/OperatorDefinition.h"
 
+#include <format>
+
 // operatotrs on steatements for examle if expresion statement else statement 
 // 
 // statement := `if` bool_expresion statement [`else` statement]
@@ -34,11 +36,11 @@ using namespace Preamble::Procedure;
 
 void printError(const std::optional<ErrorT>& err) {
 	if (err.has_value()) {
-		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.val() << " = " << err.value().oneLinerError << std::endl;
+		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.to_string() << " = " << err.value().oneLinerError << std::endl;
 	}
 }
 
-Ast::NodeIndex newLeaf(Ast& self, Result<Token,ErrorT> t)
+Ast::NodeIndex newLeaf(Ast& self, Result<Token, ErrorT> t)
 {
 	if (t) {
 		auto res = (uint32_t)self.leafs.size();
@@ -51,7 +53,7 @@ Ast::NodeIndex newLeaf(Ast& self, Result<Token,ErrorT> t)
 	}
 }
 
-Ast::NodeIndex newNode(Ast& self, Result<Ast::Node,ErrorT> t)
+Ast::NodeIndex newNode(Ast& self, Result<Ast::Node, ErrorT> t)
 {
 	if (t) {
 		auto res = (uint32_t)self.nodes.size();
@@ -115,23 +117,143 @@ Result<Ast::NodeIndex, ErrorT> requireType(TokenStream& head, Ast& ast) {
 	}
 }
 
+bool checkIsAtomcExpresion(TokenStream& head) {
+	auto t = head.peak(0);
+	if (not t.has_value()) return false;
+	if (t->kind == Token::Type::atom) return true;
+	if (t->kind == Token::Type::string_literal) return true;
+	if (t->kind == (Token::Type)ProcedureTokenType::integer_literal) return true;
+	if (t->kind == (Token::Type)ProcedureTokenType::double_literal) return true;
+	return false;
+}
+
+int getPrecedence(std::optional<Token> a) {
+	if (not a) return 0;
+	if (a->value == "=") return 3;
+	if (a->value == "*") return 2;
+	if (a->value == "/") return 2;
+	if (a->value == "+") return 1;
+	if (a->value == "-") return 1;
+	TODO("Implement real operator precedence");
+}
+
+Result<Ast::NodeIndex, ErrorT> parsePrimary(TokenStream& head, Ast& ast) {
+	if (checkIsAtomcExpresion(head)) {
+		auto t = head.peak();
+		head.consume();
+		return newLeaf(ast, t.value());
+	}
+	return ErrorT{ head.peak(0)->value,std::format("Expected primary Expresion get {}",head.peak()->value.to_string()),"TODO long error" };
+}
+
+//Result<Ast::NodeIndex, ErrorT> parseExpresion1(TokenStream& head, Ast& ast, Ast::NodeIndex lhs, int min_precedence) {
+//	//auto lookahead = head.peak();
+//	//while (lookahead->kind == (Token::Type)ProcedureTokenType::operator_t and getPrecedence(lookahead) >= min_precedence) {
+//	//	auto op = lookahead;
+//	//	auto rhs = parsePrimary(head, ast);
+//	//	lookahead = head.peak();
+//	//}
+//}
+// string?
+// string?int|bool = string?(int|bool)
+// string?int?bool = (string?int)?bool
+
+
+struct SyntaxProduction {
+	std::string result;
+	std::vector<std::string> seq;
+};
+
+//exp := 
+// [ ] prefixop exp // prefix > infix
+// [ ] exp sufixop // sufix > infix 
+// [ ] exp infixop exp
+// [v] ( exp ) -> bracets
+// [v] exp(exp) -> function_call
+// [v] exp{exp} -> construct_struct/object
+// [v] exp[exp] -> array_acess
+// [ ] atom
+// [ ] literal
+// [ ] operator
+// [v] `empty` 
+// 
+// primary primary => error
+//
+// prefix exp sufix => prefix ( exp sufix ) if sufix  > prefix
+// prefix exp sufix => (prefix exp ) sufix  if prefix > sufix
+//
+
 Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
-
-	if (auto a = head.optional(Token::Type::atom)) {
-
+	// not Token?
+	Ast::Node res;
+	res.kind = (uint64_t)NodeKinds::expression;
+	bool lastOneIsOperatorOrEmpty = true;
+	while (true) {
+		if (lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { // brackets
+			parseExpresion(head,ast);
+			auto t =  head.require(Token::Type::parenthesis,")");
+			if (not t) return (ErrorT)t;
+		}
+		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
+			do{
+				parseExpresion(head, ast);
+			}while(head.optional((Token::Type)ProcedureTokenType::comma));
+			auto t = head.require(Token::Type::parenthesis, ")");
+			if (not t) return (ErrorT)t;
+		}
+		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "{")) { //constructor
+			do {
+				parseExpresion(head, ast);
+			} while (head.optional((Token::Type)ProcedureTokenType::comma));
+			auto t = head.require(Token::Type::parenthesis, "}");
+			if (not t) return (ErrorT)t;
+		}
+		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "[")) { //array acess
+			do {
+				parseExpresion(head, ast);
+			} while (head.optional((Token::Type)ProcedureTokenType::comma));
+			auto t = head.require(Token::Type::parenthesis, "]");
+			if(not t) return (ErrorT)t;
+		}
+		break;//if token not handled stop parsing expression
 	}
-	if (head.optional(Token::Type::parenthesis, "(")) {
 
-		head.require(Token::Type::parenthesis, ")");
-	}
-	if (head.optional(Token::Type::parenthesis, "[")) {
-		head.require(Token::Type::parenthesis, "]");
-	}
-	if (head.check(Token::Type::parenthesis, ")")) {}
-	if (head.check(Token::Type::parenthesis, "]")) {}
-	if (head.check(Token::Type::parenthesis, "}")) {}
-	if (head.check(Token::Type::parenthesis, ",")) {}
-	return ErrorT{ head.peak()->value,"TODO","TODO" };
+	return newNode(ast, res);
+	//std::vector<Ast::NodeIndex> output;
+	//std::vector<Preamble::Procedure::Operator> stack;
+	//while (true) {
+	//	if (checkIsAtomcExpresion(head)) {
+	//		output.push_back(newLeaf(ast, head.peak(0).value()));
+	//		head.consume(1);
+	//		continue;
+	//	}
+	//	if (head.check((Token::Type)ProcedureTokenType::operator_t)) {
+	//		continue;
+	//	}
+	//	if (head.optional(Token::Type::parenthesis, "(")) { // function calls
+	//		auto t = parseExpresion(head, ast);
+	//		if (not t) printError((ErrorT)t);
+	//		else
+	//			head.require(Token::Type::parenthesis, ")");
+	//	}
+	//	if (head.optional(Token::Type::parenthesis, "[")) { // arrays
+	//		auto t = parseExpresion(head, ast);
+	//		if (not t) printError((ErrorT)t);
+	//		else
+	//			head.require(Token::Type::parenthesis, "]");
+	//	}
+	//	if (head.optional(Token::Type::parenthesis, "{")) { // construct value
+	//		auto t = parseExpresion(head, ast);
+	//		if (not t) printError((ErrorT)t);
+	//		else
+	//			head.require(Token::Type::parenthesis, "{");
+	//	}
+	//	break; // if i dont recognize token stop expression
+	//}
+	//if (head.check(Token::Type::parenthesis, ")")) {}
+	//if (head.check(Token::Type::parenthesis, "]")) {}
+	//if (head.check(Token::Type::parenthesis, "}")) {}
+	//if (head.check(Token::Type::parenthesis, ",")) {}
 }
 
 // atom : type/*expresion that evaluated in compile time will result in Type*/
@@ -198,11 +320,27 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 {
 	switch ((Preamble::Procedure::NodeKinds)n)
 	{
-	case Preamble::Procedure::NodeKinds::namespace_path: return "namespace_path";
-	case Preamble::Procedure::NodeKinds::name: return "name";
-	case Preamble::Procedure::NodeKinds::function_head: return "function_head";
-	case Preamble::Procedure::NodeKinds::function_head_args_definition: return "function_head_args_definition";
-	case Preamble::Procedure::NodeKinds::type: return "type";
+		case Preamble::Procedure::NodeKinds::namespace_path: return "namespace_path";
+		case Preamble::Procedure::NodeKinds::name: return "name";
+		case Preamble::Procedure::NodeKinds::function_head: return "function_head";
+		case Preamble::Procedure::NodeKinds::function_head_args_definition: return "function_head_args_definition";
+		case Preamble::Procedure::NodeKinds::type: return "type";
+		case Preamble::Procedure::NodeKinds::square_bracket: return "square_bracket";
+		case Preamble::Procedure::NodeKinds::bracket: return "bracket";
+		case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
+		case Preamble::Procedure::NodeKinds::prefix_operator: return "prefix_operator";
+		case Preamble::Procedure::NodeKinds::infix_operator: return "infix_operator";
+		case Preamble::Procedure::NodeKinds::postfix_operator: return "postfix_operator";
+		case Preamble::Procedure::NodeKinds::function_call: return "function_call";
+		case Preamble::Procedure::NodeKinds::array_acess: return "array_acess";
+		case Preamble::Procedure::NodeKinds::Object_construct: return "Object_construct";
+		case Preamble::Procedure::NodeKinds::varible_declaration: return "varible_declaration";
+		case Preamble::Procedure::NodeKinds::for_loop: return "for_loop";
+		case Preamble::Procedure::NodeKinds::if_branch: return "if_branch";
+		case Preamble::Procedure::NodeKinds::while_loop: return "while_loop";
+		case Preamble::Procedure::NodeKinds::const_mod: return "const_mod";
+		case Preamble::Procedure::NodeKinds::mut_mod: return "mut_mod";
+		case Preamble::Procedure::NodeKinds::expression: return "expression";
 	}
 	UNREACHABLE("Switch case not exausted");
 }

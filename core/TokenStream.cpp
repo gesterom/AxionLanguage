@@ -3,9 +3,9 @@
 #include "TODO.h"
 #include <format>
 
-TokenStream::TokenStream(PreamleIndex index,std::vector<Token> vec, PreambleRepository& repo) : repo(repo), internal(vec), preambleIndex(index)
+TokenStream::TokenStream(PreamleIndex index, std::vector<Token> vec, PreambleRepository& repo) : repo(repo), internal(vec), preambleIndex(index)
 {
-	ASSERT(vec.size() != 0,"Fuck anyone");
+	ASSERT(vec.size() != 0, "Fuck anyone");
 	this->preambleIndex = index;
 }
 
@@ -26,7 +26,7 @@ std::optional<Token> TokenStream::peak(int64_t n) const noexcept
 bool TokenStream::consume(int64_t n)
 {
 	pointer = std::min(pointer + n, internal.size());
-	return pointer>= internal.size();
+	return pointer >= internal.size();
 }
 
 Result<Token, ErrorT> TokenStream::require(Token::Type kind)
@@ -44,7 +44,7 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind)
 Result<Token, ErrorT> TokenStream::require(Token::Type kind, std::string val)
 {
 	auto token = this->peak();
-	if (not token.has_value()) return ErrorT{ internal.back().value, "Internal Stream ended","Internal Stream to early"};
+	if (not token.has_value()) return ErrorT{ internal.back().value, "Internal Stream ended","Internal Stream to early" };
 	if (token.value().kind == kind and token.value().value == val) { pointer++; return token.value(); }
 	return ErrorT{ token.value().value,
 		std::format("Expected : {} get : {}", repo.to_string(this->preambleIndex,kind), repo.to_string(token.value())),
@@ -55,9 +55,9 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind, std::string val)
 std::optional<ErrorT> TokenStream::requireEmpty()
 {
 	auto token = this->peak();
-	if(not token.has_value()) return std::nullopt;
+	if (not token.has_value()) return std::nullopt;
 	return ErrorT{ token.value().value,
-		std::format("Expected end of Stream get : {}:{} \"{}\"",repo.prambleName(token.value()),repo.to_string(token.value()),token->value.val()),
+		std::format("Expected end of Stream get : {}:{} \"{}\"",repo.prambleName(token.value()),repo.to_string(token.value()),token->value.to_string()),
 		"TODO Long errors"
 	};
 }
@@ -66,7 +66,7 @@ std::optional<Token> TokenStream::optional(Token::Type kind)
 {
 	auto token = this->peak();
 	if (not token.has_value()) return std::nullopt;
-	if (token.value().kind == kind) { pointer++; return token.value();}
+	if (token.value().kind == kind) { pointer++; return token.value(); }
 	return std::nullopt;
 }
 

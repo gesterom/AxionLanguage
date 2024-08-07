@@ -5,32 +5,20 @@
 
 #include "Token.h"
 
-enum class OperandType {
-	Operand_null, Operand_atom, Operand_ptr, Operand_bool, Operand_string, Operand_int, Operand_float, Operand_int_sized
-};
-
-struct OperatorDefinition {
-	enum Type {
-		prefix, infix, postfix
-	};
-	std::vector<std::string> representation;
-	uint8_t presedence;
-	bool left_acocieted;
-	Type type;
-	OperandType LeftType = OperandType::Operand_null;
-	OperandType RightType = OperandType::Operand_null;
-	OperandType ResultType = OperandType::Operand_null;
-	//TODO add what types are implemented
-	// type A,type B => Type C
-};
 
 /* Type modifiers/operators
 	Type[] = dynamic array of T (basicly pointer + size)
 	Type[com_time_size] = static size array of Ts
 	Type[enum_type] = static size array of Ts indexed by enum
 	Type[range_type] = static size array of Ts indexed by range type
-	Type[distinct] = static size array of Ts indexed by uniq index_type => create array and type.distinct type_array_name = size_t;
+	Type[distinct] = dynamic size array of Ts indexed by uniq index_type => create array and type.distinct type_array_name = size_t;
+	Type[distinct 4] = static size array of Ts indexed by uniq index_type => create array and type.distinct type_array_name = size_t;
+	Type[distinct *] = static size(deduced) array of Ts indexed by uniq index_type => create array and type.distinct type_array_name = size_t;
+	Type[distinct range_type] = static size array of Ts indexed by uniq index_type => create array and type.distinct type_array_name = size_t;
 	Type[*] = [1,2,3,4] = deduce size from init (in this case 4)
+	4..10 = range_type
+	comp_time..comp_time = range type [left,right) right exclusive
+	comp_time...comp_time = range type [left,right] right inclusive
 	(Args)->Return = function
 	Type& = reference
 	Type* = pointer
@@ -76,6 +64,7 @@ enum class ProcedureTokenType : int64_t { // 0x00 00 00 01 00 00 00 03
 	semicolon,
 	integer_literal,
 	double_literal,
+	bool_literal,
 	operator_t,
 };
 

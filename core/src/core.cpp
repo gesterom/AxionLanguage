@@ -76,7 +76,7 @@ int main(int argc, char** args)
 			if (skip)std::cout << "Error Recovery: ";
 			if (a->kind == Token::Type::preamble) std::cout << std::endl;
 			if (a->kind == Token::Type::preamble) preamble = a->value;
-			std::cout << std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}#{} ", repo.prambleName(a.value()), repo.to_string(a.value()), a->value.val(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
+			std::cout << std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}:{} ", repo.prambleName(a.value()), repo.to_string(a.value()), a->value.to_string(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
 			//std::cout <<"\t\t\t" << ++i << " : (" << repo.prambleName(a->kind) << "/" << repo.to_string(a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
 			if (addToHead) {
 				if (a.value().value == "{") {

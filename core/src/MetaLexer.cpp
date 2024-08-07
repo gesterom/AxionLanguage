@@ -37,7 +37,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = afterComment;
-				return createToken(Token::Type::comment,res );
+				return createToken(Token::Type::comment, res);
 			}
 			else {
 				loc += ch;
@@ -51,7 +51,7 @@ std::optional<Token> MetaLexer::lex() {
 					auto res = loc;
 					loc = loc.moveStartToEnd();
 					mode = afterComment;
-					return createToken( Token::Type::comment,res );
+					return createToken(Token::Type::comment, res);
 				}
 			}
 			else if (ch == '/' and next_ch == '*') {
@@ -71,7 +71,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = afterComment;
-				return createToken( Token::Type::string_literal,res );
+				return createToken(Token::Type::string_literal, res);
 			}
 			else {
 				loc += ch;
@@ -80,7 +80,7 @@ std::optional<Token> MetaLexer::lex() {
 		case LexerMode::emit_body_closing_bracker: {
 			auto res = loc += ch;
 			mode = afterComment;
-			return createToken( Token::Type::parenthesis,res );
+			return createToken(Token::Type::parenthesis, res);
 		}break;
 		case LexerMode::file_atribute_name:
 			if (last_ch == '#' and ch == '#') { loc += ch; loc = loc.moveStartToEnd(); }
@@ -90,14 +90,14 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::idle;
 				//file_scope_atributes.emplace(res, res.moveStartToEnd());
-				return createToken( Token::Type::file_scope_atribute_name,loc );
+				return createToken(Token::Type::file_scope_atribute_name, loc);
 			}
 			else if (ch == '=') {
 				auto res = loc;
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::file_atribute_value;
-				return createToken(Token::Type::file_scope_atribute_name,res );
+				return createToken(Token::Type::file_scope_atribute_name, res);
 			}
 			else {
 				loc += ch;
@@ -110,14 +110,14 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::idle;
 				//file_scope_atributes.emplace(atributeNamePartial, res);
-				return createToken(Token::Type::file_scope_atribute_value,res );
+				return createToken(Token::Type::file_scope_atribute_value, res);
 			}
 			else {
 				loc += ch;
 			}
 			break;
 		case LexerMode::atribute_name:
-			if (loc.val() == "" and ch == '#')
+			if (loc.to_string() == "" and ch == '#')
 			{
 				loc += ch;
 				loc = loc.moveStartToEnd();
@@ -129,14 +129,14 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::idle;
 				//partial.atributes.emplace(res, res.moveStartToEnd());
-				return createToken( Token::Type::atribute_name,res );
+				return createToken(Token::Type::atribute_name, res);
 			}
 			else if (ch == '=') {
 				auto res = loc;
 				loc += ch;
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::atribute_value;
-				return createToken( Token::Type::atribute_name,res );
+				return createToken(Token::Type::atribute_name, res);
 			}
 			else {
 				loc += ch;
@@ -149,7 +149,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc = loc.moveStartToEnd();
 				mode = LexerMode::idle;
 				//partial.atributes.emplace(atributeNamePartial, res);
-				return createToken( Token::Type::atribute_value,res );
+				return createToken(Token::Type::atribute_value, res);
 			}
 			else {
 				loc += ch;
@@ -165,7 +165,7 @@ std::optional<Token> MetaLexer::lex() {
 				loc += ch;
 				mode = LexerMode::head;
 				preambleIndex = repo.getPeambuleIndex(res);
-				return createToken( Token::Type::preamble,res );
+				return createToken(Token::Type::preamble, res);
 			}
 			else {
 				TODO("Not valid preamble name");
@@ -177,7 +177,7 @@ std::optional<Token> MetaLexer::lex() {
 				mode = LexerMode::error_recovery;
 				loc += ch;
 				loc = loc.moveStartToEnd();
-				return createToken( Token::Type::error,res );
+				return createToken(Token::Type::error, res);
 			}
 			else if (ch == '{') {
 				this->tempLoc = loc.asLimiter();
@@ -226,10 +226,10 @@ std::optional<Token> MetaLexer::lex() {
 			break;
 		case LexerMode::head_specific: {
 			auto res = repo.get(preambleIndex)->lexer->lexHead(tempLoc);
-			if (res != std::nullopt) { 
-				if (res->kind > Token::Type::count) 
+			if (res != std::nullopt) {
+				if (res->kind > Token::Type::count)
 					res->preambleIndex = preambleIndex;
-				return res; 
+				return res;
 			}
 			auto res2 = loc;
 			loc = loc.moveStartToEnd();
@@ -241,7 +241,7 @@ std::optional<Token> MetaLexer::lex() {
 				mode = LexerMode::error_recovery;
 				loc += ch;
 				loc = loc.moveStartToEnd();
-				return createToken(Token::Type::error,res );
+				return createToken(Token::Type::error, res);
 			}
 			else if (ch == '"') {
 				this->tempLoc = loc.asLimiter();
@@ -265,7 +265,7 @@ std::optional<Token> MetaLexer::lex() {
 				this->parentisisCounter++;
 				auto res = loc += ch;
 				loc = loc.moveStartToEnd();
-				return createToken(Token::Type::parenthesis,res );
+				return createToken(Token::Type::parenthesis, res);
 			}
 			else if (ch == '{' and loc.size() != 0) {
 				tempLoc = loc.asLimiter();
