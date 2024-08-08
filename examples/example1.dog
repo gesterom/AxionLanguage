@@ -86,7 +86,7 @@ procedure main2() {
 }
 
 procedure addToList(list : vector(int) , a : int){
-	return list;
+	z = copy not x++ + y * 2 ** 3 ;
 }
 
 build all{

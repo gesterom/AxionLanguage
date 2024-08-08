@@ -40,6 +40,8 @@ namespace Preamble {
 			mut_mod,
 			expression,
 			expression_list,
+			array_literal,
+			operator_in_construction = 0xff,
 		};
 
 		class Parser : public IParser {

@@ -181,8 +181,8 @@ struct OperatorOutput {
 // [v] exp(exp) -> function_call
 // [v] exp{exp} -> construct_struct/object
 // [v] exp[exp] -> array_acess
-// [ ] atom
-// [ ] literal
+// [v] atom
+// [v] literal
 // [ ] prefix_operator
 // [v] `empty` 
 // 
@@ -192,91 +192,204 @@ struct OperatorOutput {
 // prefix exp sufix => (prefix exp ) sufix  if prefix > sufix
 //
 
+Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast);
+
+Result<Ast::NodeIndex, ErrorT> parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output) {
+	Ast::Node temp;
+	temp.kind = (uint64_t)NodeKinds::expression_list;
+	do {
+		auto a = parseExpresion(head, ast);
+		if (a) temp.children.push_back(a);
+		else break;
+	} while (head.optional((Token::Type)ProcedureTokenType::comma));
+	auto t = head.require(Token::Type::parenthesis, endToken);
+	if (not t) return (ErrorT)t;
+	auto args = newNode(ast, temp);
+	auto func = output[output.size() - 1];
+	output.pop_back();;
+	Ast::Node funcCall;
+	funcCall.kind = (uint64_t)NodeKinds::function_call;
+	funcCall.children.push_back(func);
+	funcCall.children.push_back(args);
+	output.push_back(newNode(ast, funcCall));
+	return output[output.size() - 1];
+}
+
+std::optional<Token> isPrimaryExpresion(TokenStream& head) {
+	if (not head.peak().has_value()) return std::nullopt;
+	auto k = head.peak()->kind;
+	if (k == Token::Type::atom
+		or k == Token::Type::string_literal
+		or k == (Token::Type)ProcedureTokenType::bool_literal
+		or k == (Token::Type)ProcedureTokenType::double_literal
+		or k == (Token::Type)ProcedureTokenType::integer_literal
+		) {
+		auto t = head.peak();
+		head.consume();
+		return t;
+	}
+	return std::nullopt;
+}
+
+
+struct OperatorSyntaxDefinition {
+	std::string representation;
+	int precedence;
+	enum {
+		Prefix,
+		Infix,
+		Sufix,
+	} type;
+};
+//TODO populate this vector with values
+std::vector<OperatorSyntaxDefinition> operatorsSyntax = {
+	OperatorSyntaxDefinition{"copy",16,OperatorSyntaxDefinition::Prefix},
+	OperatorSyntaxDefinition{"-",16,OperatorSyntaxDefinition::Prefix},
+	OperatorSyntaxDefinition{"+",16,OperatorSyntaxDefinition::Prefix},
+	OperatorSyntaxDefinition{"+",16,OperatorSyntaxDefinition::Infix},
+	OperatorSyntaxDefinition{"-",16,OperatorSyntaxDefinition::Infix},
+	OperatorSyntaxDefinition{"?",16,OperatorSyntaxDefinition::Sufix},
+	OperatorSyntaxDefinition{"?",16,OperatorSyntaxDefinition::Infix},
+};
+
+bool isOperator(Ast& ast, Ast::NodeIndex index) {
+	if (index.first == 0) return false; // needs to be node 
+	if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
+	if (ast.nodes[index.second].children[0].first != 0) return false; // children needs to be a leaf
+	auto leaf_index = ast.nodes[index.second].children[0].second;
+	if (ast.leafs[leaf_index].kind == (Token::Type)ProcedureTokenType::operator_t) return true;
+	return false;
+}
+
+bool isValue(Ast& ast, Ast::NodeIndex index) {
+	return not isOperator(ast, index);
+}
+
+int getPrecedence(Ast& ast, Ast::NodeIndex index) {
+	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
+	auto leaf_index = ast.nodes[index.second].children[0].second;
+	for (const auto& o : operatorsSyntax) {
+		if (o.representation == ast.leafs[leaf_index].value) {
+			return o.precedence;
+		}
+	}
+	TODO(std::format("Implement operator {}!", ast.leafs[leaf_index].value.to_string()));
+}
+
+bool prefix(Ast& ast, Ast::NodeIndex index) {
+	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
+	auto leaf_index = ast.nodes[index.second].children[0].second;
+	for (const auto& o : operatorsSyntax) {
+		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Prefix) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool infix(Ast& ast, Ast::NodeIndex index) {
+	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
+	auto leaf_index = ast.nodes[index.second].children[0].second;
+	for (const auto& o : operatorsSyntax) {
+		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Infix) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool sufix(Ast& ast, Ast::NodeIndex index) {
+	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
+	auto leaf_index = ast.nodes[index.second].children[0].second;
+	for (const auto& o : operatorsSyntax) {
+		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Sufix) {
+			return true;
+		}
+	}
+	return false;
+}
+
+//
+//void reduce_output(std::vector<Ast::NodeIndex> last, int new_precedence) {
+//	while (true) {
+//		if (last[0] == op and last[1] == val and last[0].sufix and last[0].precedence > new_precedence) {
+//			output.push(newExpression(last.pop, last.pop, sufix));
+//			continue;
+//		}
+//		if (last[0] == val and last[1] == op and last[2] == val and last[1].precedence > new_precedence and last[1].infix) {
+//			output.push(newExpression(last.pop, last.pop, infix));
+//			continue;
+//		}
+//		if (last[0] == val and last[1] == op and last[1].precedence > new_precedence and last[1].prefix) {
+//			output.push(newExpression(last.pop, last.pop, prefix));
+//			continue;
+//		}
+//		break;
+//	}
+//}
+
+// let a = vector(int){nullptr,0,0};
 Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::expression;
 	std::vector<Ast::NodeIndex> output;
+	int32_t precedence = 0;
 
-	bool lastOneIsOperatorOrEmpty = true;
+	bool lastIsValue = false;
 	while (true) {
-		if (lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { // brackets
-			auto e = parseExpresion(head,ast);
-			if(e) output.push_back(e);
-			auto t =  head.require(Token::Type::parenthesis,")");
-			if (not t) return (ErrorT)t;
-			lastOneIsOperatorOrEmpty = true;
-			continue;
-		}
-		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
-			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::expression_list;
-			do{
-				auto a = parseExpresion(head, ast);
-				if(a) temp.children.push_back(a);
-				else break;
-			}while(head.optional((Token::Type)ProcedureTokenType::comma));
+		//value
+		if (not lastIsValue and head.optional(Token::Type::parenthesis, "(")) { // brackets
+			auto e = parseExpresion(head, ast);
+			if (e) output.push_back(e);
 			auto t = head.require(Token::Type::parenthesis, ")");
 			if (not t) return (ErrorT)t;
-			auto args = newNode(ast, temp);
-			auto func = output[output.size()-1];
-			output.pop_back();
-			Ast::Node funcCall;
-			funcCall.kind = (uint64_t)NodeKinds::function_call;
-			funcCall.children.push_back(func);
-			funcCall.children.push_back(args);
-			output.push_back(newNode(ast,funcCall));
-			lastOneIsOperatorOrEmpty = true;
+			lastIsValue = true;
 			continue;
 		}
-		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "{")) { //constructor
+		else if (not lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array literal
 			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::expression_list;
-			do {
-				auto a = parseExpresion(head, ast);
-				if (a) temp.children.push_back(a);
-				else break;
-			} while (head.optional((Token::Type)ProcedureTokenType::comma));
-			auto t = head.require(Token::Type::parenthesis, "}");
-			if (not t) return (ErrorT)t;
-			auto args = newNode(ast, temp);
-			auto func = output[output.size() - 1];
-			output.pop_back();
-			Ast::Node constructor;
-			constructor.kind = (uint64_t)NodeKinds::Object_construct;
-			constructor.children.push_back(func);
-			constructor.children.push_back(args);
-			output.push_back(newNode(ast, constructor));
-			lastOneIsOperatorOrEmpty = true;
-			continue;
-		}
-		else if (not lastOneIsOperatorOrEmpty and head.optional(Token::Type::parenthesis, "[")) { //array acess
-			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::expression_list;
+			temp.kind = (uint64_t)NodeKinds::array_literal;
 			do {
 				auto a = parseExpresion(head, ast);
 				if (a) temp.children.push_back(a);
 				else break;
 			} while (head.optional((Token::Type)ProcedureTokenType::comma));
 			auto t = head.require(Token::Type::parenthesis, "]");
-			if(not t) return (ErrorT)t;
-			auto args = newNode(ast, temp);
-			auto func = output[output.size() - 1];
-			output.pop_back();
-			Ast::Node array_acess;
-			array_acess.kind = (uint64_t)NodeKinds::array_acess;
-			array_acess.children.push_back(func);
-			array_acess.children.push_back(args);
-			output.push_back(newNode(ast, array_acess));
-			lastOneIsOperatorOrEmpty=true;
+			output.push_back(newNode(ast, temp));
+			lastIsValue = true;
 			continue;
 		}
-		else if (auto t = head.optional(Token::Type::atom)) {
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
+			parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			lastIsValue = true;
+			continue;
+		}
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
+			parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			lastIsValue = true;
+			continue;
+		}
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array acess
+			parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			lastIsValue = true;
+			continue;
+		}
+		else if (auto t = isPrimaryExpresion(head)) {
 			Ast::Node temp;
 			temp.kind = (uint64_t)NodeKinds::expression;
-			temp.children.emplace_back(newLeaf(ast,t.value()));
-			output.emplace_back(newNode(ast,temp));
-			lastOneIsOperatorOrEmpty=false;
+			temp.children.emplace_back(newLeaf(ast, t.value()));
+			output.emplace_back(newNode(ast, temp));
+			lastIsValue = true;
+			continue;
+		}
+		//operators
+		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
+			Ast::Node temp;
+			temp.kind = (uint64_t)NodeKinds::operator_in_construction;
+			temp.children.emplace_back(newLeaf(ast, t.value()));
+			output.emplace_back(newNode(ast, temp));
+			lastIsValue = false;
 			continue;
 		}
 		break;//if token not handled stop parsing expression
@@ -285,41 +398,6 @@ Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
 		return (Ast::NodeIndex)output[0];
 	}
 	return newNode(ast, res);
-	//std::vector<Ast::NodeIndex> output;
-	//std::vector<Preamble::Procedure::Operator> stack;
-	//while (true) {
-	//	if (checkIsAtomcExpresion(head)) {
-	//		output.push_back(newLeaf(ast, head.peak(0).value()));
-	//		head.consume(1);
-	//		continue;
-	//	}
-	//	if (head.check((Token::Type)ProcedureTokenType::operator_t)) {
-	//		continue;
-	//	}
-	//	if (head.optional(Token::Type::parenthesis, "(")) { // function calls
-	//		auto t = parseExpresion(head, ast);
-	//		if (not t) printError((ErrorT)t);
-	//		else
-	//			head.require(Token::Type::parenthesis, ")");
-	//	}
-	//	if (head.optional(Token::Type::parenthesis, "[")) { // arrays
-	//		auto t = parseExpresion(head, ast);
-	//		if (not t) printError((ErrorT)t);
-	//		else
-	//			head.require(Token::Type::parenthesis, "]");
-	//	}
-	//	if (head.optional(Token::Type::parenthesis, "{")) { // construct value
-	//		auto t = parseExpresion(head, ast);
-	//		if (not t) printError((ErrorT)t);
-	//		else
-	//			head.require(Token::Type::parenthesis, "{");
-	//	}
-	//	break; // if i dont recognize token stop expression
-	//}
-	//if (head.check(Token::Type::parenthesis, ")")) {}
-	//if (head.check(Token::Type::parenthesis, "]")) {}
-	//if (head.check(Token::Type::parenthesis, "}")) {}
-	//if (head.check(Token::Type::parenthesis, ",")) {}
 }
 
 // atom : type/*expresion that evaluated in compile time will result in Type*/
@@ -371,7 +449,11 @@ std::optional<Ast::NodeIndex> parseHead(TokenStream& head, Ast& ast) {
 }
 
 std::optional<Ast::NodeIndex> parseBody(TokenStream& body, Ast& ast) {
-	return std::nullopt;
+	body.require(Token::Type::parenthesis, "{");
+	auto t = parseExpresion(body, ast);
+	body.require(Token::Type::parenthesis, "}");
+	if (t) return t;
+	else return std::nullopt;
 }
 
 Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
@@ -386,30 +468,31 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 {
 	switch ((Preamble::Procedure::NodeKinds)n)
 	{
-		case Preamble::Procedure::NodeKinds::namespace_path: return "namespace_path";
-		case Preamble::Procedure::NodeKinds::name: return "name";
-		case Preamble::Procedure::NodeKinds::function_head: return "function_head";
-		case Preamble::Procedure::NodeKinds::function_head_args_definition: return "function_head_args_definition";
-		case Preamble::Procedure::NodeKinds::type: return "type";
-		case Preamble::Procedure::NodeKinds::square_bracket: return "square_bracket";
-		case Preamble::Procedure::NodeKinds::bracket: return "bracket";
-		case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
-		case Preamble::Procedure::NodeKinds::prefix_operator: return "prefix_operator";
-		case Preamble::Procedure::NodeKinds::infix_operator: return "infix_operator";
-		case Preamble::Procedure::NodeKinds::postfix_operator: return "postfix_operator";
-		case Preamble::Procedure::NodeKinds::function_call: return "function_call";
-		case Preamble::Procedure::NodeKinds::array_acess: return "array_acess";
-		case Preamble::Procedure::NodeKinds::Object_construct: return "Object_construct";
-		case Preamble::Procedure::NodeKinds::varible_declaration: return "varible_declaration";
-		case Preamble::Procedure::NodeKinds::for_loop: return "for_loop";
-		case Preamble::Procedure::NodeKinds::if_branch: return "if_branch";
-		case Preamble::Procedure::NodeKinds::while_loop: return "while_loop";
-		case Preamble::Procedure::NodeKinds::const_mod: return "const_mod";
-		case Preamble::Procedure::NodeKinds::mut_mod: return "mut_mod";
-		case Preamble::Procedure::NodeKinds::expression: return "expression";
-		case Preamble::Procedure::NodeKinds::expression_list: return "expression_list";
+	case Preamble::Procedure::NodeKinds::namespace_path: return "namespace_path";
+	case Preamble::Procedure::NodeKinds::name: return "name";
+	case Preamble::Procedure::NodeKinds::function_head: return "function_head";
+	case Preamble::Procedure::NodeKinds::function_head_args_definition: return "function_head_args_definition";
+	case Preamble::Procedure::NodeKinds::type: return "type";
+	case Preamble::Procedure::NodeKinds::square_bracket: return "square_bracket";
+	case Preamble::Procedure::NodeKinds::bracket: return "bracket";
+	case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
+	case Preamble::Procedure::NodeKinds::prefix_operator: return "prefix_operator";
+	case Preamble::Procedure::NodeKinds::infix_operator: return "infix_operator";
+	case Preamble::Procedure::NodeKinds::postfix_operator: return "postfix_operator";
+	case Preamble::Procedure::NodeKinds::function_call: return "function_call";
+	case Preamble::Procedure::NodeKinds::array_acess: return "array_acess";
+	case Preamble::Procedure::NodeKinds::Object_construct: return "Object_construct";
+	case Preamble::Procedure::NodeKinds::varible_declaration: return "varible_declaration";
+	case Preamble::Procedure::NodeKinds::for_loop: return "for_loop";
+	case Preamble::Procedure::NodeKinds::if_branch: return "if_branch";
+	case Preamble::Procedure::NodeKinds::while_loop: return "while_loop";
+	case Preamble::Procedure::NodeKinds::const_mod: return "const_mod";
+	case Preamble::Procedure::NodeKinds::mut_mod: return "mut_mod";
+	case Preamble::Procedure::NodeKinds::expression: return "expression";
+	case Preamble::Procedure::NodeKinds::expression_list: return "expression_list";
+	case Preamble::Procedure::NodeKinds::operator_in_construction: return "operator_in_construction";
 	}
-	UNREACHABLE("Switch case not exausted");
+	UNREACHABLE(std::format("Switch case not exausted {}", n));
 }
 
 Preamble::Procedure::Parser::~Parser()
