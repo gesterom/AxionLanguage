@@ -1,9 +1,10 @@
 #include "Preambles/Procedure/Parser.h"
 
 #include "Preambles/Procedure/Lexer.h"
-#include "Preambles/Procedure/OperatorDefinition.h"
-
 #include <format>
+#include <iostream>
+
+using namespace Preamble::Procedure;
 
 // operatotrs on steatements for examle if expresion statement else statement 
 // 
@@ -78,7 +79,7 @@ void add(std::vector<Token>& vec, const Result<Token, ErrorT>& t) {
 #define TRY_ASIGNE(x,y) do{auto __temp__ = y;if(__temp__){x.emplace_back(__temp__);} else return (ErrorT)__temp__;}while(false)
 #define TRY_ADD(x,y) do{auto __temp__ = y;if(__temp__){x.emplace_back(__temp__);} else return (ErrorT)__temp__;}while(false)
 
-Result<Ast::NodeIndex, ErrorT> requireName(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::requireName(TokenStream& head, Ast& ast) {
 	std::vector<Token> atoms;
 	TRY_ADD(atoms, head.require(Token::Type::atom));
 	while (head.optional((Token::Type)ProcedureTokenType::operator_t, ".")) {
@@ -99,7 +100,7 @@ Result<Ast::NodeIndex, ErrorT> requireName(TokenStream& head, Ast& ast) {
 	return newNode(ast, name);
 }
 
-Result<Ast::NodeIndex, ErrorT> requireType(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::requireType(TokenStream& head, Ast& ast) {
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::type;
 	auto a = requireName(head, ast);
@@ -127,17 +128,7 @@ bool checkIsAtomcExpresion(TokenStream& head) {
 	return false;
 }
 
-int getPrecedence(std::optional<Token> a) {
-	if (not a) return 0;
-	if (a->value == "=") return 3;
-	if (a->value == "*") return 2;
-	if (a->value == "/") return 2;
-	if (a->value == "+") return 1;
-	if (a->value == "-") return 1;
-	TODO("Implement real operator precedence");
-}
-
-Result<Ast::NodeIndex, ErrorT> parsePrimary(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::parsePrimary(TokenStream& head, Ast& ast) {
 	if (checkIsAtomcExpresion(head)) {
 		auto t = head.peak();
 		head.consume();
@@ -158,21 +149,6 @@ Result<Ast::NodeIndex, ErrorT> parsePrimary(TokenStream& head, Ast& ast) {
 // string?int|bool = string?(int|bool)
 // string?int?bool = (string?int)?bool
 
-
-struct SyntaxProduction {
-	std::string result;
-	std::vector<std::string> seq;
-};
-
-struct OperatorOutput {
-	Token representation;
-	uint32_t priority;
-	bool leftAcosivity;
-	bool prefix;
-	bool infix;
-	bool sufix;
-};
-
 //exp := 
 // [ ] prefixop exp // prefix > infix
 // [ ] exp sufixop // sufix > infix 
@@ -192,9 +168,7 @@ struct OperatorOutput {
 // prefix exp sufix => (prefix exp ) sufix  if prefix > sufix
 //
 
-Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast);
-
-Result<Ast::NodeIndex, ErrorT> parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output) {
+Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output) {
 	Ast::Node temp;
 	temp.kind = (uint64_t)NodeKinds::expression_list;
 	do {
@@ -231,33 +205,11 @@ std::optional<Token> isPrimaryExpresion(TokenStream& head) {
 	return std::nullopt;
 }
 
-
-struct OperatorSyntaxDefinition {
-	std::string representation;
-	int precedence;
-	enum {
-		Prefix,
-		Infix,
-		Sufix,
-	} type;
-};
-//TODO populate this vector with values
-std::vector<OperatorSyntaxDefinition> operatorsSyntax = {
-	OperatorSyntaxDefinition{"copy",16,OperatorSyntaxDefinition::Prefix},
-	OperatorSyntaxDefinition{"-",16,OperatorSyntaxDefinition::Prefix},
-	OperatorSyntaxDefinition{"+",16,OperatorSyntaxDefinition::Prefix},
-	OperatorSyntaxDefinition{"+",16,OperatorSyntaxDefinition::Infix},
-	OperatorSyntaxDefinition{"-",16,OperatorSyntaxDefinition::Infix},
-	OperatorSyntaxDefinition{"?",16,OperatorSyntaxDefinition::Sufix},
-	OperatorSyntaxDefinition{"?",16,OperatorSyntaxDefinition::Infix},
-};
-
 bool isOperator(Ast& ast, Ast::NodeIndex index) {
-	if (index.first == 0) return false; // needs to be node 
-	if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
-	if (ast.nodes[index.second].children[0].first != 0) return false; // children needs to be a leaf
-	auto leaf_index = ast.nodes[index.second].children[0].second;
-	if (ast.leafs[leaf_index].kind == (Token::Type)ProcedureTokenType::operator_t) return true;
+	if (index.first == 1) return false; // needs to be node 
+	//if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
+	auto op = ast.leafs[index.second];
+	if (op.kind == (Token::Type)ProcedureTokenType::operator_t) return true;
 	return false;
 }
 
@@ -265,48 +217,22 @@ bool isValue(Ast& ast, Ast::NodeIndex index) {
 	return not isOperator(ast, index);
 }
 
-int getPrecedence(Ast& ast, Ast::NodeIndex index) {
-	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
-	auto leaf_index = ast.nodes[index.second].children[0].second;
-	for (const auto& o : operatorsSyntax) {
-		if (o.representation == ast.leafs[leaf_index].value) {
-			return o.precedence;
-		}
-	}
-	TODO(std::format("Implement operator {}!", ast.leafs[leaf_index].value.to_string()));
+bool isPrefix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+	if (index == std::nullopt) return false;
+	if (isValue(ast, index.value())) return false;
+	return repo.isPrefix(ast.leafs[index->second].value.to_string());
 }
 
-bool prefix(Ast& ast, Ast::NodeIndex index) {
-	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
-	auto leaf_index = ast.nodes[index.second].children[0].second;
-	for (const auto& o : operatorsSyntax) {
-		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Prefix) {
-			return true;
-		}
-	}
-	return false;
+bool isInfix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+	if (index == std::nullopt) return false;
+	if (isValue(ast, index.value())) return false;
+	return repo.isInfix(ast.leafs[index->second].value.to_string());
 }
 
-bool infix(Ast& ast, Ast::NodeIndex index) {
-	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
-	auto leaf_index = ast.nodes[index.second].children[0].second;
-	for (const auto& o : operatorsSyntax) {
-		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Infix) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool sufix(Ast& ast, Ast::NodeIndex index) {
-	ASSERT(isOperator(ast, index), "Precedence exist only for operators not values");
-	auto leaf_index = ast.nodes[index.second].children[0].second;
-	for (const auto& o : operatorsSyntax) {
-		if (o.representation == ast.leafs[leaf_index].value and o.type == OperatorSyntaxDefinition::Sufix) {
-			return true;
-		}
-	}
-	return false;
+bool isSuffix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+	if (index == std::nullopt) return false;
+	if (isValue(ast, index.value())) return false;
+	return repo.isSufix(ast.leafs[index->second].value.to_string());
 }
 
 //
@@ -328,8 +254,103 @@ bool sufix(Ast& ast, Ast::NodeIndex index) {
 //	}
 //}
 
+std::optional<Ast::NodeIndex> get(std::vector<Ast::NodeIndex>& vec, int32_t index) {
+	if (index >= vec.size()) return std::nullopt;
+	if (index < 0) return std::nullopt;
+	return vec[index];
+}
+
+void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int new_precedence) {
+	while (true)
+	{
+		std::cout << "============\n";
+		for (auto i : last) {
+			if (i.first == 0) {
+				std::cout << " > ERROR Leaf(" << ast.leafs[i.second].value << ")" << std::endl;
+			}
+			else {
+				std::cout << " > ERROR Node : ";
+				for (const auto& j : ast.nodes[i.second].children) {
+					if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
+					else std::cout << j << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
+		//repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1]->second].value.to_string())
+		//repo.isleftAssociativity(ast.leafs[last[last.size() - 1].second].value.to_string());
+		if (
+			last.size() > 1 and
+			isOperator(ast, last[last.size() - 1]) and
+			isValue(ast, last[last.size() - 2]) and
+			isSuffix(repo, ast, last[last.size() - 1]) and
+			(repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string()) < new_precedence
+				or repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string()) <= new_precedence and repo.isleftAssociativitySuffix(ast.leafs[last[last.size() - 1].second].value.to_string()))
+			) { //SUFFUX operator
+			Ast::Node res;
+			res.kind = (uint64_t)NodeKinds::suffix_operator;
+			res.children.push_back(last[last.size() - 1]);
+			res.children.push_back(last[last.size() - 2]);
+			last.pop_back(); last.pop_back();
+			last.push_back(newNode(ast, res));
+			continue;
+		}
+		else if (
+			last.size() > 2 and
+			isValue(ast, last[last.size() - 1]) and
+			isOperator(ast, last[last.size() - 2]) and
+			isValue(ast, last[last.size() - 3]) and
+			isInfix(repo, ast, last[last.size() - 2]) and
+			(repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string()) < new_precedence
+				or repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string()) <= new_precedence and repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string()))
+			) { // INFIX operator
+			Ast::Node res;
+			res.kind = (uint64_t)NodeKinds::infix_operator;
+			res.children.push_back(last[last.size() - 2]);
+			res.children.push_back(last[last.size() - 3]);
+			res.children.push_back(last[last.size() - 1]);
+			last.pop_back(); last.pop_back(); last.pop_back();
+			last.push_back(newNode(ast, res));
+			continue;
+		}
+		else if (
+			last.size() > 1 and
+			isValue(ast, last[last.size() - 1]) and
+			isOperator(ast, last[last.size() - 2]) and
+			isPrefix(repo, ast, last[last.size() - 2]) and
+			(repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string()) < new_precedence
+				or repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string()) <= new_precedence and repo.isleftAssociativityPrefx(ast.leafs[last[last.size() - 2].second].value.to_string()))
+			) { // PREFIX operator
+			Ast::Node res;
+			res.kind = (uint64_t)NodeKinds::prefix_operator;
+			res.children.push_back(last[last.size() - 2]);
+			res.children.push_back(last[last.size() - 1]);
+			last.pop_back(); last.pop_back();
+			last.push_back(newNode(ast, res));
+			continue;
+		}
+		else {
+			break;
+		}
+	}
+}
+
+std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
+	if (index.first == 0) return ast.leafs[index.second].value;
+	if (ast.nodes[index.second].children.size() == 0) return std::nullopt;
+	auto res = min(ast, ast.nodes[index.second].children[0]);
+	for (size_t i = 1; i < ast.nodes[index.second].children.size(); i++) {
+		auto temp = min(ast, ast.nodes[index.second].children[i]);
+		if (not res.has_value()) res = temp;
+
+		if (temp.has_value() and temp->file_pointer_start() < res->file_pointer_start())
+			res = temp;
+	}
+	return res;
+}
+
 // let a = vector(int){nullptr,0,0};
-Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::expression;
@@ -385,23 +406,59 @@ Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast) {
 		}
 		//operators
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
-			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::operator_in_construction;
-			temp.children.emplace_back(newLeaf(ast, t.value()));
-			output.emplace_back(newNode(ast, temp));
+			//Ast::Node temp;
+			//temp.kind = (uint64_t)NodeKinds::operator_in_construction;
+			//temp.children.emplace_back(newLeaf(ast, t.value()));
+			//output.emplace_back(newNode(ast, temp));
+			int32_t p1 = repo.getPrecedencePrefix(t->value.to_string());
+			int32_t p2 = repo.getPrecedenceInfix(t->value.to_string());
+			int32_t p3 = repo.getPrecedenceSuffix(t->value.to_string());
+			int32_t pre = 0;
+			if (p1 != -1 and (p1 <= p2 or p2 == -1) and (p1 <= p3 or p3 == -1))
+				pre = p1;
+			if (p2 != -1 and (p2 <= p1 or p1 == -1) and (p2 <= p3 or p3 == -1))
+				pre = p2;
+			if (p3 != -1 and (p3 <= p2 or p2 == -1) and (p3 <= p1 or p1 == -1))
+				pre = p3;
+			reduce_output(repo, ast, output, pre);
+			output.emplace_back(newLeaf(ast, t.value()));
 			lastIsValue = false;
 			continue;
 		}
 		break;//if token not handled stop parsing expression
 	}
-	if (output.size() > 0) {
+	reduce_output(repo, ast, output, -1);
+	if (output.size() == 1) {
 		return (Ast::NodeIndex)output[0];
 	}
-	return newNode(ast, res);
+	else if (output.size() == 0) {
+		Ast::Node res;
+		res.kind = (uint64_t)NodeKinds::expression;
+		return newNode(ast, res);
+	}
+	else {
+		ast_to_string(std::cout, this, ast);
+		for (auto i : output) {
+			if (i.first == 0) {
+				std::cout << " ERROR Leaf(" << ast.leafs[i.second].value << ")" << std::endl;
+			}
+			else {
+				std::cout << " ERROR ";
+				for (const auto& j : ast.nodes[i.second].children) {
+					if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
+					else std::cout << j << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
+		auto err = min(ast, output[1]);
+		ASSERT(err != std::nullopt, "something fishy!!");
+		return ErrorT{ err.value(),std::format("Unexpected token {}, invalid expresion !!",err->to_string()),"TODO long error" };
+	}
 }
 
 // atom : type/*expresion that evaluated in compile time will result in Type*/
-Result<Ast::NodeIndex, ErrorT> requireFunctionHeadArgs(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::requireFunctionHeadArgs(TokenStream& head, Ast& ast) {
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::function_head_args_definition;
 	if (not head.check(Token::Type::parenthesis, ")")) {
@@ -417,7 +474,7 @@ Result<Ast::NodeIndex, ErrorT> requireFunctionHeadArgs(TokenStream& head, Ast& a
 // try stmt -> expresion = to stmt or return from function with error
 
 // name args returnType
-std::optional<Ast::NodeIndex> parseHead(TokenStream& head, Ast& ast) {
+std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 	std::vector<ErrorT> errors;
 	Ast::Node res;
 	res.kind = (uint64_t)NodeKinds::function_head;
@@ -448,7 +505,7 @@ std::optional<Ast::NodeIndex> parseHead(TokenStream& head, Ast& ast) {
 	return newNode(ast, res);
 }
 
-std::optional<Ast::NodeIndex> parseBody(TokenStream& body, Ast& ast) {
+std::optional<Ast::NodeIndex> Parser::parseBody(TokenStream& body, Ast& ast) {
 	body.require(Token::Type::parenthesis, "{");
 	auto t = parseExpresion(body, ast);
 	body.require(Token::Type::parenthesis, "}");
@@ -456,10 +513,15 @@ std::optional<Ast::NodeIndex> parseBody(TokenStream& body, Ast& ast) {
 	else return std::nullopt;
 }
 
+Preamble::Procedure::Parser::Parser(OperatorRepository& repo) : repo(repo)
+{
+}
+
 Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
 {
 	Ast res;
 	res.headNode = parseHead(head, res);
+	if (res.headNode == std::nullopt) return res;
 	res.bodyNode = parseBody(body, res);
 	return res;
 }
@@ -478,7 +540,7 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 	case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
 	case Preamble::Procedure::NodeKinds::prefix_operator: return "prefix_operator";
 	case Preamble::Procedure::NodeKinds::infix_operator: return "infix_operator";
-	case Preamble::Procedure::NodeKinds::postfix_operator: return "postfix_operator";
+	case Preamble::Procedure::NodeKinds::suffix_operator: return "postfix_operator";
 	case Preamble::Procedure::NodeKinds::function_call: return "function_call";
 	case Preamble::Procedure::NodeKinds::array_acess: return "array_acess";
 	case Preamble::Procedure::NodeKinds::Object_construct: return "Object_construct";

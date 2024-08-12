@@ -31,6 +31,7 @@ procedure main(){
 	b=c**-a;
 	b or a;
 	a+-c;
+	a = 0.3;
 	//a+-+-+-+-+-+-+-+-b;
 	//a+-+-+-+-+-+-+-+-(b);
 	//a+-+-+-+-+-(+-+-+-b);
@@ -86,7 +87,7 @@ procedure main2() {
 }
 
 procedure addToList(list : vector(int) , a : int){
-	z = copy not x++ + y * 2 ** 3 ;
+	z = not x++ + y * 2 ** 3 ;
 }
 
 build all{

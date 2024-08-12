@@ -1,11 +1,10 @@
 #pragma once
 
+#include "Token.h"
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-#include "Token.h"
-
 
 
 struct Ast {
@@ -23,13 +22,18 @@ struct Ast {
 	//std::vector<uint32_t> numbers; // nodeType == 1
 };
 
+
+
 struct PreambleNode {
 	std::map<Token, Token> atributes;
 	Token preambleKind;
 	Ast ast;
 };
 
+void cleanAst(Ast& ast);
 std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
+class IParser;
+std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
 
 /*
 	1. std::vector<Preamble> <- highest level

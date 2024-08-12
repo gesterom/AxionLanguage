@@ -94,7 +94,7 @@ int main(int argc, char** args)
 				if (a.value().value == "}") paramCount--;
 
 				if (paramCount == 0) {
-					auto p = new Preamble::Procedure::Parser();
+					auto p = repo.get(repo.getPeambuleIndex(preamble))->parser;
 					auto h = TokenStream(repo.getPeambuleIndex(preamble), head, repo);
 					auto b = TokenStream(repo.getPeambuleIndex(preamble), body, repo);
 					auto ast = p->parse(h, b);
@@ -108,7 +108,6 @@ int main(int argc, char** args)
 						}
 						std::cout << std::endl;
 					}
-					delete p;
 					addToBody = false;
 					head.clear();
 					body.clear();

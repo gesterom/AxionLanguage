@@ -135,6 +135,16 @@ CodeLocation CodeLocation::consume(int64_t n) noexcept
 	return *this;
 }
 
+uint64_t CodeLocation::file_pointer_start() const
+{
+	return this->start_pos;
+}
+
+uint64_t CodeLocation::file_pointer_end() const
+{
+	return this->end_pos;
+}
+
 CodeLocation CodeLocation::moveStartToEnd() const noexcept {
 	CodeLocation res = *this;
 	res.start_pos = res.end_pos;
@@ -197,7 +207,7 @@ std::string CodeLocation::start() const noexcept { 	// Increment the byte number
 			}
 		}
 	}
-	return std::to_string(line) + ":" + std::to_string(position_utf8);
+	return std::to_string(this->start_pos) + "-" + std::to_string(line) + ":" + std::to_string(position_utf8);
 }
 
 std::string CodeLocation::end() const noexcept {

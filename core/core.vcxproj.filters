@@ -78,7 +78,7 @@
     <ClCompile Include="CallStackTrace.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="Preambles\Procedure\OperatorDefinition.cpp">
+    <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp">
       <Filter>Preambules\Procedure</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,9 +119,6 @@
     <ClInclude Include="Preambles\Type\Lexer.h">
       <Filter>Preambules\Type</Filter>
     </ClInclude>
-    <ClInclude Include="Preambles\Procedure\OperatorDefinition.h">
-      <Filter>Preambules\Procedure</Filter>
-    </ClInclude>
     <ClInclude Include="Preambles\Procedure\Parser.h">
       <Filter>Preambules\Procedure</Filter>
     </ClInclude>
@@ -133,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="CallStackTrace.h">
       <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="Preambles\Procedure\OperatorRepository.h">
+      <Filter>Preambules\Procedure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

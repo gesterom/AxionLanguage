@@ -173,7 +173,7 @@
     <ClCompile Include="CallStackTrace.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
-    <ClCompile Include="Preambles\Procedure\OperatorDefinition.cpp" />
+    <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp" />
     <ClCompile Include="Preambles\Procedure\Parser.cpp" />
     <ClCompile Include="Preambles\Type\Lexer.cpp" />
     <ClCompile Include="src\CodeLocation.cpp" />
@@ -201,7 +201,7 @@
     <ClInclude Include="headers\VirtualFile.h" />
     <ClInclude Include="Preambles\Function\Lexer.h" />
     <ClInclude Include="Preambles\Procedure\Lexer.h" />
-    <ClInclude Include="Preambles\Procedure\OperatorDefinition.h" />
+    <ClInclude Include="Preambles\Procedure\OperatorRepository.h" />
     <ClInclude Include="Preambles\Procedure\Parser.h" />
     <ClInclude Include="Preambles\Type\Lexer.h" />
     <ClInclude Include="TokenStream.h" />

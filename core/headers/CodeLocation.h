@@ -23,6 +23,7 @@ class CodeLocation {
 #endif // DEBUG
 	explicit CodeLocation();
 public:
+
 	static CodeLocation null() noexcept;
 	explicit CodeLocation(std::string filename);
 	CodeLocation asLimiter() const noexcept;
@@ -33,6 +34,8 @@ public:
 	CodeLocation operator=(CodeLocation&& other) noexcept;
 	CodeLocation operator+=(char ch) noexcept;
 	CodeLocation consume(int64_t) noexcept;
+	uint64_t file_pointer_start() const;
+	uint64_t file_pointer_end() const;
 	CodeLocation moveStartToEnd() const noexcept;
 	CodeLocation move(uint64_t n) const noexcept;
 	CodeLocation substr(uint64_t n) const noexcept;
