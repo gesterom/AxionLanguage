@@ -263,75 +263,63 @@ std::optional<Ast::NodeIndex> get(std::vector<Ast::NodeIndex>& vec, int32_t inde
 void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int new_precedence) {
 	while (true)
 	{
-		std::cout << "============\n";
-		for (auto i : last) {
-			if (i.first == 0) {
-				std::cout << " > ERROR Leaf(" << ast.leafs[i.second].value << ")" << std::endl;
-			}
-			else {
-				std::cout << " > ERROR Node : ";
-				for (const auto& j : ast.nodes[i.second].children) {
-					if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
-					else std::cout << j << " ";
-				}
-				std::cout << std::endl;
-			}
-		}
 		//repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1]->second].value.to_string())
 		//repo.isleftAssociativity(ast.leafs[last[last.size() - 1].second].value.to_string());
 		if (
 			last.size() > 1 and
 			isOperator(ast, last[last.size() - 1]) and
 			isValue(ast, last[last.size() - 2]) and
-			isSuffix(repo, ast, last[last.size() - 1]) and
-			(repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string()) < new_precedence
-				or repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string()) <= new_precedence and repo.isleftAssociativitySuffix(ast.leafs[last[last.size() - 1].second].value.to_string()))
-			) { //SUFFUX operator
-			Ast::Node res;
-			res.kind = (uint64_t)NodeKinds::suffix_operator;
-			res.children.push_back(last[last.size() - 1]);
-			res.children.push_back(last[last.size() - 2]);
-			last.pop_back(); last.pop_back();
-			last.push_back(newNode(ast, res));
-			continue;
+			isSuffix(repo, ast, last[last.size() - 1]) ) { //SUFFUX operator
+			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 1].second].value.to_string());
+			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 1].second].value.to_string());
+			if (pre < new_precedence or (pre == new_precedence and left)) {
+				Ast::Node res;
+				res.kind = (uint64_t)NodeKinds::suffix_operator;
+				res.children.push_back(last[last.size() - 1]);
+				res.children.push_back(last[last.size() - 2]);
+				last.pop_back(); last.pop_back();
+				last.push_back(newNode(ast, res));
+				continue;
+			}
 		}
 		else if (
 			last.size() > 2 and
 			isValue(ast, last[last.size() - 1]) and
 			isOperator(ast, last[last.size() - 2]) and
 			isValue(ast, last[last.size() - 3]) and
-			isInfix(repo, ast, last[last.size() - 2]) and
-			(repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string()) < new_precedence
-				or repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string()) <= new_precedence and repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string()))
-			) { // INFIX operator
-			Ast::Node res;
-			res.kind = (uint64_t)NodeKinds::infix_operator;
-			res.children.push_back(last[last.size() - 2]);
-			res.children.push_back(last[last.size() - 3]);
-			res.children.push_back(last[last.size() - 1]);
-			last.pop_back(); last.pop_back(); last.pop_back();
-			last.push_back(newNode(ast, res));
-			continue;
+			isInfix(repo, ast, last[last.size() - 2]) ) { // INFIX operator
+			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			if (pre < new_precedence or (pre == new_precedence and left)) {
+				Ast::Node res;
+				res.kind = (uint64_t)NodeKinds::infix_operator;
+				res.children.push_back(last[last.size() - 2]);
+				res.children.push_back(last[last.size() - 3]);
+				res.children.push_back(last[last.size() - 1]);
+				last.pop_back(); last.pop_back(); last.pop_back();
+				last.push_back(newNode(ast, res));
+				continue;
+			}
 		}
 		else if (
 			last.size() > 1 and
 			isValue(ast, last[last.size() - 1]) and
 			isOperator(ast, last[last.size() - 2]) and
-			isPrefix(repo, ast, last[last.size() - 2]) and
-			(repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string()) < new_precedence
-				or repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string()) <= new_precedence and repo.isleftAssociativityPrefx(ast.leafs[last[last.size() - 2].second].value.to_string()))
-			) { // PREFIX operator
-			Ast::Node res;
-			res.kind = (uint64_t)NodeKinds::prefix_operator;
-			res.children.push_back(last[last.size() - 2]);
-			res.children.push_back(last[last.size() - 1]);
-			last.pop_back(); last.pop_back();
-			last.push_back(newNode(ast, res));
-			continue;
+			isPrefix(repo, ast, last[last.size() - 2]) ) 
+			{ // PREFIX operator
+			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			if (pre < new_precedence or (pre == new_precedence and left)) {
+				Ast::Node res;
+				res.kind = (uint64_t)NodeKinds::prefix_operator;
+				res.children.push_back(last[last.size() - 2]);
+				res.children.push_back(last[last.size() - 1]);
+				last.pop_back(); last.pop_back();
+				last.push_back(newNode(ast, res));
+				continue;
+			}
 		}
-		else {
-			break;
-		}
+		break;
 	}
 }
 
@@ -397,19 +385,12 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			continue;
 		}
 		else if (auto t = isPrimaryExpresion(head)) {
-			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::expression;
-			temp.children.emplace_back(newLeaf(ast, t.value()));
-			output.emplace_back(newNode(ast, temp));
+			output.emplace_back(newLeaf(ast, t.value()));
 			lastIsValue = true;
 			continue;
 		}
 		//operators
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
-			//Ast::Node temp;
-			//temp.kind = (uint64_t)NodeKinds::operator_in_construction;
-			//temp.children.emplace_back(newLeaf(ast, t.value()));
-			//output.emplace_back(newNode(ast, temp));
 			int32_t p1 = repo.getPrecedencePrefix(t->value.to_string());
 			int32_t p2 = repo.getPrecedenceInfix(t->value.to_string());
 			int32_t p3 = repo.getPrecedenceSuffix(t->value.to_string());
@@ -427,7 +408,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		}
 		break;//if token not handled stop parsing expression
 	}
-	reduce_output(repo, ast, output, -1);
+	reduce_output(repo, ast, output, 100000);
 	if (output.size() == 1) {
 		return (Ast::NodeIndex)output[0];
 	}
