@@ -87,7 +87,7 @@
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
-    <TargetName>cerberus</TargetName>
+    <TargetName>axion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>

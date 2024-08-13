@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 
+#include "AST.h"
 #include "CodeLocation.h"
 #include "MetaLexer.h"
 #include "MetaParser.h"
 #include"PreambleDefinition.h"
-#include "AST.h"
 
 
 struct cliArgs {
@@ -64,9 +64,59 @@ int main(int argc, char** args)
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
 		MetaLexer lexer(repo, args[file_count]);
 		MetaParser parser(repo);
+		// let a : optional(int&) = null;
+		// A?Err -> Result<A,Err> 
+		// int + int& + bool 
+		// if a is int {
+		// a -> int&
+		// } else if a is int&{
+		// a -> int&&
+		// } else if a is bool or ERROR {
+		// a-> bool&
+		// }
+		// 
+		// if sum is int?int& {
+		// 
+		// }
+		// 
+		// option in compiler 
+		// 
+		// if Let Some(A) = x {
+		//	A
+		// }
+		// if x is int = z { 
+		// 
+		// int maybe_a = optional
+		// int a = a.value()
+		// if a.has_value() {
+		//  foo(a/*a is int*/)
+		//	a = null;
+		// }
+		// let vec : vector(int) = vector{0};
+		// if vec is int {
+		//	
+		// }
+		// 
+		// for let a in vec {
+		//	
+		// }
+		// 
+		//	return function (int)->string {a = 5; return "hey";};
+		// } else {
+		//	// a is null
+		// }
+		// 
+		// 
+		// 
+		// if not a {
+		//	// a is type int
+		// } else {
+		//	// a is null
+		// }
+		//
 		while (auto preamble = parser.parseProgram(lexer)) {
-			if(preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
-				std::cout << astToGraph(preamble.value())<<std::endl;
+			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
+				std::cout << astToGraph(preamble.value()) << std::endl;
 		}
 	}
 

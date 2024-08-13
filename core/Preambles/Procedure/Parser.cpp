@@ -206,7 +206,7 @@ std::optional<Token> isPrimaryExpresion(TokenStream& head) {
 }
 
 bool isOperator(Ast& ast, Ast::NodeIndex index) {
-	if (index.first == 1) return false; // needs to be node 
+	if (index.first == 1) return false; // needs to be leaf
 	//if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
 	auto op = ast.leafs[index.second];
 	if (op.kind == (Token::Type)ProcedureTokenType::operator_t) return true;
@@ -263,13 +263,11 @@ std::optional<Ast::NodeIndex> get(std::vector<Ast::NodeIndex>& vec, int32_t inde
 void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence) {
 	while (true)
 	{
-		//repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1]->second].value.to_string())
-		//repo.isleftAssociativity(ast.leafs[last[last.size() - 1].second].value.to_string());
 		if (
 			last.size() > 1 and
 			isOperator(ast, last[last.size() - 1]) and
 			isValue(ast, last[last.size() - 2]) and
-			isSuffix(repo, ast, last[last.size() - 1]) ) { //SUFFUX operator
+			isSuffix(repo, ast, last[last.size() - 1])) { //SUFFUX operator
 			auto pre = repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
 			auto left = repo.isleftAssociativitySuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
@@ -287,7 +285,7 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			isValue(ast, last[last.size() - 1]) and
 			isOperator(ast, last[last.size() - 2]) and
 			isValue(ast, last[last.size() - 3]) and
-			isInfix(repo, ast, last[last.size() - 2]) ) { // INFIX operator
+			isInfix(repo, ast, last[last.size() - 2])) { // INFIX operator
 			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
@@ -305,8 +303,8 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			last.size() > 1 and
 			isValue(ast, last[last.size() - 1]) and
 			isOperator(ast, last[last.size() - 2]) and
-			isPrefix(repo, ast, last[last.size() - 2]) ) 
-			{ // PREFIX operator
+			isPrefix(repo, ast, last[last.size() - 2]))
+		{ // PREFIX operator
 			auto pre = repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			auto left = repo.isleftAssociativityPrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
@@ -337,14 +335,14 @@ std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
 	return res;
 }
 
-int32_t deducePrecedence(OperatorRepository& repo,Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation) {
-	ASSERT(output.size() > 0,"output size > 0; parseExpression as caller");
-	
+int32_t deducePrecedence(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation) {
+	ASSERT(output.size() > 0, "output size > 0; parseExpression as caller");
+
 	int32_t p1 = -1;
 	int32_t p2 = -1;
 	int32_t p3 = -1;
 
-	if (isValue(ast,output[output.size() - 1])) {
+	if (isValue(ast, output[output.size() - 1])) {
 		p2 = repo.getPrecedenceInfix(representation);
 		p3 = repo.getPrecedenceSuffix(representation);
 	}
@@ -360,17 +358,14 @@ int32_t deducePrecedence(OperatorRepository& repo,Ast& ast, std::vector<Ast::Nod
 	if (isSuffix(repo, ast, output[output.size() - 1]) and repo.isSuffix(representation)) {
 		p3 = repo.getPrecedenceSuffix(representation);
 	}
-	//p1 = repo.getPrecedencePrefix(representation);
-	//p2 = repo.getPrecedenceInfix(representation);
-	//p3 = repo.getPrecedenceSuffix(representation);
 	int32_t pre = 0;
-	if (p1 != -1 and (p1 <= p2 or p2 == -1) and (p1 <= p3 or p3 == -1))
+	if (p1 != -1 and (p1 >= p2 or p2 == -1) and (p1 >= p3 or p3 == -1))
 		pre = p1;
-	if (p2 != -1 and (p2 <= p1 or p1 == -1) and (p2 <= p3 or p3 == -1))
+	if (p2 != -1 and (p2 >= p1 or p1 == -1) and (p2 >= p3 or p3 == -1))
 		pre = p2;
-	if (p3 != -1 and (p3 <= p2 or p2 == -1) and (p3 <= p1 or p1 == -1))
+	if (p3 != -1 and (p3 >= p2 or p2 == -1) and (p3 >= p1 or p1 == -1))
 		pre = p3;
-	ASSERT(pre != -1,"TODO : Syntax error expresion");
+	ASSERT(pre != -1, "TODO : Syntax error expresion");
 	return pre;
 }
 
@@ -410,7 +405,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
 			lastIsValue = true;
 			continue;
-		}
+		} //  
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
 			parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
 			lastIsValue = true;
@@ -427,6 +422,21 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			continue;
 		}
 		//operators
+		// int ? not ++ int 
+		// adsas + das int ? -> 3/6
+		//      val  op		-> val
+		// val  op   val	-> val
+		//      op   val	-> val
+		// int ? (not int) -> 6
+		// val op op val op op val op val op val 
+		// +unary != +add
+		// z = not x ++ + y * 2 ** 3 ;
+		// 1 * 2 + 3
+		// 1 2 3 * +
+		// output : 1 2
+		// ops : +
+		// 1 2 * 3 + 
+		//
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
 			if (output.size() > 0) {
 				auto pre = deducePrecedence(repo, ast, output, t->value.to_string());

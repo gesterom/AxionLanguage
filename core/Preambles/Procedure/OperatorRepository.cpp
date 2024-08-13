@@ -94,7 +94,26 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 
 	this->addInfix(".", ++iota, true, nullptr);
 
+	// defineNewOperator prefix ++ insert . true ;
+	// operator ++ for int
+	// false not  
+	// ptr* 
+	// a++; ++a;
 	// Increment and Decrement
+	// 
+	// ENUM COLORS{RED,YELLOW,BLUE}
+	// let array : [int: COLORS] = [VAL_1,VAL_2,VAL_3,VAL_4];
+	// let array : int[*:COLORS] // size 8 8 8 8 
+	// let array : int[4] = [1,2,3,4];
+	// let array : int[*:COLORS] = [1,2,3,4]; // ptr size cap 
+	// let array : int[dynamic:COLORS] = [1,2,3,4]; // ptr size cap 
+	// let array : vec(int,COLORS,context.HEAP_ALLOC) = [1,2,3,4]; // size cap ptr 
+	// 
+	// let array : int[COLORS] = [1,2,3,4];
+	// let i : array.id = 3 as array.id;
+	// array[i] == 1 
+	// array[3] // error
+	// 
 	this->addSuffix("++", ++iota, true, nullptr);
 	this->addSuffix("--", iota, true, nullptr);
 	this->addPrefix("++", ++iota, false, nullptr);
@@ -102,7 +121,7 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	this->addInfix("as", ++iota, false, nullptr);  // Type casting
 
 	// Prefix Operators (highest precedence)
-	this->addPrefix("+", ++iota, false, nullptr);  // Unary plus
+	//this->addPrefix("+", ++iota, false, nullptr);  // Unary plus
 	this->addPrefix("-", iota, false, nullptr);  // Unary minus
 	this->addPrefix("!", iota, false, nullptr);  // Logical NOT
 	this->addPrefix("not", iota, false, nullptr); // Alternative for logical NOT
@@ -112,7 +131,7 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	this->addPrefix("*", iota, false, nullptr);  // Pointer dereference
 
 	this->insertInfix("**", ++iota, false, nullptr);  // Power
-
+	// APL - 
 	// Multiplicative Operators
 	this->addInfix("*", ++iota, true, nullptr);  // Multiplication
 	this->addInfix("/", iota, true, nullptr);  // Division
@@ -171,8 +190,9 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	// Member Access / Type Casting / Result Type
 	//this->addInfix("->", 14, true, nullptr);  // Member access through pointer
 	// 
-	//this->insertPrefix("copy", this->getPrecedence("="), false, nullptr);  // Copy (only with borrow checker)
-	//this->insertPrefix("move", this->getPrecedence("="), false, nullptr);  // Move (only with borrow checker)
+	//this->insertPrefix("copy", this->getPrecedence("="), false, nullptr);  // Copy (only with steel* checker)
+	//this->insertPrefix("move", this->getPrecedence("="), false, nullptr);  // Move (only with steel* checker)
+	// axion treesiter main.dg -> axionParser.c -> axionParser.a 
 }
 
 void OperatorRepository::addPrefix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {

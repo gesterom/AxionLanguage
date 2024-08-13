@@ -90,6 +90,10 @@ procedure addToList(list : vector(int) , a : int){
 	z = not x++ + y * 2 ** 3 ;
 }
 
+procedure addToList(list : vector(int) , a : int){
+	z = 2**3**4**5 ;
+}
+
 build all{
 	compile(example1.dog)
 	compile(example2.dog)
