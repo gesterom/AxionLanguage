@@ -65,6 +65,7 @@ int main(int argc, char** args)
 		uint64_t i = 0;
 		std::vector<Token> head;
 		bool addToHead = false;
+		std::optional<Token> t = std::nullopt;
 		std::vector<Token> body;
 		bool addToBody = false;
 		int paramCount = 0;
@@ -98,23 +99,26 @@ int main(int argc, char** args)
 					auto h = TokenStream(repo.getPeambuleIndex(preamble), head, repo);
 					auto b = TokenStream(repo.getPeambuleIndex(preamble), body, repo);
 					auto ast = p->parse(h, b);
-					std::cout << "Head : " << ast.headNode << std::endl;
-					std::cout << "Body : " << ast.bodyNode << std::endl;
-					for (const auto& [i, n] : enumerate(ast.nodes)) {
-						std::cout << "[" << i << "] Kind(" << p->NodeKind_toString(n.kind) << ") ";
-						for (const auto& j : n.children) {
-							if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
-							else std::cout << j << " ";
-						}
-						std::cout << std::endl;
-					}
+					//std::cout << "Head : " << ast.headNode << std::endl;
+					//std::cout << "Body : " << ast.bodyNode << std::endl;
+					//for (const auto& [i, n] : enumerate(ast.nodes)) {
+					//	std::cout << "[" << i << "] Kind(" << p->NodeKind_toString(n.kind) << ") ";
+					//	for (const auto& j : n.children) {
+					//		if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
+					//		else std::cout << j << " ";
+					//	}
+					//	std::cout << std::endl;
+					//}
 					addToBody = false;
 					head.clear();
 					body.clear();
+					PreambleNode res{ std::map<Token, Token>{} ,t.value() ,ast};
+					std::cout<< astToGraph(res,p);
 				}
 			}
 			if (a->kind == Token::Type::preamble and a->value == "procedure") {
 				addToHead = true;
+				t = a;
 			}
 		}
 	}

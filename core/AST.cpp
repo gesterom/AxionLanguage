@@ -4,6 +4,7 @@
 #include "PreambleDefinition.h"
 #include "TODO.h"
 #include <format>
+#include <sstream>
 
 void cleanAst(Ast& ast)
 {
@@ -34,4 +35,22 @@ std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast)
 		out << std::endl;
 	}
 	return out;
+}
+
+std::string astToGraph(const PreambleNode& preamble, IParser* p) {
+	std::stringstream ss;
+	ss << "digraph "<<preamble.preambleKind.value.to_string() << "{"<<std::endl;
+	for (size_t i =0 ; i < preamble.ast.nodes.size() ;i ++) {
+		for (const auto& child : preamble.ast.nodes[i].children) {
+			ss << "\t" << "Node_1_"<<i<<" -> "<<"Node_"<< child.first<<"_"<<child.second<<std::endl;
+		}
+	}
+	for (size_t i = 0; i < preamble.ast.leafs.size(); i++) {
+		ss<<"\t"<<"Node_0_"<<i<<"[label=\""<< preamble.ast.leafs[i].value.to_string()<<"\"]"<<std::endl;
+	}
+	for (size_t i = 0; i < preamble.ast.nodes.size(); i++) {
+		ss << "\t" << "Node_1_" << i << "[label=\"" << p->NodeKind_toString(preamble.ast.nodes[i].kind) << "\"]" << std::endl;
+	}
+	ss<<"}";
+	return ss.str();
 }
