@@ -23,18 +23,18 @@ struct Ast {
 };
 
 
-
+class IParser;
 struct PreambleNode {
-	std::map<Token, Token> atributes;
+	std::map<Token, std::optional<Token>> atributes;
 	Token preambleKind;
 	Ast ast;
+	IParser* parser;
 };
 
 void cleanAst(Ast& ast);
 std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
-class IParser;
 std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
-std::string astToGraph(const PreambleNode& preamble, IParser* p);
+std::string astToGraph(const PreambleNode& preamble);
 
 /*
 	1. std::vector<Preamble> <- highest level

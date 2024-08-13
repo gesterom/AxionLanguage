@@ -37,9 +37,11 @@ std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast)
 	return out;
 }
 
-std::string astToGraph(const PreambleNode& preamble, IParser* p) {
+std::string astToGraph(const PreambleNode& preamble) {
+	IParser* p = preamble.parser;
+	if(not p) return "<null parser>";
 	std::stringstream ss;
-	ss << "digraph "<<preamble.preambleKind.value.to_string() << "{"<<std::endl;
+	ss << "digraph "<<preamble.preambleKind.value.to_string() << "{" << std::endl;
 	for (size_t i =0 ; i < preamble.ast.nodes.size() ;i ++) {
 		for (const auto& child : preamble.ast.nodes[i].children) {
 			ss << "\t" << "Node_1_"<<i<<" -> "<<"Node_"<< child.first<<"_"<<child.second<<std::endl;

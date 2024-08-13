@@ -45,6 +45,8 @@ struct Token {
 
 };
 
+bool operator<(const Token& a, const Token& b);
+
 
 
 /*

@@ -9,9 +9,10 @@
 
 #include "CodeLocation.h"
 #include "MetaLexer.h"
+#include "MetaParser.h"
+#include"PreambleDefinition.h"
+#include "AST.h"
 
-#include "Preambles/Procedure/Parser.h"
-#include <Enumerate.h>
 
 struct cliArgs {
 	struct cliArg {
@@ -62,64 +63,10 @@ int main(int argc, char** args)
 	// useage : $ cerberus <build_filename>
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
 		MetaLexer lexer(repo, args[file_count]);
-		uint64_t i = 0;
-		std::vector<Token> head;
-		bool addToHead = false;
-		std::optional<Token> t = std::nullopt;
-		std::vector<Token> body;
-		bool addToBody = false;
-		int paramCount = 0;
-		bool skip = false;
-		CodeLocation preamble = CodeLocation::null();
-		while (auto a = lexer.lex()) {
-			if (a->kind == Token::Type::comment) continue;
-			if (skip == true and a->kind == Token::Type::preamble) skip = false;
-			if (skip)std::cout << "Error Recovery: ";
-			if (a->kind == Token::Type::preamble) std::cout << std::endl;
-			if (a->kind == Token::Type::preamble) preamble = a->value;
-			std::cout << std::format("\t\t\t({}/{} \"{}\") -> {}:{} Where = {}:{}:{} ", repo.prambleName(a.value()), repo.to_string(a.value()), a->value.to_string(), a->value.start(), a->value.end(), a->file, a->line, a->func) << std::endl;
-			//std::cout <<"\t\t\t" << ++i << " : (" << repo.prambleName(a->kind) << "/" << repo.to_string(a->kind) << ") " << (a->value) << " -> " << a->value.start() << "-" << a->value.end() << std::endl;
-			if (addToHead) {
-				if (a.value().value == "{") {
-					addToBody = true;
-					addToHead = false;
-				}
-				else
-					head.push_back(a.value());
-			}
-			if (a.value().value == "}" and paramCount == 0 and not addToBody) skip = true;
-			if (addToBody) {
-				body.push_back(a.value());
-
-				if (a.value().value == "{") paramCount++;
-				if (a.value().value == "}") paramCount--;
-
-				if (paramCount == 0) {
-					auto p = repo.get(repo.getPeambuleIndex(preamble))->parser;
-					auto h = TokenStream(repo.getPeambuleIndex(preamble), head, repo);
-					auto b = TokenStream(repo.getPeambuleIndex(preamble), body, repo);
-					auto ast = p->parse(h, b);
-					//std::cout << "Head : " << ast.headNode << std::endl;
-					//std::cout << "Body : " << ast.bodyNode << std::endl;
-					//for (const auto& [i, n] : enumerate(ast.nodes)) {
-					//	std::cout << "[" << i << "] Kind(" << p->NodeKind_toString(n.kind) << ") ";
-					//	for (const auto& j : n.children) {
-					//		if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
-					//		else std::cout << j << " ";
-					//	}
-					//	std::cout << std::endl;
-					//}
-					addToBody = false;
-					head.clear();
-					body.clear();
-					PreambleNode res{ std::map<Token, Token>{} ,t.value() ,ast};
-					std::cout<< astToGraph(res,p);
-				}
-			}
-			if (a->kind == Token::Type::preamble and a->value == "procedure") {
-				addToHead = true;
-				t = a;
-			}
+		MetaParser parser(repo);
+		while (auto preamble = parser.parseProgram(lexer)) {
+			if(preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
+				std::cout << astToGraph(preamble.value())<<std::endl;
 		}
 	}
 

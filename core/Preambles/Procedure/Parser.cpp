@@ -260,7 +260,7 @@ std::optional<Ast::NodeIndex> get(std::vector<Ast::NodeIndex>& vec, int32_t inde
 	return vec[index];
 }
 
-void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int new_precedence) {
+void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence) {
 	while (true)
 	{
 		//repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1]->second].value.to_string())
@@ -408,7 +408,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		}
 		break;//if token not handled stop parsing expression
 	}
-	reduce_output(repo, ast, output, 100000);
+	reduce_output(repo, ast, output, INT32_MAX);
 	if (output.size() == 1) {
 		return (Ast::NodeIndex)output[0];
 	}
@@ -418,23 +418,13 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		return newNode(ast, res);
 	}
 	else {
-		ast_to_string(std::cout, this, ast);
-		for (auto i : output) {
-			if (i.first == 0) {
-				std::cout << " ERROR Leaf(" << ast.leafs[i.second].value << ")" << std::endl;
-			}
-			else {
-				std::cout << " ERROR ";
-				for (const auto& j : ast.nodes[i.second].children) {
-					if (j.first == 0) std::cout << "Leaf(" << ast.leafs[j.second].value << ") ";
-					else std::cout << j << " ";
-				}
-				std::cout << std::endl;
-			}
-		}
 		auto err = min(ast, output[1]);
 		ASSERT(err != std::nullopt, "something fishy!!");
-		return ErrorT{ err.value(),std::format("Unexpected token {}, invalid expresion !!",err->to_string()),"TODO long error" };
+		if (err) {
+			return ErrorT{ err.value(),std::format("Unexpected token {}, invalid expresion !!",err->to_string()),"TODO long error" };
+		}
+		else
+			UNREACHABLE("To remove warning");
 	}
 }
 

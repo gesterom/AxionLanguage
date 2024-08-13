@@ -81,6 +81,9 @@
     <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp">
       <Filter>Preambules\Procedure</Filter>
     </ClCompile>
+    <ClCompile Include="MetaParser.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Enumerate.h">
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Preambles\Procedure\OperatorRepository.h">
       <Filter>Preambules\Procedure</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaParser.h">
+      <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
