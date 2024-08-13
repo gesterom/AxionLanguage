@@ -44,7 +44,7 @@ namespace Preamble {
 			bool isleftAssociativitySuffix(std::string) const;
 			bool isPrefix(std::string) const;
 			bool isInfix(std::string) const;
-			bool isSufix(std::string) const;
+			bool isSuffix(std::string) const;
 			//codeGenOperator getCodeGen(std::string) const;
 		};
 	}

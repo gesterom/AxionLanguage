@@ -232,7 +232,7 @@ bool isInfix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> i
 bool isSuffix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
 	if (index == std::nullopt) return false;
 	if (isValue(ast, index.value())) return false;
-	return repo.isSufix(ast.leafs[index->second].value.to_string());
+	return repo.isSuffix(ast.leafs[index->second].value.to_string());
 }
 
 //
@@ -337,6 +337,43 @@ std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
 	return res;
 }
 
+int32_t deducePrecedence(OperatorRepository& repo,Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation) {
+	ASSERT(output.size() > 0,"output size > 0; parseExpression as caller");
+	
+	int32_t p1 = -1;
+	int32_t p2 = -1;
+	int32_t p3 = -1;
+
+	if (isValue(ast,output[output.size() - 1])) {
+		p2 = repo.getPrecedenceInfix(representation);
+		p3 = repo.getPrecedenceSuffix(representation);
+	}
+	if (isPrefix(repo, ast, output[output.size() - 1]) and repo.isPrefix(representation)) {
+		p1 = repo.getPrecedencePrefix(representation);
+	}
+	if (isInfix(repo, ast, output[output.size() - 1]) and repo.isPrefix(representation)) {
+		p1 = repo.getPrecedencePrefix(representation);
+	}
+	if (isSuffix(repo, ast, output[output.size() - 1]) and repo.isInfix(representation)) {
+		p2 = repo.getPrecedenceInfix(representation);
+	}
+	if (isSuffix(repo, ast, output[output.size() - 1]) and repo.isSuffix(representation)) {
+		p3 = repo.getPrecedenceSuffix(representation);
+	}
+	//p1 = repo.getPrecedencePrefix(representation);
+	//p2 = repo.getPrecedenceInfix(representation);
+	//p3 = repo.getPrecedenceSuffix(representation);
+	int32_t pre = 0;
+	if (p1 != -1 and (p1 <= p2 or p2 == -1) and (p1 <= p3 or p3 == -1))
+		pre = p1;
+	if (p2 != -1 and (p2 <= p1 or p1 == -1) and (p2 <= p3 or p3 == -1))
+		pre = p2;
+	if (p3 != -1 and (p3 <= p2 or p2 == -1) and (p3 <= p1 or p1 == -1))
+		pre = p3;
+	ASSERT(pre != -1,"TODO : Syntax error expresion");
+	return pre;
+}
+
 // let a = vector(int){nullptr,0,0};
 Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
@@ -391,17 +428,10 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		}
 		//operators
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
-			int32_t p1 = repo.getPrecedencePrefix(t->value.to_string());
-			int32_t p2 = repo.getPrecedenceInfix(t->value.to_string());
-			int32_t p3 = repo.getPrecedenceSuffix(t->value.to_string());
-			int32_t pre = 0;
-			if (p1 != -1 and (p1 <= p2 or p2 == -1) and (p1 <= p3 or p3 == -1))
-				pre = p1;
-			if (p2 != -1 and (p2 <= p1 or p1 == -1) and (p2 <= p3 or p3 == -1))
-				pre = p2;
-			if (p3 != -1 and (p3 <= p2 or p2 == -1) and (p3 <= p1 or p1 == -1))
-				pre = p3;
-			reduce_output(repo, ast, output, pre);
+			if (output.size() > 0) {
+				auto pre = deducePrecedence(repo, ast, output, t->value.to_string());
+				reduce_output(repo, ast, output, pre);
+			}
 			output.emplace_back(newLeaf(ast, t.value()));
 			lastIsValue = false;
 			continue;

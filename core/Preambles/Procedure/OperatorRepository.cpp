@@ -310,7 +310,7 @@ bool OperatorRepository::isInfix(std::string rep) const {
 	}
 	return false;
 }
-bool OperatorRepository::isSufix(std::string rep) const {
+bool OperatorRepository::isSuffix(std::string rep) const {
 	for (const auto& i : operators) {
 		if (i.representation == rep and i.type == OperatorDefinition::Suffix) return true;
 	}

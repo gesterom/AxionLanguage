@@ -52,7 +52,7 @@ std::string astToGraph(const PreambleNode& preamble) {
 		ss<<"\t"<<"Node_0_"<<i<<"[label=\""<< preamble.ast.leafs[i].value.to_string()<<"\"]"<<std::endl;
 	}
 	for (size_t i = 0; i < preamble.ast.nodes.size(); i++) {
-		ss << "\t" << "Node_1_" << i << "[label=\"" << p->NodeKind_toString(preamble.ast.nodes[i].kind) << "\"]" << std::endl;
+		ss << "\t" << "Node_1_" << i << "[label=\"" << p->NodeKind_toString(preamble.ast.nodes[i].kind) << "\",shape=record]" << std::endl;
 	}
 	ss<<"}";
 	return ss.str();
