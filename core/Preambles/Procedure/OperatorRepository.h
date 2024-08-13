@@ -39,7 +39,7 @@ namespace Preamble {
 			int32_t getPrecedencePrefix(std::string) const;
 			int32_t getPrecedenceInfix(std::string) const;
 			int32_t getPrecedenceSuffix(std::string) const;
-			bool isleftAssociativityPrefx(std::string) const;
+			bool isleftAssociativityPrefix(std::string) const;
 			bool isleftAssociativityInfix(std::string) const;
 			bool isleftAssociativitySuffix(std::string) const;
 			bool isPrefix(std::string) const;

@@ -92,81 +92,81 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	this->addInfix(".", 3, true, nullptr);
 
 	// Increment and Decrement
-	this->addPrefix("++", 4, true, nullptr);
-	this->addPrefix("--", 4, true, nullptr);
-	this->addSuffix("++", 4, false, nullptr);
-	this->addSuffix("--", 4, false, nullptr);
-	this->addInfix("as", 5, true, nullptr);  // Type casting
+	this->addSuffix("++", 4, true, nullptr);
+	this->addSuffix("--", 4, true, nullptr);
+	this->addPrefix("++", 5, false, nullptr);
+	this->addPrefix("--", 5, false, nullptr);
+	this->addInfix("as", 6, false, nullptr);  // Type casting
 
 	// Prefix Operators (highest precedence)
-	this->addPrefix("+", 6, false, nullptr);  // Unary plus
-	this->addPrefix("-", 6, false, nullptr);  // Unary minus
-	this->addPrefix("!", 6, false, nullptr);  // Logical NOT
-	this->addPrefix("not", 6, false, nullptr); // Alternative for logical NOT
-	this->addPrefix("~", 6, false, nullptr);  // Bitwise NOT (complement)
-	this->addPrefix("bnot", 6, false, nullptr);  // Bitwise NOT (complement)
-	this->addPrefix("&", 6, false, nullptr);  // Address-of
-	this->addPrefix("*", 6, false, nullptr);  // Pointer dereference
+	this->addPrefix("+", 7, false, nullptr);  // Unary plus
+	this->addPrefix("-", 7, false, nullptr);  // Unary minus
+	this->addPrefix("!", 7, false, nullptr);  // Logical NOT
+	this->addPrefix("not", 7, false, nullptr); // Alternative for logical NOT
+	this->addPrefix("~", 7, false, nullptr);  // Bitwise NOT (complement)
+	this->addPrefix("bnot", 7, false, nullptr);  // Bitwise NOT (complement)
+	this->addPrefix("&", 7, false, nullptr);  // Address-of
+	this->addPrefix("*", 7, false, nullptr);  // Pointer dereference
 
-	this->insertInfix("**", 7, false, nullptr);  // Power
+	this->insertInfix("**", 8, false, nullptr);  // Power
 
 	// Multiplicative Operators
-	this->addInfix("*", 8, true, nullptr);  // Multiplication
-	this->addInfix("/", 8, true, nullptr);  // Division
-	this->addInfix("%", 8, true, nullptr);  // Modulus
+	this->addInfix("*", 9, true, nullptr);  // Multiplication
+	this->addInfix("/", 9, true, nullptr);  // Division
+	this->addInfix("%", 9, true, nullptr);  // Modulus
 
 	// Arithmetic Operators
-	this->addInfix("+", 9, true, nullptr);  // Addition
-	this->addInfix("-", 9, true, nullptr);  // Subtraction
+	this->addInfix("+", 10, true, nullptr);  // Addition
+	this->addInfix("-", 10, true, nullptr);  // Subtraction
 
-	this->addInfix("..", 10, true, nullptr);  // exclusive Range
-	this->addInfix("...", 10, true, nullptr);  // Inclusive Range // (4+3)..10
+	this->addInfix("..", 11, true, nullptr);  // exclusive Range
+	this->addInfix("...", 11, true, nullptr);  // Inclusive Range // (4+3)..10
 
-	this->addInfix("<<", 11, true, nullptr);  // Bitwise left shift
-	this->addInfix(">>", 11, true, nullptr);  // Bitwise right shift
+	this->addInfix("<<", 12, true, nullptr);  // Bitwise left shift
+	this->addInfix(">>", 12, true, nullptr);  // Bitwise right shift
 
-	this->addInfix("<=>", 12, true, nullptr);  // Three-way comparison operator
+	this->addInfix("<=>", 13, true, nullptr);  // Three-way comparison operator
 
 	// Comparison Operators / Membership Test
-	this->addInfix("<", 13, true, nullptr);  // Less than
-	this->addInfix("<=", 13, true, nullptr);  // Less than or equal
-	this->addInfix(">", 13, true, nullptr);  // Greater than
-	this->addInfix(">=", 13, true, nullptr);  // Greater than or equal
+	this->addInfix("<", 14, true, nullptr);  // Less than
+	this->addInfix("<=", 14, true, nullptr);  // Less than or equal
+	this->addInfix(">", 14, true, nullptr);  // Greater than
+	this->addInfix(">=", 14, true, nullptr);  // Greater than or equal
 
-	this->addInfix("==", 14, true, nullptr);  // Equality
-	this->addInfix("!=", 14, true, nullptr);  // Inequality
-	this->addInfix("in", 14, true, nullptr);  // Membership test
+	this->addInfix("==", 15, true, nullptr);  // Equality
+	this->addInfix("!=", 15, true, nullptr);  // Inequality
+	this->addInfix("in", 15, true, nullptr);  // Membership test
 
 	// Bitwise Shift Operators
 
 	// Bitwise Operators
-	this->addInfix("&", 15, true, nullptr);  // Bitwise AND
-	this->addInfix("band", 15, true, nullptr);  // Bitwise AND
-	this->addInfix("^", 16, true, nullptr);  // Bitwise XOR
-	this->addInfix("bxor", 16, true, nullptr);  // Bitwise XOR
-	this->addInfix("|", 17, true, nullptr);  // Bitwise OR
-	this->addInfix("bor", 17, true, nullptr);  // Bitwise OR
+	this->addInfix("&", 16, true, nullptr);  // Bitwise AND
+	this->addInfix("band", 16, true, nullptr);  // Bitwise AND
+	this->addInfix("^", 17, true, nullptr);  // Bitwise XOR
+	this->addInfix("bxor", 17, true, nullptr);  // Bitwise XOR
+	this->addInfix("|", 18, true, nullptr);  // Bitwise OR
+	this->addInfix("bor", 18, true, nullptr);  // Bitwise OR
 
 	// Logical AND/OR
-	this->addInfix("&&", 18, true, nullptr);  // Logical AND
-	this->addInfix("and", 18, true, nullptr); // Logical AND (alternative)
-	this->addInfix("xor", 19, true, nullptr);  // Logical XOR (alternative)
-	this->addInfix("||", 20, true, nullptr);  // Logical OR
-	this->addInfix("or", 20, true, nullptr);  // Logical OR (alternative)
+	this->addInfix("&&", 19, true, nullptr);  // Logical AND
+	this->addInfix("and", 19, true, nullptr); // Logical AND (alternative)
+	this->addInfix("xor", 20, true, nullptr);  // Logical XOR (alternative)
+	this->addInfix("||", 21, true, nullptr);  // Logical OR
+	this->addInfix("or", 21, true, nullptr);  // Logical OR (alternative)
 
 	// Assignment Operators (including custom with borrow checker)
 
-	this->addInfix("=", 21, false, nullptr);  // Assignment
-	this->addInfix("+=", 21, false, nullptr);  // Add and assign
-	this->addInfix("-=", 21, false, nullptr);  // Subtract and assign
-	this->addInfix("*=", 21, false, nullptr);  // Multiply and assign
-	this->addInfix("/=", 21, false, nullptr);  // Divide and assign
-	this->addInfix("%=", 21, false, nullptr);  // Modulus and assign
-	this->addInfix("<<=", 21, false, nullptr);  // Left shift and assign
-	this->addInfix(">>=", 21, false, nullptr);  // Right shift and assign
-	this->addInfix("&=", 21, false, nullptr);  // Bitwise AND and assign
-	this->addInfix("|=", 21, false, nullptr);  // Bitwise OR and assign
-	this->addInfix("^=", 21, false, nullptr);  // Bitwise XOR and assign
+	this->addInfix("=", 22, false, nullptr);  // Assignment
+	this->addInfix("+=", 22, false, nullptr);  // Add and assign
+	this->addInfix("-=", 22, false, nullptr);  // Subtract and assign
+	this->addInfix("*=", 22, false, nullptr);  // Multiply and assign
+	this->addInfix("/=", 22, false, nullptr);  // Divide and assign
+	this->addInfix("%=", 22, false, nullptr);  // Modulus and assign
+	this->addInfix("<<=", 22, false, nullptr);  // Left shift and assign
+	this->addInfix(">>=", 22, false, nullptr);  // Right shift and assign
+	this->addInfix("&=", 22, false, nullptr);  // Bitwise AND and assign
+	this->addInfix("|=", 22, false, nullptr);  // Bitwise OR and assign
+	this->addInfix("^=", 22, false, nullptr);  // Bitwise XOR and assign
 
 	// Member Access / Type Casting / Result Type
 	//this->addInfix("->", 14, true, nullptr);  // Member access through pointer
@@ -277,7 +277,7 @@ int32_t OperatorRepository::getPrecedenceSuffix(std::string rep) const {
 	return -1;
 }
 
-bool OperatorRepository::isleftAssociativityPrefx(std::string rep) const {
+bool OperatorRepository::isleftAssociativityPrefix(std::string rep) const {
 	for (const auto& i : operators) {
 		if (i.representation == rep and i.type == OperatorDefinition::Prefix) return i.leftAssociativity;
 	}

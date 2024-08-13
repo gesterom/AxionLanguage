@@ -270,8 +270,8 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			isOperator(ast, last[last.size() - 1]) and
 			isValue(ast, last[last.size() - 2]) and
 			isSuffix(repo, ast, last[last.size() - 1]) ) { //SUFFUX operator
-			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 1].second].value.to_string());
-			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 1].second].value.to_string());
+			auto pre = repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
+			auto left = repo.isleftAssociativitySuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
 				Ast::Node res;
 				res.kind = (uint64_t)NodeKinds::suffix_operator;
@@ -307,8 +307,8 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			isOperator(ast, last[last.size() - 2]) and
 			isPrefix(repo, ast, last[last.size() - 2]) ) 
 			{ // PREFIX operator
-			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
-			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			auto pre = repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
+			auto left = repo.isleftAssociativityPrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
 				Ast::Node res;
 				res.kind = (uint64_t)NodeKinds::prefix_operator;

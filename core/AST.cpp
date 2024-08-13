@@ -43,8 +43,9 @@ std::string astToGraph(const PreambleNode& preamble) {
 	std::stringstream ss;
 	ss << "digraph "<<preamble.preambleKind.value.to_string() << "{" << std::endl;
 	for (size_t i =0 ; i < preamble.ast.nodes.size() ;i ++) {
-		for (const auto& child : preamble.ast.nodes[i].children) {
-			ss << "\t" << "Node_1_"<<i<<" -> "<<"Node_"<< child.first<<"_"<<child.second<<std::endl;
+		for (size_t j = 0 ; j < preamble.ast.nodes[i].children.size();j++) {
+			auto& child = preamble.ast.nodes[i].children[j];
+			ss << "\t" << "Node_1_"<<i<<" -> "<<"Node_"<< child.first<<"_"<<child.second<<"[label=\""<< j<<"\"]" << std::endl;
 		}
 	}
 	for (size_t i = 0; i < preamble.ast.leafs.size(); i++) {
