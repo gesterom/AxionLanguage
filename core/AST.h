@@ -12,7 +12,7 @@ struct Ast {
 	using NodeIndex = std::pair<uint32_t, uint32_t>;
 	struct Node
 	{
-		uint64_t kind = 0;
+		uint32_t kind;
 		std::vector<Ast::NodeIndex> children; // nodeType(in witch vector to search) and nodeId
 	};
 	std::optional<NodeIndex> headNode = std::nullopt;
@@ -32,8 +32,8 @@ struct PreambleNode {
 };
 
 void cleanAst(Ast& ast);
-std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
-std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
+//std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
+//std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
 std::string astToGraph(const PreambleNode& preamble);
 
 /*

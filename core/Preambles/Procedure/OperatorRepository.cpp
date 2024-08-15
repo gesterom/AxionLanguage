@@ -104,9 +104,9 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	// ENUM COLORS{RED,YELLOW,BLUE}
 	// let array : [int: COLORS] = [VAL_1,VAL_2,VAL_3,VAL_4];
 	// let array : int[*:COLORS] // size 8 8 8 8 
-	// let array : int[4] = [1,2,3,4];
-	// let array : int[*:COLORS] = [1,2,3,4]; // ptr size cap 
-	// let array : int[dynamic:COLORS] = [1,2,3,4]; // ptr size cap 
+	// let array : int[4] = [1,2,3,4]; // size 1 2 3 4
+	// let array : int[*:COLORS] = [1,2,3,4];//indexed by COLORS // size 1 2 3 4
+	// let array : int[dynamic:COLORS] = [1,2,3,4]; // size ptr
 	// let array : vec(int,COLORS,context.HEAP_ALLOC) = [1,2,3,4]; // size cap ptr 
 	// 
 	// let array : int[COLORS] = [1,2,3,4];

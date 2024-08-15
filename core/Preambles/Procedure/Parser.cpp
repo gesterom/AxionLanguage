@@ -6,117 +6,47 @@
 
 using namespace Preamble::Procedure;
 
-// operatotrs on steatements for examle if expresion statement else statement 
-// 
-// statement := `if` bool_expresion statement [`else` statement]
-// statement := `while` bool_expresion statement
-// statement := `for` iterator_expresion statement
-// statement := `do` statement `while` bool_expresion `;`
-// statement := expresion `;`
-// statement := `{` [statement..] `}`
-// statement := `twice` statement
-// 
-// {} = blok kodu = statement with list of statements
-// expresion = literal,operation, atom.atom is a operation on atoms
-// expresion := expresion infix_op expresion
-// expresion := prefix_op expresion
-// expresion := expresion sufix_op
-// expresion := `ifx` bool_expresion `then` expresion `else` expresion
-// expresion := `send` message_expresion `to` agent_expresion
-// expresion := `goto` label_atom
-//
-// require = if present consume otherwise panic
-// optional = bool result and consume
-// check = bool result and do not consume 
-//
-
-
-// foo(x : Int)->int
-
-using namespace Preamble::Procedure;
-
-void printError(const std::optional<ErrorT>& err) {
-	if (err.has_value()) {
-		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.to_string() << " = " << err.value().oneLinerError << std::endl;
-	}
-}
-
-Ast::NodeIndex newLeaf(Ast& self, Result<Token, ErrorT> t)
-{
-	if (t) {
-		auto res = (uint32_t)self.leafs.size();
-		self.leafs.push_back(t);
-		return { 0,res };
-	}
-	else {
-		printError((ErrorT)t);
-		UNREACHABLE("ERROR");
-	}
-}
-
-Ast::NodeIndex newNode(Ast& self, Result<Ast::Node, ErrorT> t)
-{
-	if (t) {
-		auto res = (uint32_t)self.nodes.size();
-		self.nodes.push_back(t);
-		return { 1,res };
-	}
-	else {
-		printError((ErrorT)t);
-		UNREACHABLE("ERROR");
-	}
-}
-
-void add(std::vector<Token>& vec, const Result<Token, ErrorT>& t) {
-	if (t) {
-		vec.emplace_back(t);
-	}
-	else {
-		printError(t);
-	}
-}
-
-#define TRY_ASIGNE(x,y) do{auto __temp__ = y;if(__temp__){x.emplace_back(__temp__);} else return (ErrorT)__temp__;}while(false)
-#define TRY_ADD(x,y) do{auto __temp__ = y;if(__temp__){x.emplace_back(__temp__);} else return (ErrorT)__temp__;}while(false)
-
 Result<Ast::NodeIndex, ErrorT> Parser::requireName(TokenStream& head, Ast& ast) {
 	std::vector<Token> atoms;
-	TRY_ADD(atoms, head.require(Token::Type::atom));
+	auto t = head.require(Token::Type::atom);
+	if (not t) {
+		return (ErrorT)t;
+	}
+	atoms.emplace_back(t);
 	while (head.optional((Token::Type)ProcedureTokenType::operator_t, ".")) {
-		TRY_ADD(atoms, head.require(Token::Type::atom));
+		auto t2 = head.require(Token::Type::atom);
+		if (not t2) {
+			return ErrorT(t2);
+		}
+		atoms.emplace_back(t2);
 	}
 	if (atoms.size() == 0) return ErrorT{ head.peak(-1).value().value,"expected id","" };
 	auto last = atoms.at(atoms.size() - 1);
-	Ast::Node path;
-	path.kind = (uint64_t)NodeKinds::namespace_path;
+	std::vector<Ast::NodeIndex> path;
 	for (int i = 0; i < atoms.size() - 1; i++) {
-		path.children.push_back(newLeaf(ast, atoms[i]));
+		path.push_back(builder.newLeaf(atoms[i]));
 	}
-	auto path_id = newNode(ast, path);
-	Ast::Node name;
-	name.kind = (uint64_t)NodeKinds::name;
-	name.children.push_back(path_id);
-	name.children.push_back(newLeaf(ast, last));
-	return newNode(ast, name);
+	auto path_id = builder.createNode(translator[NodeKinds::namespace_path], path);
+	return builder.createNode(translator[NodeKinds::name], { path_id,builder.newLeaf(last) });
 }
 
-Result<Ast::NodeIndex, ErrorT> Parser::requireType(TokenStream& head, Ast& ast) {
-	Ast::Node res;
-	res.kind = (uint64_t)NodeKinds::type;
-	auto a = requireName(head, ast);
-	if (not a) return (ErrorT)a;
-	res.children.emplace_back(a);
-	if (head.optional(Token::Type::parenthesis, "(")) {
-		while (not head.check(Token::Type::parenthesis, ")") and head.peak().has_value()) {
-			res.children.push_back(newLeaf(ast, head.peak().value()));
-			head.consume();
-		}
-		return newNode(ast, res);
-	}
-	else {
-		return newNode(ast, res);
-	}
-}
+//Result<Ast::NodeIndex, ErrorT> Parser::requireType(TokenStream& head, Ast& ast) {
+//	Ast::Node res;
+//	res.kind = (uint64_t)NodeKinds::type;
+//	auto a = requireName(head, ast);
+//	if (not a) return (ErrorT)a;
+//	res.children.emplace_back(a);
+//	if (head.optional(Token::Type::parenthesis, "(")) {
+//		while (not head.check(Token::Type::parenthesis, ")") and head.peak().has_value()) {
+//			res.children.push_back(builder.newLeaf(head.peak().value()));
+//			head.consume();
+//		}
+//		return builder.createNode(res);
+//	}
+//	else {
+//		return builder.createNode(res);
+//	}
+//}
 
 bool checkIsAtomcExpresion(TokenStream& head) {
 	auto t = head.peak(0);
@@ -132,60 +62,27 @@ Result<Ast::NodeIndex, ErrorT> Parser::parsePrimary(TokenStream& head, Ast& ast)
 	if (checkIsAtomcExpresion(head)) {
 		auto t = head.peak();
 		head.consume();
-		return newLeaf(ast, t.value());
+		return builder.newLeaf(t.value());
 	}
 	return ErrorT{ head.peak(0)->value,std::format("Expected primary Expresion get {}",head.peak()->value.to_string()),"TODO long error" };
 }
 
-//Result<Ast::NodeIndex, ErrorT> parseExpresion1(TokenStream& head, Ast& ast, Ast::NodeIndex lhs, int min_precedence) {
-//	//auto lookahead = head.peak();
-//	//while (lookahead->kind == (Token::Type)ProcedureTokenType::operator_t and getPrecedence(lookahead) >= min_precedence) {
-//	//	auto op = lookahead;
-//	//	auto rhs = parsePrimary(head, ast);
-//	//	lookahead = head.peak();
-//	//}
-//}
-// string?
-// string?int|bool = string?(int|bool)
-// string?int?bool = (string?int)?bool
-
-//exp := 
-// [ ] prefixop exp // prefix > infix
-// [ ] exp sufixop // sufix > infix 
-// [ ] exp infixop exp
-// [v] ( exp ) -> bracets
-// [v] exp(exp) -> function_call
-// [v] exp{exp} -> construct_struct/object
-// [v] exp[exp] -> array_acess
-// [v] atom
-// [v] literal
-// [ ] prefix_operator
-// [v] `empty` 
-// 
-// primary primary => error
-//
-// prefix exp sufix => prefix ( exp sufix ) if sufix  > prefix
-// prefix exp sufix => (prefix exp ) sufix  if prefix > sufix
-//
-
 Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output) {
-	Ast::Node temp;
-	temp.kind = (uint64_t)NodeKinds::expression_list;
+	std::vector<Ast::NodeIndex> temp;
 	do {
 		auto a = parseExpresion(head, ast);
-		if (a) temp.children.push_back(a);
+		if (a) temp.push_back(a);
 		else break;
 	} while (head.optional((Token::Type)ProcedureTokenType::comma));
 	auto t = head.require(Token::Type::parenthesis, endToken);
 	if (not t) return (ErrorT)t;
-	auto args = newNode(ast, temp);
+	auto args = builder.createNode(translator[NodeKinds::expression_list], temp);
 	auto func = output[output.size() - 1];
 	output.pop_back();;
-	Ast::Node funcCall;
-	funcCall.kind = (uint64_t)NodeKinds::function_call;
-	funcCall.children.push_back(func);
-	funcCall.children.push_back(args);
-	output.push_back(newNode(ast, funcCall));
+	std::vector<Ast::NodeIndex> funcCall;
+	funcCall.push_back(func);
+	funcCall.push_back(args);
+	output.push_back(builder.createNode(translator[NodeKinds::function_call], funcCall));
 	return output[output.size() - 1];
 }
 
@@ -235,32 +132,13 @@ bool isSuffix(OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> 
 	return repo.isSuffix(ast.leafs[index->second].value.to_string());
 }
 
-//
-//void reduce_output(std::vector<Ast::NodeIndex> last, int new_precedence) {
-//	while (true) {
-//		if (last[0] == op and last[1] == val and last[0].sufix and last[0].precedence > new_precedence) {
-//			output.push(newExpression(last.pop, last.pop, sufix));
-//			continue;
-//		}
-//		if (last[0] == val and last[1] == op and last[2] == val and last[1].precedence > new_precedence and last[1].infix) {
-//			output.push(newExpression(last.pop, last.pop, infix));
-//			continue;
-//		}
-//		if (last[0] == val and last[1] == op and last[1].precedence > new_precedence and last[1].prefix) {
-//			output.push(newExpression(last.pop, last.pop, prefix));
-//			continue;
-//		}
-//		break;
-//	}
-//}
-
 std::optional<Ast::NodeIndex> get(std::vector<Ast::NodeIndex>& vec, int32_t index) {
 	if (index >= vec.size()) return std::nullopt;
 	if (index < 0) return std::nullopt;
 	return vec[index];
 }
 
-void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence) {
+void Parser::reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence) {
 	while (true)
 	{
 		if (
@@ -271,12 +149,11 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			auto pre = repo.getPrecedenceSuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
 			auto left = repo.isleftAssociativitySuffix(ast.leafs[last[last.size() - 1].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
-				Ast::Node res;
-				res.kind = (uint64_t)NodeKinds::suffix_operator;
-				res.children.push_back(last[last.size() - 1]);
-				res.children.push_back(last[last.size() - 2]);
+				std::vector<Ast::NodeIndex> res;
+				res.push_back(last[last.size() - 1]);
+				res.push_back(last[last.size() - 2]);
 				last.pop_back(); last.pop_back();
-				last.push_back(newNode(ast, res));
+				last.push_back(builder.createNode(translator[NodeKinds::suffix_operator], res));
 				continue;
 			}
 		}
@@ -289,13 +166,12 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			auto pre = repo.getPrecedenceInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			auto left = repo.isleftAssociativityInfix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
-				Ast::Node res;
-				res.kind = (uint64_t)NodeKinds::infix_operator;
-				res.children.push_back(last[last.size() - 2]);
-				res.children.push_back(last[last.size() - 3]);
-				res.children.push_back(last[last.size() - 1]);
+				std::vector<Ast::NodeIndex> res;
+				res.push_back(last[last.size() - 2]);
+				res.push_back(last[last.size() - 3]);
+				res.push_back(last[last.size() - 1]);
 				last.pop_back(); last.pop_back(); last.pop_back();
-				last.push_back(newNode(ast, res));
+				last.push_back(builder.createNode(translator[NodeKinds::infix_operator], res));
 				continue;
 			}
 		}
@@ -308,12 +184,11 @@ void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeInde
 			auto pre = repo.getPrecedencePrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			auto left = repo.isleftAssociativityPrefix(ast.leafs[last[last.size() - 2].second].value.to_string());
 			if (pre < new_precedence or (pre == new_precedence and left)) {
-				Ast::Node res;
-				res.kind = (uint64_t)NodeKinds::prefix_operator;
-				res.children.push_back(last[last.size() - 2]);
-				res.children.push_back(last[last.size() - 1]);
+				std::vector<Ast::NodeIndex> res;
+				res.push_back(last[last.size() - 2]);
+				res.push_back(last[last.size() - 1]);
 				last.pop_back(); last.pop_back();
-				last.push_back(newNode(ast, res));
+				last.push_back(builder.createNode(translator[NodeKinds::prefix_operator], res));
 				continue;
 			}
 		}
@@ -335,7 +210,7 @@ std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
 	return res;
 }
 
-int32_t deducePrecedence(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation) {
+Preamble::Procedure::OperatorPrecedence Parser::deducePrecedence(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation) {
 	ASSERT(output.size() > 0, "output size > 0; parseExpression as caller");
 
 	int32_t p1 = -1;
@@ -372,8 +247,8 @@ int32_t deducePrecedence(OperatorRepository& repo, Ast& ast, std::vector<Ast::No
 // let a = vector(int){nullptr,0,0};
 Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
-	Ast::Node res;
-	res.kind = (uint64_t)NodeKinds::expression;
+	//Ast::Node res;
+	//res.kind = (uint64_t)NodeKinds::expression;
 	std::vector<Ast::NodeIndex> output;
 	int32_t precedence = 0;
 
@@ -389,15 +264,14 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			continue;
 		}
 		else if (not lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array literal
-			Ast::Node temp;
-			temp.kind = (uint64_t)NodeKinds::array_literal;
+			std::vector<Ast::NodeIndex> temp;
 			do {
 				auto a = parseExpresion(head, ast);
-				if (a) temp.children.push_back(a);
+				if (a) temp.push_back(a);
 				else break;
 			} while (head.optional((Token::Type)ProcedureTokenType::comma));
 			auto t = head.require(Token::Type::parenthesis, "]");
-			output.push_back(newNode(ast, temp));
+			output.push_back(builder.createNode(translator[NodeKinds::array_literal], temp));
 			lastIsValue = true;
 			continue;
 		}
@@ -417,32 +291,17 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			continue;
 		}
 		else if (auto t = isPrimaryExpresion(head)) {
-			output.emplace_back(newLeaf(ast, t.value()));
+			output.emplace_back(builder.newLeaf(t.value()));
 			lastIsValue = true;
 			continue;
 		}
 		//operators
-		// int ? not ++ int 
-		// adsas + das int ? -> 3/6
-		//      val  op		-> val
-		// val  op   val	-> val
-		//      op   val	-> val
-		// int ? (not int) -> 6
-		// val op op val op op val op val op val 
-		// +unary != +add
-		// z = not x ++ + y * 2 ** 3 ;
-		// 1 * 2 + 3
-		// 1 2 3 * +
-		// output : 1 2
-		// ops : +
-		// 1 2 * 3 + 
-		//
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
 			if (output.size() > 0) {
 				auto pre = deducePrecedence(repo, ast, output, t->value.to_string());
 				reduce_output(repo, ast, output, pre);
 			}
-			output.emplace_back(newLeaf(ast, t.value()));
+			output.emplace_back(builder.newLeaf(t.value()));
 			lastIsValue = false;
 			continue;
 		}
@@ -453,9 +312,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		return (Ast::NodeIndex)output[0];
 	}
 	else if (output.size() == 0) {
-		Ast::Node res;
-		res.kind = (uint64_t)NodeKinds::expression;
-		return newNode(ast, res);
+		return builder.createNode(translator[NodeKinds::empty_expression], {});
 	}
 	else {
 		auto err = min(ast, output[1]);
@@ -470,16 +327,15 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 
 // atom : type/*expresion that evaluated in compile time will result in Type*/
 Result<Ast::NodeIndex, ErrorT> Parser::requireFunctionHeadArgs(TokenStream& head, Ast& ast) {
-	Ast::Node res;
-	res.kind = (uint64_t)NodeKinds::function_head_args_definition;
+	std::vector<Ast::NodeIndex> res;
 	if (not head.check(Token::Type::parenthesis, ")")) {
 		do {
-			res.children.push_back(newLeaf(ast, head.require(Token::Type::atom)));
+			res.push_back(builder.newLeaf(head.require(Token::Type::atom)));
 			head.require((Token::Type)ProcedureTokenType::colon);
-			res.children.push_back(parseExpresion(head, ast));
+			res.push_back(parseExpresion(head, ast));
 		} while (head.optional((Token::Type)ProcedureTokenType::comma));
 	}
-	return newNode(ast, res);
+	return builder.createNode(translator[NodeKinds::function_head_args_definition], res);
 }
 
 // try stmt -> expresion = to stmt or return from function with error
@@ -487,33 +343,30 @@ Result<Ast::NodeIndex, ErrorT> Parser::requireFunctionHeadArgs(TokenStream& head
 // name args returnType
 std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 	std::vector<ErrorT> errors;
-	Ast::Node res;
-	res.kind = (uint64_t)NodeKinds::function_head;
-	res.children.resize(3);
+	std::vector<Ast::NodeIndex> res;
+	res.resize(3);
 	if (auto name = requireName(head, ast)) {
-		res.children[0] = name; // name
+		res[0] = name; // name
 	}
 	else { return std::nullopt; }
 	if (not head.require(Token::Type::parenthesis, "(")) return std::nullopt;
 	auto args = requireFunctionHeadArgs(head, ast);
 	if (not args) return std::nullopt;
-	res.children[1] = args;
+	res[1] = args;
 
 	if (not head.require(Token::Type::parenthesis, ")")) return std::nullopt;
 
 	if (head.optional((Token::Type)ProcedureTokenType::operator_t, "->")) {
-		auto retT = requireType(head, ast);
+		auto retT = parseExpresion(head, ast);
 		if (not retT)
-			res.children[2] = retT;
+			res[2] = retT;
 		else return std::nullopt;
 	}
 	else {
-		Ast::Node retT;
-		retT.kind = (uint64_t)NodeKinds::type;
-		res.children[2] = newNode(ast, retT);
+		res[2] = builder.createNode(translator[NodeKinds::empty_expression], {});
 	}
 	if (head.requireEmpty()) return std::nullopt; //TODO Better error : "unexpected tockens"
-	return newNode(ast, res);
+	return builder.createNode(translator[NodeKinds::function_head], res);
 }
 
 std::optional<Ast::NodeIndex> Parser::parseBody(TokenStream& body, Ast& ast) {
@@ -524,13 +377,54 @@ std::optional<Ast::NodeIndex> Parser::parseBody(TokenStream& body, Ast& ast) {
 	else return std::nullopt;
 }
 
-Preamble::Procedure::Parser::Parser(OperatorRepository& repo) : repo(repo)
+Preamble::Procedure::Parser::Parser(OperatorRepository& repo, NodeBuilder& builder) : repo(repo), builder(builder)
 {
+	/*
+		namespace_path,
+		name,
+		expression,
+		function_head_args_definition,
+		function_head,
+		prefix_operator,
+		infix_operator,
+		suffix_operator,
+		function_call,
+		array_acess,
+		Object_construct,
+		varible_declaration,
+		for_loop,
+		if_branch,
+		while_loop,
+		const_mod,
+		mut_mod,
+		expression_list,
+		array_literal,
+
+	*/
+	translator.emplace(NodeKinds::namespace_path, builder.addNodeKind("namespace", { {"path",0} }, true));
+	translator.emplace(NodeKinds::name, builder.addNodeKind("name", { {"path",translator[NodeKinds::namespace_path]},{"core_name",0} }));
+	translator.emplace(NodeKinds::expression, builder.addNodeKind("expression", {}));
+
+	translator.emplace(NodeKinds::function_head_args_definition, builder.addNodeKind("function_head_args_definition", { {"argument_name",0},{"type",translator[NodeKinds::expression]} }, true));
+	translator.emplace(NodeKinds::function_head, builder.addNodeKind("function_head", { {"function_name",translator[NodeKinds::name]}, {"Args definition",translator[NodeKinds::function_head_args_definition]}, {"ReturnType",translator[NodeKinds::expression]} }));
+
+	translator.emplace(NodeKinds::empty_expression, builder.addInharitedNodeKind("empty_expression", translator[NodeKinds::expression], {}));
+	translator.emplace(NodeKinds::function_call, builder.addInharitedNodeKind("function_call", translator[NodeKinds::expression], { {"Function",translator[NodeKinds::expression]},{"Parameters", translator[NodeKinds::expression_list]} }));
+	translator.emplace(NodeKinds::array_literal, builder.addInharitedNodeKind("array_literal", translator[NodeKinds::expression], { { "Elements", translator[NodeKinds::expression_list] } }));
+	translator.emplace(NodeKinds::Object_construct, builder.addInharitedNodeKind("Object_construct", translator[NodeKinds::expression], { {"Constructed Type",translator[NodeKinds::expression]},{"Parameters", translator[NodeKinds::expression_list]} }));
+	translator.emplace(NodeKinds::array_acess, builder.addInharitedNodeKind("array_acess", translator[NodeKinds::expression], { {"Array",translator[NodeKinds::expression]},{"indexes", translator[NodeKinds::expression_list]} }));
+	translator.emplace(NodeKinds::prefix_operator, builder.addInharitedNodeKind("prefix_operator", translator[NodeKinds::expression], { {"Operator",0},{"right", translator[NodeKinds::expression]} }));
+	translator.emplace(NodeKinds::infix_operator, builder.addInharitedNodeKind("infix_operator", translator[NodeKinds::expression], { {"Operator",0},{"left", translator[NodeKinds::expression]},{"right", translator[NodeKinds::expression]} }));
+	translator.emplace(NodeKinds::suffix_operator, builder.addInharitedNodeKind("suffix_operator", translator[NodeKinds::expression], { {"Operator",0},{"left", translator[NodeKinds::expression]} }));
+	//translator.emplace(NodeKinds::expression, builder.addNodeKind("expression", { "type", }));
+	//translator.emplace(NodeKinds::type, builder.addNodeKind("type", { "type", }))
+
 }
 
 Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
 {
 	Ast res;
+	this->builder.setAst(&res);
 	res.headNode = parseHead(head, res);
 	if (res.headNode == std::nullopt) return res;
 	res.bodyNode = parseBody(body, res);
@@ -546,9 +440,9 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 	case Preamble::Procedure::NodeKinds::function_head: return "function_head";
 	case Preamble::Procedure::NodeKinds::function_head_args_definition: return "function_head_args_definition";
 	case Preamble::Procedure::NodeKinds::type: return "type";
-	case Preamble::Procedure::NodeKinds::square_bracket: return "square_bracket";
-	case Preamble::Procedure::NodeKinds::bracket: return "bracket";
-	case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
+		//case Preamble::Procedure::NodeKinds::square_bracket: return "square_bracket";
+		//case Preamble::Procedure::NodeKinds::bracket: return "bracket";
+		//case Preamble::Procedure::NodeKinds::curly_bracket: return "curly_bracket";
 	case Preamble::Procedure::NodeKinds::prefix_operator: return "prefix_operator";
 	case Preamble::Procedure::NodeKinds::infix_operator: return "infix_operator";
 	case Preamble::Procedure::NodeKinds::suffix_operator: return "postfix_operator";
@@ -563,7 +457,6 @@ std::string Preamble::Procedure::Parser::NodeKind_toString(uint64_t n) const
 	case Preamble::Procedure::NodeKinds::mut_mod: return "mut_mod";
 	case Preamble::Procedure::NodeKinds::expression: return "expression";
 	case Preamble::Procedure::NodeKinds::expression_list: return "expression_list";
-	case Preamble::Procedure::NodeKinds::operator_in_construction: return "operator_in_construction";
 	}
 	UNREACHABLE(std::format("Switch case not exausted {}", n));
 }

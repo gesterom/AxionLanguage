@@ -172,6 +172,7 @@
     <ClCompile Include="AST.cpp" />
     <ClCompile Include="CallStackTrace.cpp" />
     <ClCompile Include="MetaParser.cpp" />
+    <ClCompile Include="NodeBuilder.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp" />
@@ -186,6 +187,7 @@
     <ClCompile Include="src\TODO.cpp" />
     <ClCompile Include="src\Token.cpp" />
     <ClCompile Include="src\VirtualFile.cpp" />
+    <ClCompile Include="TokenRepository.cpp" />
     <ClCompile Include="TokenStream.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -201,11 +203,14 @@
     <ClInclude Include="headers\Token.h" />
     <ClInclude Include="headers\VirtualFile.h" />
     <ClInclude Include="MetaParser.h" />
+    <ClInclude Include="NodeBuilder.h" />
     <ClInclude Include="Preambles\Function\Lexer.h" />
     <ClInclude Include="Preambles\Procedure\Lexer.h" />
     <ClInclude Include="Preambles\Procedure\OperatorRepository.h" />
     <ClInclude Include="Preambles\Procedure\Parser.h" />
     <ClInclude Include="Preambles\Type\Lexer.h" />
+    <ClInclude Include="Result.h" />
+    <ClInclude Include="TokenRepository.h" />
     <ClInclude Include="TokenStream.h" />
   </ItemGroup>
   <ItemGroup>

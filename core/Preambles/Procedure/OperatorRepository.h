@@ -9,11 +9,12 @@ typedef std::string(*codeGenOperator)(Ast& ast, Ast::NodeIndex left, Ast::NodeIn
 
 namespace Preamble {
 	namespace Procedure {
+		using OperatorPrecedence = int32_t;
 		class OperatorRepository
 		{
 			struct OperatorDefinition {
 				std::string representation = "<ERROR>";
-				int32_t precedence = 0;
+				OperatorPrecedence precedence = 0;
 				bool leftAssociativity = false;
 				enum Type
 				{
@@ -29,16 +30,16 @@ namespace Preamble {
 
 		public:
 			OperatorRepository();
-			void addPrefix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
-			void insertPrefix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
-			void addInfix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
-			void insertInfix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
-			void addSuffix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
-			void insertSuffix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func);
+			void addPrefix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
+			void insertPrefix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
+			void addInfix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
+			void insertInfix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
+			void addSuffix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
+			void insertSuffix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity, codeGenOperator func);
 			const std::vector<std::string>& getOperatorLexList() const;
-			int32_t getPrecedencePrefix(std::string) const;
-			int32_t getPrecedenceInfix(std::string) const;
-			int32_t getPrecedenceSuffix(std::string) const;
+			OperatorPrecedence getPrecedencePrefix(std::string) const;
+			OperatorPrecedence getPrecedenceInfix(std::string) const;
+			OperatorPrecedence getPrecedenceSuffix(std::string) const;
 			bool isleftAssociativityPrefix(std::string) const;
 			bool isleftAssociativityInfix(std::string) const;
 			bool isleftAssociativitySuffix(std::string) const;

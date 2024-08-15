@@ -79,16 +79,15 @@ PreambleRepository::PreambleRepository()
 		if (vec.at(vec.size() - 1)->lexer != nullptr)
 			vec.at(vec.size() - 1)->lexer->setPreambleIndex((int32_t)vec.size() - 1);
 		};
-
 	addPreamble(new PreambleDefinition{ "<Meta>" });
 	addPreamble(new PreambleDefinition{ "extension" }); // load something like type or agents or sal // extends syntax of core language
-	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(repo),new Preamble::Procedure::Parser(repo) });
+	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(repo),new Preamble::Procedure::Parser(repo,nodeBuilder) });
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
 	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.alias",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
-	addPreamble(new PreambleDefinition{ "build",new Preamble::Procedure::Lexer(repo),new Preamble::Procedure::Parser(repo) }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
+	addPreamble(new PreambleDefinition{ "build",new Preamble::Procedure::Lexer(repo),new Preamble::Procedure::Parser(repo,nodeBuilder) }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
 	//addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
 	addPreamble(new PreambleDefinition{ "sql",nullptr }); // sql scrip
 	addPreamble(new PreambleDefinition{ "sql.query",nullptr }); // sql quer

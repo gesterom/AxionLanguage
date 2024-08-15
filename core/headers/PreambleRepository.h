@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NodeBuilder.h"
 #include "Preambles/Procedure/OperatorRepository.h"
 #include "Token.h"
 #include <string>	
@@ -12,6 +13,7 @@ using PreamleIndex = uint32_t;
 class PreambleRepository {
 	std::vector<PreambleDefinition*> vec;
 	Preamble::Procedure::OperatorRepository repo;
+	NodeBuilder nodeBuilder;
 public:
 	PreambleRepository();
 	std::vector<PreambleDefinition*> get() const;
