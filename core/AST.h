@@ -12,7 +12,7 @@ struct Ast {
 	using NodeIndex = std::pair<uint32_t, uint32_t>;
 	struct Node
 	{
-		uint32_t kind;
+		uint32_t kind = 0;
 		std::vector<Ast::NodeIndex> children; // nodeType(in witch vector to search) and nodeId
 	};
 	std::optional<NodeIndex> headNode = std::nullopt;

@@ -19,6 +19,7 @@ namespace Preamble {
 		};
 
 		enum class NodeKinds : uint64_t {
+			namespace_,
 			namespace_path,
 			name,
 			type,
@@ -49,7 +50,7 @@ namespace Preamble {
 		private:
 			OperatorRepository& repo;
 			NodeBuilder& builder;
-			std::map<NodeKinds, uint64_t> translator;
+			std::map<NodeKinds, uint32_t> translator;
 
 			void reduce_output(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence);
 			int32_t deducePrecedence(OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation);

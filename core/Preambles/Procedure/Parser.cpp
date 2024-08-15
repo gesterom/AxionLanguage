@@ -21,7 +21,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::requireName(TokenStream& head, Ast& ast) 
 		atoms.emplace_back(t2);
 	}
 	if (atoms.size() == 0) return ErrorT{ head.peak(-1).value().value,"expected id","" };
-	auto last = atoms.at(atoms.size() - 1);
+	Token last = atoms.at(atoms.size() - 1);
 	std::vector<Ast::NodeIndex> path;
 	for (int i = 0; i < atoms.size() - 1; i++) {
 		path.push_back(builder.newLeaf(atoms[i]));
@@ -77,7 +77,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& 
 	auto t = head.require(Token::Type::parenthesis, endToken);
 	if (not t) return (ErrorT)t;
 	auto args = builder.createNode(translator[NodeKinds::expression_list], temp);
-	auto func = output[output.size() - 1];
+	Ast::NodeIndex func = output[output.size() - 1];
 	output.pop_back();;
 	std::vector<Ast::NodeIndex> funcCall;
 	funcCall.push_back(func);
@@ -105,7 +105,7 @@ std::optional<Token> isPrimaryExpresion(TokenStream& head) {
 bool isOperator(Ast& ast, Ast::NodeIndex index) {
 	if (index.first == 1) return false; // needs to be leaf
 	//if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
-	auto op = ast.leafs[index.second];
+	Token op = ast.leafs[index.second];
 	if (op.kind == (Token::Type)ProcedureTokenType::operator_t) return true;
 	return false;
 }
@@ -401,8 +401,9 @@ Preamble::Procedure::Parser::Parser(OperatorRepository& repo, NodeBuilder& build
 		array_literal,
 
 	*/
-	translator.emplace(NodeKinds::namespace_path, builder.addNodeKind("namespace", { {"path",0} }, true));
-	translator.emplace(NodeKinds::name, builder.addNodeKind("name", { {"path",translator[NodeKinds::namespace_path]},{"core_name",0} }));
+	translator.emplace(NodeKinds::namespace_, builder.addNodeKind("namespace", { }, true));
+	translator.emplace(NodeKinds::namespace_path, builder.addInharitedNodeKind("namespace", translator[NodeKinds::namespace_], { {"path",0} }, true));
+	translator.emplace(NodeKinds::name, builder.addNodeKind("name", { {"path",translator[NodeKinds::namespace_]},{"core_name",0} }));
 	translator.emplace(NodeKinds::expression, builder.addNodeKind("expression", {}));
 
 	translator.emplace(NodeKinds::function_head_args_definition, builder.addNodeKind("function_head_args_definition", { {"argument_name",0},{"type",translator[NodeKinds::expression]} }, true));

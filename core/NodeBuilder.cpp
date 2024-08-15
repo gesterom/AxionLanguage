@@ -17,7 +17,7 @@ void printError(const std::optional<ErrorT>& err) {
 Ast::NodeIndex NodeBuilder::newLeaf(Result<Token, ErrorT> t)
 {
 	if (t) {
-		uint32_t res = ast->leafs.size();
+		uint32_t res = (uint32_t)ast->leafs.size();
 		ast->leafs.push_back((Token)t);
 		return { 0,res };
 	}
@@ -27,22 +27,22 @@ Ast::NodeIndex NodeBuilder::newLeaf(Result<Token, ErrorT> t)
 	}
 }
 
-uint64_t NodeBuilder::addNodeKind(std::string name, std::vector<ChildDescription> rule, bool repeat)
+NodeKindId NodeBuilder::addNodeKind(std::string name, std::vector<ChildDescription> rule, bool repeat)
 {
-	uint64_t newid = stringRepo.size() + 1;
+	NodeKindId newid = (NodeKindId)stringRepo.size() + 1;
 	stringRepo.emplace(newid, name);
 	rules.emplace(newid, rule);
 	repetable.emplace(newid, repeat);
 	return newid;
 }
 
-uint64_t NodeBuilder::addInharitedNodeKind(std::string name, uint64_t parent, std::vector<ChildDescription> rule, bool repeat)
+NodeKindId NodeBuilder::addInharitedNodeKind(std::string name, NodeKindId parent, std::vector<ChildDescription> rule, bool repeat)
 {
 	auto it = rules.find(parent);
 	ASSERT(it != rules.end(), std::format("Kind not registered : {}", parent));
 	ASSERT(it->second.size() == 0, std::format("Parent can have only 0 size {}", this->toString(parent)));
 
-	uint64_t newid = stringRepo.size() + 1;
+	NodeKindId newid = (NodeKindId)stringRepo.size() + 1;
 	stringRepo.emplace(newid, name);
 	rules.emplace(newid, rule);
 	repetable.emplace(newid, repeat);
@@ -50,7 +50,7 @@ uint64_t NodeBuilder::addInharitedNodeKind(std::string name, uint64_t parent, st
 	return newid;
 }
 
-Ast::NodeIndex NodeBuilder::createNode(uint64_t kind, std::vector<Ast::NodeIndex> elements) const
+Ast::NodeIndex NodeBuilder::createNode(NodeKindId kind, std::vector<Ast::NodeIndex> elements) const
 {
 	auto it = rules.find(kind);
 	ASSERT(it != rules.end(), std::format("Kind not registered : {}", kind));
@@ -75,7 +75,7 @@ Ast::NodeIndex NodeBuilder::createNode(uint64_t kind, std::vector<Ast::NodeIndex
 			ASSERT(elements[i].first == it->second[index].nodeKind, std::format("Node kind dont match expected `{}` get `{}` at position `{}`", this->toString(it->second[index].nodeKind), this->toString(elements[i].first), i));
 		}
 	}
-	uint32_t res = ast->nodes.size();
+	uint32_t res = (uint32_t)ast->nodes.size();
 
 	Ast::Node node;
 	node.kind = kind;
@@ -86,7 +86,7 @@ Ast::NodeIndex NodeBuilder::createNode(uint64_t kind, std::vector<Ast::NodeIndex
 	return { kind + 1,res };
 }
 
-std::string NodeBuilder::toString(uint64_t nodeKind) const
+std::string NodeBuilder::toString(NodeKindId nodeKind) const
 {
 	auto it = stringRepo.find(nodeKind);
 	if (it == stringRepo.end())
