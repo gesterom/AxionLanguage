@@ -1,4 +1,4 @@
-# Axion 0.0.2
+# Weasel 0.0.2
 
 ** THIS SOFTWARE IS UNFINISHED **
 
