@@ -31,7 +31,7 @@ public:
 	PreambleDefinition* get(PreamleIndex index) const;
 
 	NodeKindIndex addNodeKind(std::string name, std::vector<ChildDescription>, bool repetable = false);
-	NodeKindIndex addIPolimorficNodeKind(std::string name, NodeKindIndex parent, std::vector<ChildDescription> rule, bool repeat = false);
+	NodeKindIndex addPolimorficNodeKind(std::string name, NodeKindIndex parent, std::vector<ChildDescription> rule, bool repeat = false);
 	void addLeafToPolimorficNodeKind(std::string name, NodeKindIndex parent);
 	std::string nodeKind(NodeKindIndex n)const;
 	std::string nodeKindChilden(NodeKindIndex nodeKind, uint64_t childrenIndex)const;

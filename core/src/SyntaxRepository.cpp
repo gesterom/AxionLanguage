@@ -76,7 +76,7 @@ void SyntaxRepository::addLeafToPolimorficNodeKind(std::string name, NodeKindInd
 	nodePolimorfizm[parent].push_back(0);
 }
 
-NodeKindIndex SyntaxRepository::addIPolimorficNodeKind(std::string name, NodeKindIndex parent, std::vector<ChildDescription> rule, bool repeat)
+NodeKindIndex SyntaxRepository::addPolimorficNodeKind(std::string name, NodeKindIndex parent, std::vector<ChildDescription> rule, bool repeat)
 {
 	auto it = nodeConstructionRules.find(parent);
 	ASSERT(it != nodeConstructionRules.end(), std::format("Kind not registered : {}", parent));
@@ -135,7 +135,8 @@ std::string SyntaxRepository::to_string(PreamleIndex preambleIndex, Token::Type 
 	if (type <= Token::count) return meta_to_string(type);
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
 	else if (preambleIndex < (int64_t)(vec.size() % 100000)) {
-		ASSERT(vec.at(preambleIndex)->lexer != nullptr, "Internal Error : Lexer shoude be init");
+		//ASSERT(vec.at(preambleIndex)->lexer != nullptr, "Internal Error : Lexer shoude be init");
+		if (vec.at(preambleIndex)->lexer == nullptr) return "<Lexer nil "+std::to_string(type)+">";
 		return vec.at(preambleIndex)->lexer->to_string(type);
 	}
 	return "<Incorect Preamble Index>";

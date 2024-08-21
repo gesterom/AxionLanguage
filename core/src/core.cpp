@@ -127,6 +127,7 @@ int main(int argc, char** args)
 		// }
 		//
 		while (auto preamble = parser.parseProgram(lexer)) {
+			std::cout<<"Preambule : "<< preamble->preambleKind.value <<std::endl;
 			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
 				std::cout << astToGraph(preamble.value(),repo) << std::endl;
 		}

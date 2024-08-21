@@ -4,9 +4,13 @@
 #include <format>
 
 void printError(const std::optional<ErrorT>& err) {
-	if (err.has_value()) {
-		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.to_string() << " = " << err.value().oneLinerError << std::endl;
-	}
+	if (err) 
+		std::cout << "ERROR : " << err->loc.start() << "  -> " << err->oneLinerError << std::endl;
+}
+
+void printError(const Result<Token, ErrorT>& err) {
+	if (not err) 
+		std::cout << "ERROR : " << ((ErrorT)err).loc.start() << "  -> " << ((ErrorT)err).oneLinerError << std::endl;
 }
 
 NodeBuilder::NodeBuilder(SyntaxRepository& repo, Ast* ast) : repo(repo), ast(ast)
@@ -14,7 +18,7 @@ NodeBuilder::NodeBuilder(SyntaxRepository& repo, Ast* ast) : repo(repo), ast(ast
 
 }
 
-Ast::NodeIndex NodeBuilder::createLeaf(Result<Token, ErrorT> t) const
+Ast::NodeIndex NodeBuilder::createLeaf(const Result<Token, ErrorT>& t) const
 {
 	ASSERT(ast != nullptr, "AST not set up");
 	if (t) {
@@ -23,7 +27,7 @@ Ast::NodeIndex NodeBuilder::createLeaf(Result<Token, ErrorT> t) const
 		return { 0,res };
 	}
 	else {
-		printError((ErrorT)t);
+		printError(t);
 		UNREACHABLE("ERROR");
 	}
 }
@@ -92,7 +96,7 @@ NodeKindIndex NodeBuilder::addNodeKind(ExternalNodeId externalEnum,std::string n
 	translator.emplace(externalEnum, repo.addNodeKind(name, translated,repetable ));
 	return translator[externalEnum];
 }
-NodeKindIndex NodeBuilder::addIPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, NodeKindIndex parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
+NodeKindIndex NodeBuilder::addPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, NodeKindIndex parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
 	std::vector<SyntaxRepository::ChildDescription> translated;
 	for (const auto& i : rule) {
 		if (i.nodeKind == 0) {
@@ -102,7 +106,7 @@ NodeKindIndex NodeBuilder::addIPolimorficNodeKind(ExternalNodeId externalEnum, s
 			translated.push_back(SyntaxRepository::ChildDescription{ i.name,translator[i.nodeKind] });
 		}
 	}
-	translator.emplace(externalEnum, repo.addIPolimorficNodeKind(name,translator[parent], translated, repetable));
+	translator.emplace(externalEnum, repo.addPolimorficNodeKind(name,translator[parent], translated, repetable));
 	return translator[externalEnum];
 }
 void NodeBuilder::addLeafToPolimorficNodeKind(std::string name, ExternalNodeId parent) {

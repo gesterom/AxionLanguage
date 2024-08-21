@@ -166,6 +166,7 @@ std::string Preamble::Procedure::Lexer::to_string(Token::Type kind) const {
 	case ProcedureTokenType::double_literal: return "double_literal";
 	case ProcedureTokenType::integer_literal: return "integer_literal";
 	case ProcedureTokenType::operator_t: return "operator_t";
+	case ProcedureTokenType::bool_literal: return "bool_literal";
 	default: return "<unknown>";
 	}
 }

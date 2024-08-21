@@ -154,13 +154,6 @@ OperatorRepository::OperatorRepository()
 	this->addInfix("|", ++iota, true);  // Bitwise OR
 	this->addInfix("bor", iota, true);  // Bitwise OR
 
-	// Logical AND/OR
-	this->addInfix("&&", ++iota, true);  // Logical AND
-	this->addInfix("and", iota, true); // Logical AND (alternative)
-	this->addInfix("xor", ++iota, true);  // Logical XOR (alternative)
-	this->addInfix("||", ++iota, true);  // Logical OR
-	this->addInfix("or", iota, true);  // Logical OR (alternative)
-
 	this->addInfix("<=>", ++iota, true);  // Three-way comparison operator
 	// Comparison Operators / Membership Test
 	this->addInfix("<", ++iota, true);  // Less than
@@ -172,6 +165,12 @@ OperatorRepository::OperatorRepository()
 	this->addInfix("!=", iota, true);  // Inequality
 	this->addInfix("in", iota, true);  // Membership test
 
+	// Logical AND/OR
+	this->addInfix("&&", ++iota, true);  // Logical AND
+	this->addInfix("and", iota, true); // Logical AND (alternative)
+	this->addInfix("xor", ++iota, true);  // Logical XOR (alternative)
+	this->addInfix("||", ++iota, true);  // Logical OR
+	this->addInfix("or", iota, true);  // Logical OR (alternative)
 	// Assignment Operators (including custom with borrow checker)
 	this->addInfix("=", ++iota, false);  // Assignment
 	this->addInfix("+=", iota, false);  // Add and assign

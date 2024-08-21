@@ -1,7 +1,7 @@
 #pragma once
 #include "CodeLocation.h"
 
-
+//#if 0
 #ifdef _WIN32
 #define createToken(x,y)  Token{ .kind = (x), .value = (y), .file = (__FILE__), .line = (__LINE__), .func = (__func__) }
 #elif unix// __CYGWIN__
@@ -9,6 +9,7 @@
 #else
 #define createToken(x,y)  Token{ .kind = (x), .value = (y), .file = (__FILE__), .line = (__LINE__), .func = ("<dontSuport_function_names>") }
 #endif
+//#endif
 
 //#define createToken(x,y) Token{ (x),(y) }
 

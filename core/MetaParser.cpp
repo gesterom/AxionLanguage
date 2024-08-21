@@ -2,6 +2,8 @@
 #include "PreambleDefinition.h"
 #include "TokenStream.h"
 
+#include <iomanip>
+
 MetaParser::MetaParser(SyntaxRepository& pre_repo) : repo(pre_repo)
 {
 }
@@ -33,8 +35,24 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 	while (auto a = lexer.lex()) {
 		if (a->kind == Token::Type::comment) continue;
 		if (skip == true and a->kind == Token::Type::preamble) skip = false;
-		if (skip) { std::cout << "Error Recovery: "; continue; }
-		if (a->kind == Token::Type::preamble) { preambleToken = a; addToHead = true; continue; }
+		if (skip) { 
+			std::cout << "Error Recovery: "<<a->value<<" (";
+			if (preambleToken.has_value()) {
+				std::cout<< repo.to_string(repo.getPeambuleIndex(preambleToken->value),a->kind) ;
+			}
+			else {
+				std::cout << repo.to_string(0,a->kind) ;
+			}
+			std::cout<<")"<<std::endl;
+			continue; 
+		}
+
+		if (a->kind == Token::Type::preamble) { 
+			preambleToken = a;
+			addToHead = true;
+			addToBody = false;
+			continue;
+		}
 		if (a->kind == Token::Type::atribute_name or a->kind == Token::Type::file_scope_atribute_name) {
 			last_atribute = a;
 		}
@@ -74,7 +92,8 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 			else
 				head.push_back(a.value());
 		}
-		if (a.value().value == "}" and paramCount == 0 and not addToBody) skip = true;
+		if (a.value().value == "}" and paramCount == 0 and not addToBody) 
+			skip = true;
 		if (addToBody) {
 			body.push_back(a.value());
 
@@ -83,12 +102,18 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 
 			if (paramCount == 0) {
 				auto p = repo.get(repo.getPeambuleIndex(preambleToken->value))->parser;
-				auto h = TokenStream(repo.getPeambuleIndex(preambleToken->value), head, repo);
-				auto b = TokenStream(repo.getPeambuleIndex(preambleToken->value), body, repo);
 				if (p) {
+					auto h = TokenStream(repo.getPeambuleIndex(preambleToken->value), head, repo);
+					auto b = TokenStream(repo.getPeambuleIndex(preambleToken->value), body, repo);
 					auto ast = p->parse(h, b);
 					PreambleNode res{ combineMaps(file_atributes,local_atributes) ,preambleToken.value() ,ast,p };
 					return res;
+				}
+				else {
+					head.clear();
+					body.clear();
+					addToHead=false;
+					addToBody=false;
 				}
 			}
 		}

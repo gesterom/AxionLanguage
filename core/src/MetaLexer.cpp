@@ -79,6 +79,7 @@ std::optional<Token> MetaLexer::lex() {
 			break;
 		case LexerMode::emit_body_closing_bracker: {
 			auto res = loc += ch;
+			loc = loc.moveStartToEnd();
 			mode = afterComment;
 			return createToken(Token::Type::parenthesis, res);
 		}break;
@@ -275,15 +276,14 @@ std::optional<Token> MetaLexer::lex() {
 			}
 			else if (ch == '}') {
 				this->parentisisCounter--;
-				if (this->parentisisCounter <= 0) {
-					tempLoc = loc.asLimiter();
-					loc = loc.moveStartToEnd();
-					mode = LexerMode::body_specific;
-					nextMode = LexerMode::emit_body_closing_bracker;
+				tempLoc = loc.asLimiter();
+				loc = loc.moveStartToEnd();
+				mode = LexerMode::body_specific;
+				nextMode = LexerMode::emit_body_closing_bracker;
+				if (this->parentisisCounter <= 0)
 					afterComment = LexerMode::idle;
-				}
-				else
-					loc += ch;
+				else 
+					afterComment = LexerMode::body;
 			}
 			else if (ch == '/' and next_ch == '/') {
 				this->tempLoc = loc.asLimiter();

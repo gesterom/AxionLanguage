@@ -312,6 +312,90 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 	}
 }
 
+Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseType(TokenStream& head, Ast& ast)
+{
+	// not Token?
+	//Ast::Node res;
+	//res.kind = (uint64_t)NodeKinds::expression;
+	std::vector<Ast::NodeIndex> output;
+	int32_t precedence = 0;
+
+	bool lastIsValue = false;
+	while (true) {
+		//value
+		if (not lastIsValue and head.optional(Token::Type::parenthesis, "(")) { // brackets
+			auto e = parseType(head, ast);
+			if (e) output.push_back(e);
+			auto t = head.require(Token::Type::parenthesis, ")");
+			if (not t) return (ErrorT)t;
+			lastIsValue = true;
+			continue;
+		}
+		else if (not lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array literal
+			std::vector<Ast::NodeIndex> temp;
+			do {
+				auto a = parseType(head, ast);
+				if (a) temp.push_back(a);
+				else break;
+			} while (head.optional((Token::Type)ProcedureTokenType::comma));
+			auto t = head.require(Token::Type::parenthesis, "]");
+			output.push_back(builder.createNode(NodeKinds::array_literal, temp));
+			lastIsValue = true;
+			continue;
+		}
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
+			parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			lastIsValue = true;
+			continue;
+		} //  
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
+			parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			lastIsValue = true;
+			continue;
+		}
+		else if (lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array acess
+			parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			lastIsValue = true;
+			continue;
+		}
+		else if (auto t = isPrimaryExpresion(head)) {
+			output.emplace_back(builder.createLeaf(t.value()));
+			lastIsValue = true;
+			continue;
+		}
+		//operators
+		else if (head.peak()->value == "=" and head.peak()->kind == (Token::Type)::ProcedureTokenType::operator_t) {
+			break;
+		}
+		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
+			if (output.size() > 0) {
+				auto pre = deducePrecedence(repo.operators(), ast, output, t->value.to_string());
+				reduce_output(repo.operators(), ast, output, pre);
+			}
+			output.emplace_back(builder.createLeaf(t.value()));
+			lastIsValue = false;
+			continue;
+		}
+		break;//if token not handled stop parsing expression
+	}
+	reduce_output(repo.operators(), ast, output, INT32_MAX);
+	if (output.size() == 1) {
+		return (Ast::NodeIndex)output[0];
+	}
+	else if (output.size() == 0) {
+		return builder.createNode(NodeKinds::empty_expression, {});
+	}
+	else {
+		auto err = min(ast, output[1]);
+		ASSERT(err != std::nullopt, "something fishy!!");
+		if (err) {
+			return ErrorT{ err.value(),std::format("Unexpected token {}, invalid type expression !!",err->to_string()),"TODO long error" };
+		}
+		else
+			UNREACHABLE("To remove warning");
+	}
+}
+
 // atom : type/*expresion that evaluated in compile time will result in Type*/
 Result<Ast::NodeIndex, ErrorT> Parser::requireFunctionHeadArgs(TokenStream& head, Ast& ast) {
 	std::vector<Ast::NodeIndex> res;
@@ -319,7 +403,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::requireFunctionHeadArgs(TokenStream& head
 		do {
 			res.push_back(builder.createLeaf(head.require(Token::Type::atom)));
 			head.require((Token::Type)ProcedureTokenType::colon);
-			res.push_back(parseExpresion(head, ast));
+			res.push_back(parseType(head, ast));
 		} while (head.optional((Token::Type)ProcedureTokenType::comma));
 	}
 	return builder.createNode(NodeKinds::function_head_args_definition, res);
@@ -344,7 +428,7 @@ std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 	if (not head.require(Token::Type::parenthesis, ")")) return std::nullopt;
 
 	if (head.optional((Token::Type)ProcedureTokenType::operator_t, "->")) {
-		auto retT = parseExpresion(head, ast);
+		auto retT = parseType(head, ast);
 		if (not retT)
 			res[2] = retT;
 		else return std::nullopt;
@@ -356,34 +440,155 @@ std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 	return builder.createNode(NodeKinds::function_head, res);
 }
 
+// return expr catch expr ;
+// evaluate first and if it is true
+// evaluate expr1 
+// if error return expr2
+// fallthrough
+// expr1? // will return value or short circute function
+// expr1??expr2 // will return value or short circute function with returned value on right
+// expr1?.expr2 // if left side is error it do nothing, if it is corect it will acess right side as member of expr1 and return expr2 or Error from expr1+eventual error from expr2
+// so type of expr1?.expr2 is
+// expr2 ? expr1.error+expr2.error
+//
+
+Result<Ast::NodeIndex, ErrorT> Parser::parseIf(TokenStream& body, Ast& ast) {
+	auto startParam = body.require(Token::Type::atom, "if");
+	if (not startParam) { printError(startParam); return ErrorT{body.peak()->value,"if statement needs to start with `if` keyword","TODO"}; }
+	auto cond_expression = parseExpresion(body,ast);
+	if (not cond_expression) { printError(cond_expression); return ErrorT{ body.peak()->value,"if statement require a expresion after `if` keyword","TODO" }; }
+	auto thenKeyword = body.require((Token::Type)ProcedureTokenType::colon, ":");
+	if (not thenKeyword) { printError(thenKeyword); return ErrorT{ body.peak()->value,"if statement require a `:` after condition","TODO" }; }
+	
+	auto if_true = parseStatement(body,ast);
+	if (not if_true) { printError(if_true); return ErrorT{ body.peak()->value,"error in if statement body","TODO" }; }
+	auto if_true_ = (Ast::NodeIndex)if_true;
+	std::optional<Ast::NodeIndex> if_false =  std::nullopt;
+	if (body.optional(Token::Type::atom, "else")) {
+		auto falseBody = parseStatement(body, ast);
+		if(not falseBody) printError(falseBody);
+		else if_false = falseBody;
+	}
+	if (if_false.has_value()) {
+		return builder.createNode(NodeKinds::if_branch, { cond_expression,if_true_,if_false.value()});
+	}
+	else {
+		return builder.createNode(NodeKinds::if_branch, { cond_expression,if_true_,builder.createNode(NodeKinds::empty_stmt,{}) });
+	}
+}
+Result<Ast::NodeIndex, ErrorT> Parser::parseLet(TokenStream& body, Ast& ast) {
+	auto startParam = body.require(Token::Type::atom, "let");
+	if (not startParam) { printError(startParam); return ErrorT{ body.peak()->value,"varible declaration statment needs to start with `let` keyword","TODO" }; }
+	auto varName = body.require(Token::Type::atom);
+	if (not varName) { printError(varName); return ErrorT{ body.peak()->value,"varible declaration statment needs varible name after `let` keyword","TODO" }; }
+	std::optional<Ast::NodeIndex> type = std::nullopt;
+	if (body.optional((Token::Type)ProcedureTokenType::colon, ":")) {
+		//TODO parseExpression needs to stop on = 
+		// now it will parse it and complayin about not reduced stack
+		auto var_type = parseType(body,ast);
+		if (not var_type) { printError(var_type); return ErrorT{ body.peak()->value,"varible declaration incorect type","TODO" }; }
+		type = var_type;
+	}
+	auto assigne = body.require((Token::Type)ProcedureTokenType::operator_t,"=");
+	if (not assigne) { printError(assigne); return ErrorT{ body.peak()->value,"varible declaration needs to initialize varible expected `=` ","TODO" }; }
+	auto initValue = parseExpresion(body,ast);
+	if (not initValue) { printError(initValue); return ErrorT{ body.peak()->value,"varible declaration needs to initialize varible","TODO" }; }
+	auto endStmt = body.require((Token::Type)ProcedureTokenType::semicolon, ";");
+	if (not endStmt) { printError(endStmt); return ErrorT{ body.peak()->value,"varible declaration needs to ends with `;`","TODO" }; }
+	if (type) {
+		return builder.createNode(NodeKinds::varible_declaration,{ builder.createLeaf(varName),type.value(),initValue});
+	}
+	else {
+		return builder.createNode(NodeKinds::varible_declaration, { builder.createLeaf(varName),builder.createNode(NodeKinds::empty_expression,{}),initValue});
+	}
+}
+
+Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseStatement(TokenStream& body, Ast& ast)
+{
+	if (body.peak()->value == "if") {
+		auto err = parseIf(body, ast);
+		if (not err) {
+			printError(err);
+		}
+		return err;
+	}
+	if (body.peak()->value == "let") {
+		auto err = parseLet(body, ast);
+		if (not err) {
+			printError(err);
+		}
+		return err;
+	}
+	if (body.peak()->value == "{" and body.peak()->kind == Token::Type::parenthesis) {
+		auto err = parseBlockStatement(body, ast);
+		if (not err) {
+			printError(err);
+		}
+		return err;
+	}
+	auto exprStmt = parseExpresion(body, ast);
+	if (exprStmt) {
+		auto endStmt = body.require((Token::Type)ProcedureTokenType::semicolon, ";");
+		if (not endStmt) { printError(endStmt); return ErrorT{ body.peak()->value,"expression needs to ends with `;`","TODO" }; }
+		return builder.createNode(NodeKinds::expression_stmt,{ exprStmt });
+	}
+	printError(exprStmt);
+	return ErrorT{ body.peak()->value,"not recognized statement","TODO" };
+}
+
+Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseBlockStatement(TokenStream& body, Ast& ast)
+{
+	auto startParam = body.require(Token::Type::parenthesis, "{");
+	if (not startParam) { printError(startParam); return ErrorT{ body.peak()->value,"block statment starts with `{`","TODO" }; }
+	std::vector<Ast::NodeIndex> inst;
+	while(not body.optional(Token::Type::parenthesis, "}")){
+		auto t = parseStatement(body, ast);
+		if(not t)
+			return ((ErrorT)t);
+		else 
+			inst.push_back((Ast::NodeIndex)t);
+	}
+	return builder.createNode(NodeKinds::stmt_block, inst);
+}
+
+
 std::optional<Ast::NodeIndex> Parser::parseBody(TokenStream& body, Ast& ast) {
-	body.require(Token::Type::parenthesis, "{");
-	auto t = parseExpresion(body, ast);
-	body.require(Token::Type::parenthesis, "}");
-	if (t) return t;
-	else {std::cout << ((ErrorT)t).loc.start() << "  -> " << ((ErrorT)t).oneLinerError << std::endl; return std::nullopt; }
+
+	auto body_ast = parseBlockStatement(body,ast);
+	if (not body_ast) {
+		printError(body_ast);
+		return std::nullopt;
+	}
+	return body_ast;
 }
 
 Preamble::Procedure::Parser::Parser(SyntaxRepository& repo) : repo(repo), builder(repo)
 {
 	builder.addNodeKind(NodeKinds::scope,"scope", { } );
-	builder.addIPolimorficNodeKind(NodeKinds::empty_scope_path,"empty_scope_path", NodeKinds::scope, { });
-	builder.addIPolimorficNodeKind(NodeKinds::scope_path,"scope_path", NodeKinds::scope, { {"path",NodeKinds::leaf} }, true);
+	builder.addPolimorficNodeKind(NodeKinds::empty_scope_path,"empty_scope_path", NodeKinds::scope, { });
+	builder.addPolimorficNodeKind(NodeKinds::scope_path,"scope_path", NodeKinds::scope, { {"path",NodeKinds::leaf} }, true);
 	builder.addNodeKind(NodeKinds::name,"name", { {"path",NodeKinds::scope},{"core_name",NodeKinds::leaf} });
 	builder.addNodeKind(NodeKinds::expression,"expression", {});
 	builder.addNodeKind(NodeKinds::expression_list,"expression_list", { {"element" , NodeKinds::expression} }, true);
 	builder.addNodeKind(NodeKinds::function_head_args_definition,"function_head_args_definition", { {"argument_name",NodeKinds::leaf},{"type",NodeKinds::expression} }, true);
 	builder.addNodeKind(NodeKinds::function_head,"function_head", { {"function_name",NodeKinds::name}, {"Args definition",NodeKinds::function_head_args_definition}, {"ReturnType",NodeKinds::expression} });
 
-	builder.addIPolimorficNodeKind(NodeKinds::empty_expression,	"empty_expression",	NodeKinds::expression, {});
-	builder.addIPolimorficNodeKind(NodeKinds::function_call,	"function_call",	NodeKinds::expression, { { "Function",NodeKinds::expression},{"Parameters", NodeKinds::expression_list} });
-	builder.addIPolimorficNodeKind(NodeKinds::array_literal,	"array_literal",	NodeKinds::expression, { { "Elements", NodeKinds::expression_list } });
-	builder.addIPolimorficNodeKind(NodeKinds::Object_construct,	"Object_construct",	NodeKinds::expression, { { "Constructed Type",NodeKinds::expression},{"Parameters", NodeKinds::expression_list} });
-	builder.addIPolimorficNodeKind(NodeKinds::array_acess,		"array_acess",		NodeKinds::expression, { { "Array",NodeKinds::expression},{"indexes", NodeKinds::expression_list} });
-	builder.addIPolimorficNodeKind(NodeKinds::prefix_operator,	"prefix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"right", NodeKinds::expression} });
-	builder.addIPolimorficNodeKind(NodeKinds::infix_operator,	"infix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"left", NodeKinds::expression},{"right", NodeKinds::expression} });
-	builder.addIPolimorficNodeKind(NodeKinds::suffix_operator,	"suffix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"left", NodeKinds::expression} });
+	builder.addPolimorficNodeKind(NodeKinds::empty_expression,	"empty_expression",	NodeKinds::expression, {});
+	builder.addPolimorficNodeKind(NodeKinds::function_call,	"function_call",	NodeKinds::expression, { { "Function",NodeKinds::expression},{"Parameters", NodeKinds::expression_list} });
+	builder.addPolimorficNodeKind(NodeKinds::array_literal,	"array_literal",	NodeKinds::expression, { { "Elements", NodeKinds::expression_list } });
+	builder.addPolimorficNodeKind(NodeKinds::Object_construct,	"Object_construct",	NodeKinds::expression, { { "Constructed Type",NodeKinds::expression},{"Parameters", NodeKinds::expression_list} });
+	builder.addPolimorficNodeKind(NodeKinds::array_acess,		"array_acess",		NodeKinds::expression, { { "Array",NodeKinds::expression},{"indexes", NodeKinds::expression_list} });
+	builder.addPolimorficNodeKind(NodeKinds::prefix_operator,	"prefix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"right", NodeKinds::expression} });
+	builder.addPolimorficNodeKind(NodeKinds::infix_operator,	"infix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"left", NodeKinds::expression},{"right", NodeKinds::expression} });
+	builder.addPolimorficNodeKind(NodeKinds::suffix_operator,	"suffix_operator",	NodeKinds::expression, { { "Operator",NodeKinds::leaf},{"left", NodeKinds::expression} });
 	builder.addLeafToPolimorficNodeKind("variable", NodeKinds::expression);
+
+	builder.addNodeKind(NodeKinds::statement,"statement", {});
+	builder.addPolimorficNodeKind(NodeKinds::empty_stmt, "empty stmt",NodeKinds::statement, {});
+	builder.addPolimorficNodeKind(NodeKinds::stmt_block, "block", NodeKinds::statement, {{"instruction",NodeKinds::statement}}, true);
+	builder.addPolimorficNodeKind(NodeKinds::varible_declaration,"varible_declaration",NodeKinds::statement,{{"varible_name",0},{"varible_type",NodeKinds::expression}, {"varible_initial_value",NodeKinds::expression}});
+	builder.addPolimorficNodeKind(NodeKinds::if_branch, "if", NodeKinds::statement, { {"cond",NodeKinds::expression},{"ifTrue",NodeKinds::statement}, {"ifFalse",NodeKinds::statement} });
+	builder.addPolimorficNodeKind(NodeKinds::expression_stmt, "expression_stmt", NodeKinds::statement, { {"expr",NodeKinds::expression}});
 }
 
 Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)

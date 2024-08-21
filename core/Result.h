@@ -15,6 +15,29 @@ class Result {
 	};
 	Value val;
 public:
+	
+	Result(const Result<R, E>& other) {
+		if (other.isGood) {
+			this->isGood = true;
+			this->val.res = other.val.res;
+		}
+		else {
+			this->isGood = false;
+			this->val.err = other.val.err;
+		}
+	}
+	//Result<R, E>& operator=(const Result<R, E>& other) {
+	//	if (other.isGood) {
+	//		this->isGood = true;
+	//		this->val.res = other.val.res;
+	//	}
+	//	else {
+	//		this->isGood = false;
+	//		this->val.err = other.val.err;
+	//	}
+	//	return *this;
+	//}
+
 	Result(R r) : isGood(true) {
 		new(&val.res) R(r);
 	}
@@ -27,7 +50,7 @@ public:
 
 	// Implicit cast to R
 	operator R() {
-		ASSERT(isGood, "implicit cast to R when not good");
+		ASSERT(isGood, "implicit cast to R when bad");
 		return val.res;
 	}
 
@@ -37,7 +60,7 @@ public:
 		return val.err;
 	}
 	operator const R() const {
-		ASSERT(isGood, "implicit cast to R when not good");
+		ASSERT(isGood, "implicit cast to R when bad");
 		return val.res;
 	}
 

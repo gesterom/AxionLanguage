@@ -52,9 +52,9 @@ procedure main2() {
 		}{
 	*/
 	// Variable declarations
-	let a : int;
-	let b : float;
-	let c : bool;
+	let a : int = 0;
+	let b : float = 0;
+	let c : bool = false;
 
 	// Basic assignment and arithmetic operations
 	a = 10;
@@ -62,11 +62,10 @@ procedure main2() {
 	c = a > b;
 
 	// Logical operations
-	if a == 10 && b < 5.0 and true or false{
+	if a == 10 && b < 5.0 and true or false : 
 		printf("Condition met: a is 10 and b is less than 5.0");
-	} else {
-		printf("Condition not met");
-	}
+	else printf("Condition not met");
+
 	let oracleandhercules=15;
 	// Compound assignment
 	a += 5;
