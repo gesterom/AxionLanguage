@@ -3,17 +3,17 @@
 ** THIS SOFTWARE IS UNFINISHED **
 
 ## About
-Axion is(will be) multi-paradigmed, self-hosted, general-purpose programming language.
+Weasel is(will be) multi-paradigmed, self-hosted, general-purpose programming language.
 
 ## Usage
 
 ### Bootstrab axion compiler
 ```bash
-$ msbuild Axion.sln
+$ msbuild Weasel.sln
 ```
 
 ### `Compile` axion source code 
 ```bash
-$ axion <file_name.axn> 
+$ wWeasel <file_name.w> 
 ```
 
