@@ -2,7 +2,7 @@
 #include "PreambleDefinition.h"
 #include "TokenStream.h"
 
-MetaParser::MetaParser(PreambleRepository& pre_repo) : repo(pre_repo)
+MetaParser::MetaParser(SyntaxRepository& pre_repo) : repo(pre_repo)
 {
 }
 

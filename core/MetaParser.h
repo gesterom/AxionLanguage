@@ -3,13 +3,13 @@
 #include <vector>
 #include "AST.h"
 #include "MetaLexer.h"
-#include "PreambleRepository.h"
+#include "SyntaxRepository.h"
 
 class MetaParser
 {
-	PreambleRepository& repo;
+	SyntaxRepository& repo;
 	public:
-		MetaParser(PreambleRepository& pre_repo);
+		MetaParser(SyntaxRepository& pre_repo);
 		std::optional<PreambleNode> parseProgram(MetaLexer& lexer);
 };
 

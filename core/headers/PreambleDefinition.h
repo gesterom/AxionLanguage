@@ -33,7 +33,7 @@ public:
 class IParser {
 public:
 	virtual Ast parse(TokenStream& head, TokenStream& body) = 0;
-	virtual std::string NodeKind_toString(uint64_t n) const = 0;
+	//virtual std::string NodeKind_toString(uint64_t n) const = 0;
 	virtual ~IParser() noexcept {}
 };
 

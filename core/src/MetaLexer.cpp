@@ -6,7 +6,7 @@
 #include "StringUtility.h"
 #include "TODO.h"
 
-MetaLexer::MetaLexer(const PreambleRepository& repo, std::string file_name) : loc(file_name), tempLoc(loc), repo(repo) {}
+MetaLexer::MetaLexer(const SyntaxRepository& repo, std::string file_name) : loc(file_name), tempLoc(loc), repo(repo) {}
 
 std::optional<Token> MetaLexer::lex() {
 	CodeLocation line = loc;

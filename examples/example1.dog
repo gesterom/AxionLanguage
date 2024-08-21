@@ -90,7 +90,7 @@ procedure addToList(list : vector(int) , a : int){
 	z = not x++ + y * 2 ** 3 ;
 }
 
-procedure addToList(list : vector(int) , a : int){
+procedure addToList2(list : vector(int) , a : int){
 	z = 2**3**4**5 ;
 }
 

@@ -2,9 +2,7 @@
 
 #include <algorithm>
 
-using namespace Preamble::Procedure;
-
-void Preamble::Procedure::OperatorRepository::insertIntoLexer(std::string representation)
+void OperatorRepository::insertIntoLexer(std::string representation)
 {
 	lexer.push_back(representation);
 	std::sort(lexer.begin(), lexer.end(), [](const auto a, const auto b) {return a.size() > b.size(); });
@@ -82,17 +80,17 @@ void Preamble::Procedure::OperatorRepository::insertIntoLexer(std::string repres
 {"?", 14, infix},      // Result type: TypeA?TypeErr
 ```*/
 
-Preamble::Procedure::OperatorRepository::OperatorRepository()
+OperatorRepository::OperatorRepository()
 {
 	// Optional type: Type?
 
 	int32_t iota = 0;
 
-	this->addSuffix("?", ++iota, true, nullptr); // optional
-	this->addInfix("?", iota, true, nullptr); // result type
-	this->addInfix("->", ++iota, true, nullptr); // function type
+	this->addSuffix("?", ++iota, true); // optional
+	this->addInfix("?", iota, true); // result type
+	this->addInfix("->", ++iota, true); // function type
 
-	this->addInfix(".", ++iota, true, nullptr);
+	this->addInfix(".", ++iota, true);
 
 	// defineNewOperator prefix ++ insert . true ;
 	// operator ++ for int
@@ -114,88 +112,88 @@ Preamble::Procedure::OperatorRepository::OperatorRepository()
 	// array[i] == 1 
 	// array[3] // error
 	// 
-	this->addSuffix("++", ++iota, true, nullptr);
-	this->addSuffix("--", iota, true, nullptr);
-	this->addPrefix("++", ++iota, false, nullptr);
-	this->addPrefix("--", iota, false, nullptr);
-	this->addInfix("as", ++iota, false, nullptr);  // Type casting
+	this->addSuffix("++", ++iota, true);
+	this->addSuffix("--", iota, true);
+	this->addPrefix("++", ++iota, false);
+	this->addPrefix("--", iota, false);
+	this->addInfix("as", ++iota, false);  // Type casting
 
 	// Prefix Operators (highest precedence)
 	//this->addPrefix("+", ++iota, false, nullptr);  // Unary plus
-	this->addPrefix("-", iota, false, nullptr);  // Unary minus
-	this->addPrefix("!", iota, false, nullptr);  // Logical NOT
-	this->addPrefix("not", iota, false, nullptr); // Alternative for logical NOT
-	this->addPrefix("~", iota, false, nullptr);  // Bitwise NOT (complement)
-	this->addPrefix("bnot", iota, false, nullptr);  // Bitwise NOT (complement)
-	this->addPrefix("&", iota, false, nullptr);  // Address-of
-	this->addPrefix("*", iota, false, nullptr);  // Pointer dereference
+	this->addPrefix("-", iota, false);  // Unary minus
+	this->addPrefix("!", iota, false);  // Logical NOT
+	this->addPrefix("not", iota, false); // Alternative for logical NOT
+	this->addPrefix("~", iota, false);  // Bitwise NOT (complement)
+	this->addPrefix("bnot", iota, false);  // Bitwise NOT (complement)
+	this->addPrefix("&", iota, false);  // Address-of
+	this->addPrefix("*", iota, false);  // Pointer dereference
 
-	this->insertInfix("**", ++iota, false, nullptr);  // Power
+	this->insertInfix("**", ++iota, false);  // Power
 	// APL - 
 	// Multiplicative Operators
-	this->addInfix("*", ++iota, true, nullptr);  // Multiplication
-	this->addInfix("/", iota, true, nullptr);  // Division
-	this->addInfix("%", iota, true, nullptr);  // Modulus
+	this->addInfix("*", ++iota, true);  // Multiplication
+	this->addInfix("/", iota, true);  // Division
+	this->addInfix("%", iota, true);  // Modulus
 
 	// Arithmetic Operators
-	this->addInfix("+", ++iota, true, nullptr);  // Addition
-	this->addInfix("-", iota, true, nullptr);  // Subtraction
+	this->addInfix("+", ++iota, true);  // Addition
+	this->addInfix("-", iota, true);  // Subtraction
 
-	this->addInfix("..", ++iota, true, nullptr);  // exclusive Range
-	this->addInfix("...", iota, true, nullptr);  // Inclusive Range // (4+3)..10
+	this->addInfix("..", ++iota, true);  // exclusive Range
+	this->addInfix("...", iota, true);  // Inclusive Range // (4+3)..10
 
 	// Bitwise Shift Operators
-	this->addInfix("<<", ++iota, true, nullptr);  // Bitwise left shift
-	this->addInfix(">>", iota, true, nullptr);  // Bitwise right shift
+	this->addInfix("<<", ++iota, true);  // Bitwise left shift
+	this->addInfix(">>", iota, true);  // Bitwise right shift
 
 	// Bitwise Operators
-	this->addInfix("&", ++iota, true, nullptr);  // Bitwise AND
-	this->addInfix("band", iota, true, nullptr);  // Bitwise AND
-	this->addInfix("^", ++iota, true, nullptr);  // Bitwise XOR
-	this->addInfix("bxor", iota, true, nullptr);  // Bitwise XOR
-	this->addInfix("|", ++iota, true, nullptr);  // Bitwise OR
-	this->addInfix("bor", iota, true, nullptr);  // Bitwise OR
+	this->addInfix("&", ++iota, true);  // Bitwise AND
+	this->addInfix("band", iota, true);  // Bitwise AND
+	this->addInfix("^", ++iota, true);  // Bitwise XOR
+	this->addInfix("bxor", iota, true);  // Bitwise XOR
+	this->addInfix("|", ++iota, true);  // Bitwise OR
+	this->addInfix("bor", iota, true);  // Bitwise OR
 
 	// Logical AND/OR
-	this->addInfix("&&", ++iota, true, nullptr);  // Logical AND
-	this->addInfix("and", iota, true, nullptr); // Logical AND (alternative)
-	this->addInfix("xor", ++iota, true, nullptr);  // Logical XOR (alternative)
-	this->addInfix("||", ++iota, true, nullptr);  // Logical OR
-	this->addInfix("or", iota, true, nullptr);  // Logical OR (alternative)
+	this->addInfix("&&", ++iota, true);  // Logical AND
+	this->addInfix("and", iota, true); // Logical AND (alternative)
+	this->addInfix("xor", ++iota, true);  // Logical XOR (alternative)
+	this->addInfix("||", ++iota, true);  // Logical OR
+	this->addInfix("or", iota, true);  // Logical OR (alternative)
 
-	this->addInfix("<=>", ++iota, true, nullptr);  // Three-way comparison operator
+	this->addInfix("<=>", ++iota, true);  // Three-way comparison operator
 	// Comparison Operators / Membership Test
-	this->addInfix("<", ++iota, true, nullptr);  // Less than
-	this->addInfix("<=", iota, true, nullptr);  // Less than or equal
-	this->addInfix(">", iota, true, nullptr);  // Greater than
-	this->addInfix(">=", iota, true, nullptr);  // Greater than or equal
+	this->addInfix("<", ++iota, true);  // Less than
+	this->addInfix("<=", iota, true);  // Less than or equal
+	this->addInfix(">", iota, true);  // Greater than
+	this->addInfix(">=", iota, true);  // Greater than or equal
 
-	this->addInfix("==", ++iota, true, nullptr);  // Equality
-	this->addInfix("!=", iota, true, nullptr);  // Inequality
-	this->addInfix("in", iota, true, nullptr);  // Membership test
+	this->addInfix("==", ++iota, true);  // Equality
+	this->addInfix("!=", iota, true);  // Inequality
+	this->addInfix("in", iota, true);  // Membership test
 
 	// Assignment Operators (including custom with borrow checker)
-	this->addInfix("=", ++iota, false, nullptr);  // Assignment
-	this->addInfix("+=", iota, false, nullptr);  // Add and assign
-	this->addInfix("-=", iota, false, nullptr);  // Subtract and assign
-	this->addInfix("*=", iota, false, nullptr);  // Multiply and assign
-	this->addInfix("/=", iota, false, nullptr);  // Divide and assign
-	this->addInfix("%=", iota, false, nullptr);  // Modulus and assign
-	this->addInfix("<<=", iota, false, nullptr);  // Left shift and assign
-	this->addInfix(">>=", iota, false, nullptr);  // Right shift and assign
-	this->addInfix("&=", iota, false, nullptr);  // Bitwise AND and assign
-	this->addInfix("|=", iota, false, nullptr);  // Bitwise OR and assign
-	this->addInfix("^=", iota, false, nullptr);  // Bitwise XOR and assign
+	this->addInfix("=", ++iota, false);  // Assignment
+	this->addInfix("+=", iota, false);  // Add and assign
+	this->addInfix("-=", iota, false);  // Subtract and assign
+	this->addInfix("*=", iota, false);  // Multiply and assign
+	this->addInfix("/=", iota, false);  // Divide and assign
+	this->addInfix("%=", iota, false);  // Modulus and assign
+	this->addInfix("<<=", iota, false);  // Left shift and assign
+	this->addInfix(">>=", iota, false);  // Right shift and assign
+	this->addInfix("&=", iota, false);  // Bitwise AND and assign
+	this->addInfix("|=", iota, false);  // Bitwise OR and assign
+	this->addInfix("^=", iota, false);  // Bitwise XOR and assign
 
 	// Member Access / Type Casting / Result Type
 	//this->addInfix("->", 14, true, nullptr);  // Member access through pointer
 	// 
 	//this->insertPrefix("copy", this->getPrecedence("="), false, nullptr);  // Copy (only with steel* checker)
 	//this->insertPrefix("move", this->getPrecedence("="), false, nullptr);  // Move (only with steel* checker)
-	// axion treesiter main.dg -> axionParser.c -> axionParser.a 
+	// weasel treesiter main.w -> weaselParser.c -> weaselParser.so 
 }
 
-void OperatorRepository::addPrefix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::addPrefix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -203,10 +201,9 @@ void OperatorRepository::addPrefix(std::string representation, int32_t precedenc
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Prefix;
-	op.codeGen = func;
 	operators.emplace_back(op);
 }
-void OperatorRepository::insertPrefix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::insertPrefix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -214,14 +211,13 @@ void OperatorRepository::insertPrefix(std::string representation, int32_t preced
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Prefix;
-	op.codeGen = func;
 	for (auto& item : operators) {
 		if (item.precedence >= precedence)
 			item.precedence++;
 	}
 	operators.emplace_back(op);
 }
-void OperatorRepository::addInfix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::addInfix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -229,10 +225,9 @@ void OperatorRepository::addInfix(std::string representation, int32_t precedence
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Infix;
-	op.codeGen = func;
 	operators.emplace_back(op);
 }
-void OperatorRepository::insertInfix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::insertInfix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -240,14 +235,13 @@ void OperatorRepository::insertInfix(std::string representation, int32_t precede
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Infix;
-	op.codeGen = func;
 	for (auto& item : operators) {
 		if (item.precedence >= precedence)
 			item.precedence++;
 	}
 	operators.emplace_back(op);
 }
-void OperatorRepository::addSuffix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::addSuffix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -255,10 +249,9 @@ void OperatorRepository::addSuffix(std::string representation, int32_t precedenc
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Suffix;
-	op.codeGen = func;
 	operators.emplace_back(op);
 }
-void OperatorRepository::insertSuffix(std::string representation, int32_t precedence, bool leftAssociativity, codeGenOperator func) {
+void OperatorRepository::insertSuffix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {
 	if (precedence <= 0) precedence = 1;
 	insertIntoLexer(representation);
 	OperatorDefinition op;
@@ -266,7 +259,6 @@ void OperatorRepository::insertSuffix(std::string representation, int32_t preced
 	op.precedence = precedence;
 	op.leftAssociativity = leftAssociativity;
 	op.type = OperatorDefinition::Suffix;
-	op.codeGen = func;
 	for (auto& item : operators) {
 		if (item.precedence >= precedence)
 			item.precedence++;
@@ -276,21 +268,21 @@ void OperatorRepository::insertSuffix(std::string representation, int32_t preced
 const std::vector<std::string>& OperatorRepository::getOperatorLexList() const {
 	return this->lexer;
 }
-int32_t OperatorRepository::getPrecedencePrefix(std::string rep) const {
+OperatorPrecedence OperatorRepository::getPrecedencePrefix(std::string rep) const {
 	for (const auto& i : operators) {
 		if (i.representation == rep and i.type == OperatorDefinition::Prefix) return i.precedence;
 	}
 	return -1;
 }
 
-int32_t OperatorRepository::getPrecedenceInfix(std::string rep) const {
+OperatorPrecedence OperatorRepository::getPrecedenceInfix(std::string rep) const {
 	for (const auto& i : operators) {
 		if (i.representation == rep and i.type == OperatorDefinition::Infix) return i.precedence;
 	}
 	return -1;
 }
 
-int32_t OperatorRepository::getPrecedenceSuffix(std::string rep) const {
+OperatorPrecedence OperatorRepository::getPrecedenceSuffix(std::string rep) const {
 	for (const auto& i : operators) {
 		if (i.representation == rep and i.type == OperatorDefinition::Suffix) return i.precedence;
 	}

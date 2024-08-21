@@ -1,30 +1,29 @@
 #pragma once
 
 #include "AST.h"
+#include "SyntaxRepository.h"
 #include "Result.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-using NodeKindId = uint32_t;
 class NodeBuilder
 {
+	Ast* ast;
+	SyntaxRepository& repo;
+	std::map<uint32_t, NodeKindIndex> translator;
 public:
-	struct ChildDescription {
-		std::string name;
-		NodeKindId nodeKind;
-	};
-private:
-	Ast* ast = nullptr;
-	std::unordered_map<NodeKindId, std::string> stringRepo;
-	std::unordered_map<NodeKindId, std::vector<ChildDescription>> rules;
-	std::unordered_map<NodeKindId, bool> repetable;
-	std::unordered_map<NodeKindId, std::vector<NodeKindId>> polimorfizm;
-public:
-	void setAst(Ast* ast);
-	Ast::NodeIndex newLeaf(Result<Token, ErrorT>);
-	NodeKindId addNodeKind(std::string name, std::vector<ChildDescription>, bool repetable = false);
-	NodeKindId addInharitedNodeKind(std::string name, NodeKindId parent, std::vector<ChildDescription> rule, bool repeat = false);
-	Ast::NodeIndex createNode(NodeKindId kind, std::vector<Ast::NodeIndex>) const;
-	std::string toString(NodeKindId nodeKind) const;
+	using ExternalNodeId = uint32_t;
+	NodeBuilder(SyntaxRepository& repo,Ast* ast = nullptr);
+	Ast::NodeIndex createLeaf(Result<Token, ErrorT>)const;
+	Ast::NodeIndex createNode(ExternalNodeId kind, std::vector<Ast::NodeIndex>) const;
+	Ast& getAst() const;
+	void setAst(Ast*);
+
+	NodeKindIndex addNodeKind(ExternalNodeId externalEnum, std::string name, std::vector<SyntaxRepository::ChildDescription>, bool repetable = false);
+	NodeKindIndex addIPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, NodeKindIndex parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repeat = false);
+	void addLeafToPolimorficNodeKind(std::string name, ExternalNodeId parent);
+	std::string nodeKind(ExternalNodeId nodeKind)const;
+	std::string nodeKindChilden(ExternalNodeId nodeKind, uint32_t childrenIndex)const;
+
 };

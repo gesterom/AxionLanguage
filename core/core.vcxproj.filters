@@ -45,7 +45,7 @@
     <ClCompile Include="src\PreambleDefinition.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\PreambleRepository.cpp">
+    <ClCompile Include="src\SyntaxRepository.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\TODO.cpp">
@@ -101,7 +101,7 @@
     <ClInclude Include="headers\PreambleDefinition.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="headers\PreambleRepository.h">
+    <ClInclude Include="headers\SyntaxRepository.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="headers\StringUtility.h">

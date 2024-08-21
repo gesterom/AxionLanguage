@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CodeLocation.h"
-#include "PreambleRepository.h"
+#include "SyntaxRepository.h"
 #include "Token.h"
 #include <optional>
 
@@ -18,7 +18,7 @@ class MetaLexer {
 	int64_t commentLevel = 0;
 	int32_t preambleIndex = -1;
 
-	const PreambleRepository& repo;
+	const SyntaxRepository& repo;
 
 	CodeLocation tempLoc;
 
@@ -29,6 +29,6 @@ class MetaLexer {
 	uint8_t start_string_lieral = '\0';
 
 public:
-	MetaLexer(const PreambleRepository& repo, std::string file_name);
+	MetaLexer(const SyntaxRepository& repo, std::string file_name);
 	std::optional<Token> lex();
 };

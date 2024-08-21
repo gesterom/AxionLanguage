@@ -3,7 +3,7 @@
 #include "TODO.h"
 #include <format>
 
-TokenStream::TokenStream(PreamleIndex index, std::vector<Token> vec, PreambleRepository& repo) : repo(repo), internal(vec), preambleIndex(index)
+TokenStream::TokenStream(PreamleIndex index, std::vector<Token> vec, SyntaxRepository& repo) : repo(repo), internal(vec), preambleIndex(index)
 {
 	ASSERT(vec.size() != 0, "Fuck anyone");
 	this->preambleIndex = index;

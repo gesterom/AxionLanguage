@@ -3,19 +3,20 @@
 #include "TODO.h"
 #include <format>
 
-void NodeBuilder::setAst(Ast* ast)
-{
-	this->ast = ast;
-}
-
 void printError(const std::optional<ErrorT>& err) {
 	if (err.has_value()) {
 		std::cout << "ERROR : " << err->loc.start() << " : " << err->loc.to_string() << " = " << err.value().oneLinerError << std::endl;
 	}
 }
 
-Ast::NodeIndex NodeBuilder::newLeaf(Result<Token, ErrorT> t)
+NodeBuilder::NodeBuilder(SyntaxRepository& repo, Ast* ast) : repo(repo), ast(ast)
 {
+
+}
+
+Ast::NodeIndex NodeBuilder::createLeaf(Result<Token, ErrorT> t) const
+{
+	ASSERT(ast != nullptr, "AST not set up");
 	if (t) {
 		uint32_t res = (uint32_t)ast->leafs.size();
 		ast->leafs.push_back((Token)t);
@@ -27,52 +28,33 @@ Ast::NodeIndex NodeBuilder::newLeaf(Result<Token, ErrorT> t)
 	}
 }
 
-NodeKindId NodeBuilder::addNodeKind(std::string name, std::vector<ChildDescription> rule, bool repeat)
+Ast::NodeIndex NodeBuilder::createNode(ExternalNodeId _kind, std::vector<Ast::NodeIndex> elements) const
 {
-	NodeKindId newid = (NodeKindId)stringRepo.size() + 1;
-	stringRepo.emplace(newid, name);
-	rules.emplace(newid, rule);
-	repetable.emplace(newid, repeat);
-	return newid;
-}
-
-NodeKindId NodeBuilder::addInharitedNodeKind(std::string name, NodeKindId parent, std::vector<ChildDescription> rule, bool repeat)
-{
-	auto it = rules.find(parent);
-	ASSERT(it != rules.end(), std::format("Kind not registered : {}", parent));
-	ASSERT(it->second.size() == 0, std::format("Parent can have only 0 size {}", this->toString(parent)));
-
-	NodeKindId newid = (NodeKindId)stringRepo.size() + 1;
-	stringRepo.emplace(newid, name);
-	rules.emplace(newid, rule);
-	repetable.emplace(newid, repeat);
-	polimorfizm[parent].push_back(newid);
-	return newid;
-}
-
-Ast::NodeIndex NodeBuilder::createNode(NodeKindId kind, std::vector<Ast::NodeIndex> elements) const
-{
-	auto it = rules.find(kind);
-	ASSERT(it != rules.end(), std::format("Kind not registered : {}", kind));
-	if (repetable.at(kind)) {
-		ASSERT(elements.size() % it->second.size() == 0, std::format("Repetable node can hold only hold multiple of nodes: `{}`", this->toString(kind)));
+	ASSERT(ast!=nullptr,"AST not set up");
+	NodeKindIndex kind = translator.at(_kind);
+	//fix it so it referes through a repo
+	auto rule = repo.nodeKindRule(kind);
+	if (repo.isRepetableNodeRule(kind)) {
+		ASSERT(elements.size() % rule.size() == 0, std::format("Repetable node can hold only hold multiple of nodes: `{}`", repo.nodeKind(kind)));
 	}
 	else {
-		ASSERT(it->second.size() == elements.size(), std::format("wrong elements number for node kind `{}`", this->toString(kind)));
+		ASSERT(elements.size() == rule.size(), std::format("wrong elements number for node kind `{}`", repo.nodeKind(kind)));
 	}
 
 	for (size_t i = 0; i < elements.size(); i++) {
-		size_t index = i % it->second.size();
+		size_t index = i % rule.size();
+		auto polIt = repo.polimorficTypes(rule[index].nodeKind);
 
-		if (polimorfizm.find(it->second[index].nodeKind) != polimorfizm.end()) {
+		if (polIt) {
+
 			bool any = false;
-			for (size_t polI = 0; polI < polimorfizm.at(it->second[index].nodeKind).size(); polI++) {
-				if (elements[i].first == polimorfizm.at(it->second[index].nodeKind)[polI]) { any = true; break; }
+			for (size_t polI = 0; polI < polIt->size(); polI++) {
+				if (elements[i].first == polIt.value()[polI]) { any = true; break; }
 			}
-			ASSERT(any, std::format("Node kind dont match expected {} get {} at position {}", this->toString(it->second[index].nodeKind), this->toString(elements[i].first), i));
+			ASSERT(any, std::format("Node kind dont match expected polimorfed `{}` get `{}` at position {}", repo.nodeKind(rule[index].nodeKind), repo.nodeKind(elements[i].first), i));
 		}
 		else {
-			ASSERT(elements[i].first == it->second[index].nodeKind, std::format("Node kind dont match expected `{}` get `{}` at position `{}`", this->toString(it->second[index].nodeKind), this->toString(elements[i].first), i));
+			ASSERT(elements[i].first == rule[index].nodeKind, std::format("Node kind dont match expected `{}` get `{}` at position `{}`", repo.nodeKind(rule[index].nodeKind), repo.nodeKind(elements[i].first), i));
 		}
 	}
 	uint32_t res = (uint32_t)ast->nodes.size();
@@ -83,16 +65,56 @@ Ast::NodeIndex NodeBuilder::createNode(NodeKindId kind, std::vector<Ast::NodeInd
 		node.children.push_back(i);
 	}
 	ast->nodes.push_back(node);
-	return { kind + 1,res };
+	return { kind,res };
 }
 
-std::string NodeBuilder::toString(NodeKindId nodeKind) const
+Ast& NodeBuilder::getAst() const
 {
-	auto it = stringRepo.find(nodeKind);
-	if (it == stringRepo.end())
-		UNREACHABLE("Node kind not registered");
-	return it->second;
+	ASSERT(ast != nullptr,"Null ptr dereference");
+	return *(this->ast);
 }
+
+void NodeBuilder::setAst(Ast* _ast)
+{
+	this->ast = _ast;
+}
+
+NodeKindIndex NodeBuilder::addNodeKind(ExternalNodeId externalEnum,std::string name, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
+	std::vector<SyntaxRepository::ChildDescription> translated;
+	for (const auto& i : rule) {
+		if (i.nodeKind == 0) {
+			translated.push_back(SyntaxRepository::ChildDescription{ i.name,0 });
+		}
+		else {
+			translated.push_back(SyntaxRepository::ChildDescription{i.name,translator[i.nodeKind]});
+		}
+	}
+	translator.emplace(externalEnum, repo.addNodeKind(name, translated,repetable ));
+	return translator[externalEnum];
+}
+NodeKindIndex NodeBuilder::addIPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, NodeKindIndex parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
+	std::vector<SyntaxRepository::ChildDescription> translated;
+	for (const auto& i : rule) {
+		if (i.nodeKind == 0) {
+			translated.push_back(SyntaxRepository::ChildDescription{ i.name,0 });
+		}
+		else {
+			translated.push_back(SyntaxRepository::ChildDescription{ i.name,translator[i.nodeKind] });
+		}
+	}
+	translator.emplace(externalEnum, repo.addIPolimorficNodeKind(name,translator[parent], translated, repetable));
+	return translator[externalEnum];
+}
+void NodeBuilder::addLeafToPolimorficNodeKind(std::string name, ExternalNodeId parent) {
+	repo.addLeafToPolimorficNodeKind(name,translator[parent]);
+}
+std::string NodeBuilder::nodeKind(ExternalNodeId nodeKind)const {
+	return repo.nodeKind(translator.at(nodeKind));
+}
+std::string NodeBuilder::nodeKindChilden(ExternalNodeId nodeKind, uint32_t childrenIndex)const {
+	return repo.nodeKindChilden(translator.at(nodeKind),childrenIndex);
+}
+
 //
 //std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a)
 //{

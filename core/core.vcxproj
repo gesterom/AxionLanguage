@@ -87,7 +87,7 @@
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
-    <TargetName>axion</TargetName>
+    <TargetName>weasel</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
@@ -138,7 +138,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -182,7 +182,7 @@
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\MetaLexer.cpp" />
     <ClCompile Include="src\PreambleDefinition.cpp" />
-    <ClCompile Include="src\PreambleRepository.cpp" />
+    <ClCompile Include="src\SyntaxRepository.cpp" />
     <ClCompile Include="src\StringUtility.cpp" />
     <ClCompile Include="src\TODO.cpp" />
     <ClCompile Include="src\Token.cpp" />
@@ -197,7 +197,7 @@
     <ClInclude Include="headers\Enumerate.h" />
     <ClInclude Include="headers\MetaLexer.h" />
     <ClInclude Include="headers\PreambleDefinition.h" />
-    <ClInclude Include="headers\PreambleRepository.h" />
+    <ClInclude Include="headers\SyntaxRepository.h" />
     <ClInclude Include="headers\StringUtility.h" />
     <ClInclude Include="headers\TODO.h" />
     <ClInclude Include="headers\Token.h" />

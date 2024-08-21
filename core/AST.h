@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Token.h"
+#include "SyntaxRepository.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -34,9 +35,4 @@ struct PreambleNode {
 void cleanAst(Ast& ast);
 //std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
 //std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
-std::string astToGraph(const PreambleNode& preamble);
-
-/*
-	1. std::vector<Preamble> <- highest level
-	Preamble <- contains Ast
-*/
+std::string astToGraph(const PreambleNode& preamble,const SyntaxRepository& repo);

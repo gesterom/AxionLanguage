@@ -11,11 +11,11 @@
 #endif
 
 #ifdef _WIN32
-#define ASSERT(x,y) _assert((__FILE__),(__LINE__),(__func__),(#x),(x),(y))
+#define ASSERT(x,y) do{ if(not (x)){ _assert((__FILE__),(__LINE__),(__func__),(#x),(x),(y)); } }while(false)
 #elif unix// __CYGWIN__
-#define ASSERT(x,y) _assert((__FILE__),(__LINE__),(__PREETY_FUNCTION__),(#x),(x),(y))
+#define ASSERT(x,y) do{ if(not (x)){ _assert((__FILE__),(__LINE__),(__PREETY_FUNCTION__),(#x),(x),(y)); } }while(false)
 #else
-#define ASSERT(x,y) _assert((__FILE__),(__LINE__),("<dontSuport_function_names>"),(#x),(x),(y))
+#define ASSERT(x,y) do{ if(not (x)){ _assert((__FILE__),(__LINE__),("<dontSuport_function_names>"),(#x),(x),(y)); } }while(false)
 #endif
 
 #ifdef _WIN32

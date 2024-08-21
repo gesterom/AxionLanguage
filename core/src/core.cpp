@@ -51,6 +51,18 @@ struct cliArgs {
 // 4. intrprete/execute build function
 //
 
+//TODO remove function and type preamble 
+// new idea
+// preambile will work similar to rust macros but with better api 
+// so implemented preamble will be build, type,procedure
+// compiler intrinsic preamble
+// `define operator` eg. ?.
+// `define statement block` eg. keyword expression stmt
+// 
+
+// TODO remove TokenType system
+// replace it with similar to NodeKind system where you need to register token type before you can use it.
+
 
 int main(int argc, char** args)
 {
@@ -58,7 +70,7 @@ int main(int argc, char** args)
 	for (int i = 0; i < argc; i++) {
 		std::cout << i << " : " << args[i] << std::endl;
 	}
-	PreambleRepository repo;
+	SyntaxRepository repo;
 	//TODO you can only compile one file but file "compiled" is build script writen in cerberus that will call cerberus compiler again and again
 	// useage : $ cerberus <build_filename>
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
@@ -116,7 +128,7 @@ int main(int argc, char** args)
 		//
 		while (auto preamble = parser.parseProgram(lexer)) {
 			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
-				std::cout << astToGraph(preamble.value()) << std::endl;
+				std::cout << astToGraph(preamble.value(),repo) << std::endl;
 		}
 	}
 
