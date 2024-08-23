@@ -36,7 +36,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::requireName(TokenStream& head, Ast& ast) 
 	}
 }
 
-bool checkIsAtomcExpresion(TokenStream& head) {
+static bool checkIsAtomcExpresion(TokenStream& head) {
 	auto t = head.peak(0);
 	if (not t.has_value()) return false;
 	if (t->kind == Token::Type::atom) return true;
@@ -60,7 +60,10 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& 
 	do {
 		auto a = parseExpresion(head, ast);
 		if (a) temp.push_back(a);
-		else break;
+		else {
+			printError(a);
+			break;
+		}
 	} while (head.optional((Token::Type)ProcedureTokenType::comma));
 	auto t = head.require(Token::Type::parenthesis, endToken);
 	if (not t) return (ErrorT)t;
@@ -70,11 +73,11 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& 
 	std::vector<Ast::NodeIndex> funcCall;
 	funcCall.push_back(func);
 	funcCall.push_back(args);
-	output.push_back(builder.createNode(NodeKinds::function_call, funcCall));
+	output.push_back(builder.createNode(kind, funcCall));
 	return output[output.size() - 1];
 }
 
-std::optional<Token> isPrimaryExpresion(TokenStream& head) {
+static std::optional<Token> isPrimaryExpresion(TokenStream& head) {
 	if (not head.peak().has_value()) return std::nullopt;
 	auto k = head.peak()->kind;
 	if (k == Token::Type::atom
@@ -90,7 +93,7 @@ std::optional<Token> isPrimaryExpresion(TokenStream& head) {
 	return std::nullopt;
 }
 
-bool isOperator(const Ast& ast, Ast::NodeIndex index) {
+static bool isOperator(const Ast& ast, Ast::NodeIndex index) {
 	if (index.first != 0) return false; // needs to be leaf
 	//if (ast.nodes[index.second].children.size() == 0) return false; // needs to have atleast 1 children 
 	Token op = ast.leafs[index.second];
@@ -98,29 +101,29 @@ bool isOperator(const Ast& ast, Ast::NodeIndex index) {
 	return false;
 }
 
-bool isValue(const Ast& ast, Ast::NodeIndex index) {
+static bool isValue(const Ast& ast, Ast::NodeIndex index) {
 	return not isOperator(ast, index);
 }
 
-bool isPrefix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+static bool isPrefix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
 	if (index == std::nullopt) return false;
 	if (isValue(ast, index.value())) return false;
 	return repo.isPrefix(ast.leafs[index->second].value.to_string());
 }
 
-bool isInfix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+static bool isInfix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
 	if (index == std::nullopt) return false;
 	if (isValue(ast, index.value())) return false;
 	return repo.isInfix(ast.leafs[index->second].value.to_string());
 }
 
-bool isSuffix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
+static bool isSuffix(const OperatorRepository& repo, Ast& ast, std::optional<Ast::NodeIndex> index) {
 	if (index == std::nullopt) return false;
 	if (isValue(ast, index.value())) return false;
 	return repo.isSuffix(ast.leafs[index->second].value.to_string());
 }
 
-std::optional<Ast::NodeIndex> get(const std::vector<Ast::NodeIndex>& vec, int32_t index) {
+static std::optional<Ast::NodeIndex> get(const std::vector<Ast::NodeIndex>& vec, int32_t index) {
 	if (index >= vec.size()) return std::nullopt;
 	if (index < 0) return std::nullopt;
 	return vec[index];
@@ -184,7 +187,7 @@ void Parser::reduce_output(const OperatorRepository& repo, Ast& ast, std::vector
 	}
 }
 
-std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
+static std::optional<CodeLocation> min(Ast& ast, Ast::NodeIndex index) {
 	if (index.first == 0) return ast.leafs[index.second].value;
 	if (ast.nodes[index.second].children.size() == 0) return std::nullopt;
 	auto res = min(ast, ast.nodes[index.second].children[0]);
@@ -232,6 +235,8 @@ OperatorPrecedence Parser::deducePrecedence(const OperatorRepository& repo, Ast&
 	return pre;
 }
 
+// TODO add stop token( so i dont need a parseType
+// TODO add StructLiterals are not allowed in `if` and `while` statemens (this case make errors awfull)
 // let a = vector(int){nullptr,0,0};
 Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast) {
 	// not Token?
@@ -264,17 +269,20 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			continue;
 		}
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
-			parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in function call: parametr expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		} //  
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
-			parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in constructor: parametr expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		}
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array acess
-			parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in array acess: index expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		}
@@ -345,17 +353,20 @@ Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseType(TokenStrea
 			continue;
 		}
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
-			parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in function call: parametr expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		} //  
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
-			parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in constructor: parametr expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		}
 		else if (lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array acess
-			parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
+			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in array acess: index expression","TODO" }; }
 			lastIsValue = true;
 			continue;
 		}
@@ -484,8 +495,6 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseLet(TokenStream& body, Ast& ast) {
 	if (not varName) { printError(varName); return ErrorT{ body.peak()->value,"varible declaration statment needs varible name after `let` keyword","TODO" }; }
 	std::optional<Ast::NodeIndex> type = std::nullopt;
 	if (body.optional((Token::Type)ProcedureTokenType::colon, ":")) {
-		//TODO parseExpression needs to stop on = 
-		// now it will parse it and complayin about not reduced stack
 		auto var_type = parseType(body, ast);
 		if (not var_type) { printError(var_type); return ErrorT{ body.peak()->value,"varible declaration incorect type","TODO" }; }
 		type = var_type;
@@ -505,25 +514,13 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseLet(TokenStream& body, Ast& ast) {
 Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseStatement(TokenStream& body, Ast& ast)
 {
 	if (body.peak()->value == "if") {
-		auto err = parseIf(body, ast);
-		if (not err) {
-			printError(err);
-		}
-		return err;
+		return parseIf(body, ast);
 	}
 	if (body.peak()->value == "let") {
-		auto err = parseLet(body, ast);
-		if (not err) {
-			printError(err);
-		}
-		return err;
+		return parseLet(body, ast);
 	}
 	if (body.peak()->value == "{" and body.peak()->kind == Token::Type::parenthesis) {
-		auto err = parseBlockStatement(body, ast);
-		if (not err) {
-			printError(err);
-		}
-		return err;
+		return parseBlockStatement(body, ast);
 	}
 	auto exprStmt = parseExpresion(body, ast);
 	if (exprStmt) {

@@ -74,27 +74,27 @@
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Configuration)\$(RelativeDir)</IntDir>
-    <TargetName>cerberus</TargetName>
+    <TargetName>wyazel</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Configuration)\$(RelativeDir)</IntDir>
-    <TargetName>cerberus</TargetName>
+    <TargetName>wyazel</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
-    <TargetName>weasel</TargetName>
+    <TargetName>wyazel</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CopyLocalDebugSymbols>true</CopyLocalDebugSymbols>
     <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
     <IntDir>$(Platform)\$(Configuration)\$(RelativeDir)</IntDir>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(RelativeDir)</OutDir>
-    <TargetName>cerberus</TargetName>
+    <TargetName>wyazel</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -156,7 +156,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -170,25 +170,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AST.cpp" />
-    <ClCompile Include="CallStackTrace.cpp" />
-    <ClCompile Include="MetaParser.cpp" />
-    <ClCompile Include="NodeBuilder.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp" />
     <ClCompile Include="Preambles\Procedure\Parser.cpp" />
     <ClCompile Include="Preambles\Type\Lexer.cpp" />
+    <ClCompile Include="src\CallStackTrace.cpp" />
     <ClCompile Include="src\CodeLocation.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\MetaLexer.cpp" />
+    <ClCompile Include="src\MetaParser.cpp" />
+    <ClCompile Include="src\NodeBuilder.cpp" />
     <ClCompile Include="src\PreambleDefinition.cpp" />
     <ClCompile Include="src\SyntaxRepository.cpp" />
     <ClCompile Include="src\StringUtility.cpp" />
     <ClCompile Include="src\TODO.cpp" />
     <ClCompile Include="src\Token.cpp" />
+    <ClCompile Include="src\TokenRepository.cpp" />
+    <ClCompile Include="src\TokenStream.cpp" />
     <ClCompile Include="src\VirtualFile.cpp" />
-    <ClCompile Include="TokenRepository.cpp" />
-    <ClCompile Include="TokenStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST.h" />

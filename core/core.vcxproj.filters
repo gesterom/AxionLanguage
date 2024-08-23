@@ -69,25 +69,25 @@
     <ClCompile Include="Preambles\Procedure\Parser.cpp">
       <Filter>Preambules\Procedure</Filter>
     </ClCompile>
-    <ClCompile Include="TokenStream.cpp">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
     <ClCompile Include="AST.cpp">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
-    <ClCompile Include="CallStackTrace.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp">
       <Filter>Preambules\Procedure</Filter>
     </ClCompile>
-    <ClCompile Include="MetaParser.cpp">
+    <ClCompile Include="src\CallStackTrace.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="TokenRepository.cpp">
+    <ClCompile Include="src\MetaParser.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="NodeBuilder.cpp">
+    <ClCompile Include="src\NodeBuilder.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TokenRepository.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TokenStream.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>

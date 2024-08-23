@@ -36,7 +36,7 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind)
 	if (token.value().kind == kind) { pointer++; return token.value(); }
 	return ErrorT{
 		token.value().value,
-		std::format("Expected : {} get : {}",repo.to_string(this->preambleIndex,kind),repo.to_string(token.value())),
+		std::format("Expected `{}` get `{}`",repo.to_string(this->preambleIndex,kind),repo.to_string(token.value())),
 		"TODO Long errors"
 	};
 }
@@ -47,12 +47,12 @@ Result<Token, ErrorT> TokenStream::require(Token::Type kind, std::string val)
 	if (not token.has_value()) return ErrorT{ internal.back().value, "Internal Stream ended","Internal Stream to early" };
 	if (token.value().kind == kind and token.value().value == val) { pointer++; return token.value(); }
 	return ErrorT{ token.value().value,
-		std::format("Expected : {} get : {}", repo.to_string(this->preambleIndex,kind), repo.to_string(token.value())),
+		std::format("Expected {}(`{}`) get {}(`{}`)", repo.to_string(this->preambleIndex,kind),val, repo.to_string(token.value()),token.value().value.to_string()),
 		"TODO Long errors"
 	};
 }
 
-std::optional<ErrorT> TokenStream::requireEmpty()
+std::optional<ErrorT> TokenStream::requireEmpty()const 
 {
 	auto token = this->peak();
 	if (not token.has_value()) return std::nullopt;

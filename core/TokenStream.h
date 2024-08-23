@@ -18,7 +18,7 @@ public:
 	bool consume(int64_t n = 1);
 	Result<Token, ErrorT> require(Token::Type kind);
 	Result<Token, ErrorT> require(Token::Type kind, std::string val);
-	std::optional<ErrorT> requireEmpty();
+	std::optional<ErrorT> requireEmpty() const ;
 	std::optional<Token> optional(Token::Type kind);
 	std::optional<Token> optional(Token::Type kind, std::string val);
 	bool check(Token::Type kind) const noexcept;

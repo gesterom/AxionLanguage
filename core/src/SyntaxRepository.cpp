@@ -37,7 +37,11 @@ std::string SyntaxRepository::nodeKindChilden(NodeKindIndex nodeKind, uint64_t c
 {
 	auto it = nodeConstructionRules.find(nodeKind);
 	ASSERT(it != nodeConstructionRules.end(), std::format("Kind not registered : {}", nodeKind));
-	return it->second[childrenIndex % it->second.size()].name;
+	if(isRepetableNodeRule(nodeKind)){
+		return it->second[childrenIndex % it->second.size()].name+"_"+std::to_string(childrenIndex);
+	}
+	ASSERT(childrenIndex < it->second.size(), std::format("Kind {} dont have chldren number {}", nodeKind,childrenIndex));
+	return it->second[childrenIndex].name;
 }
 
 bool SyntaxRepository::isRepetableNodeRule(NodeKindIndex kind) const
