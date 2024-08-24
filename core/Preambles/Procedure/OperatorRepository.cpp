@@ -189,7 +189,7 @@ OperatorRepository::OperatorRepository()
 	// 
 	//this->insertPrefix("copy", this->getPrecedence("="), false, nullptr);  // Copy (only with steel* checker)
 	//this->insertPrefix("move", this->getPrecedence("="), false, nullptr);  // Move (only with steel* checker)
-	// weasel treesiter main.w -> weaselParser.c -> weaselParser.so 
+	// wyazel treesiter main.w -> wyazelParser.c -> wyazelParser.so 
 }
 
 void OperatorRepository::addPrefix(std::string representation, OperatorPrecedence precedence, bool leftAssociativity) {

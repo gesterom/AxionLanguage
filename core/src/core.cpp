@@ -1,10 +1,10 @@
 // core.cpp : Ten plik zawiera funkcję „main”. W nim rozpoczyna się i kończy wykonywanie programu.
 //
 
+#include <iomanip>
 #include <iostream>
 #include <optional>
 #include <string>
-#include <iomanip>
 
 #include "MetaLexer.h"
 #include "MetaParser.h"
@@ -26,15 +26,15 @@ struct cliArgs {
 // if provided with interactive compile project and start interactive shell before main
 // 
 // usage:
-//  cerberus build.w relasese_build # build using build.w as build file and start function all
-//  cerbersu build.w # build using build.w and `all` atom as entry if not founded but multiple build present print error with "i coude not decide witch to choose"
-//  cerbersu build.w # build if only one build preamble present use it with warning if not named all
-//  cerbersu build.w # build if there is not any build preamble then use default build script
+//  wyazel build.w relasese_build # build using build.w as build file and start function all
+//  wyazel build.w # build using build.w and `all` atom as entry if not founded but multiple build present print error with "i coude not decide witch to choose"
+//  wyazel build.w # build if only one build preamble present use it with warning if not named all
+//  wyazel build.w # build if there is not any build preamble then use default build script
 // 
-//  cerberus --copy_default [<file_name>] # copy default build script into file location directory under name <file_name>, error if file exists # -F if to force
+//  wyazel --copy_default [<file_name>] # copy default build script into file location directory under name <file_name>, error if file exists # -F if to force
 // 
-//  cerberus --interactive_build <file_name> # start build and stop interactive on first build script
-//  cerberus --interactive <file_name> # build produce 
+//  wyazel --interactive_build <file_name> # start build and stop interactive on first build script
+//  wyazel --interactive <file_name> # build produce 
 //			# if --interactive defined and executed produce_exe or produce_elf give warning/info that you are sopouse to use 
 //			# produce_exe_interactive() or produce_elf_interactive() # or produce_exe(,interactive=true) produce_elf(,interactive=true)
 // 
@@ -64,9 +64,9 @@ struct cliArgs {
 int main(int argc, char** args)
 {
 	if (argc < 2) return -1;
-	std::cout<<"Commend line arguments:"<<std::endl;
+	std::cout << "Commend line arguments:" << std::endl;
 	for (int i = 0; i < argc; i++) {
-		std::cout <<"  Args["<<std::setw(3)<< i << "] : " << args[i] << std::endl;
+		std::cout << "  Args[" << std::setw(3) << i << "] : " << args[i] << std::endl;
 	}
 	SyntaxRepository repo;
 	//TODO you can only compile one file but file "compiled" is build script writen in Wyazel that will call Wyazel compiler again and again
@@ -76,7 +76,7 @@ int main(int argc, char** args)
 		MetaParser parser(repo);
 		while (auto preamble = parser.parseProgram(lexer)) {
 			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
-				std::cout << astToGraph(preamble.value(),repo) << std::endl;
+				std::cout << astToGraph(preamble.value(), repo) << std::endl;
 		}
 	}
 }

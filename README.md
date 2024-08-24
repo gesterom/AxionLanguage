@@ -1,19 +1,19 @@
-# Weasel 0.0.2
+# Wyazel 0.0.2
 
 ** THIS SOFTWARE IS UNFINISHED **
 
 ## About
-Weasel is(will be) multi-paradigmed, self-hosted, general-purpose programming language.
+Wyazel is(will be) multi-paradigmed, self-hosted, general-purpose programming language.
 
 ## Usage
 
 ### Bootstrab axion compiler
 ```bash
-$ msbuild Weasel.sln
+$ msbuild Wyazel.sln
 ```
 
 ### `Compile` axion source code 
 ```bash
-$ wWeasel <file_name.w> 
+$ wyazel <file_name.w> 
 ```
 
