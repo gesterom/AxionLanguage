@@ -139,12 +139,13 @@ OperatorRepository::OperatorRepository()
 	this->addInfix("+", ++iota, true);  // Addition
 	this->addInfix("-", iota, true);  // Subtraction
 
-	this->addInfix("..", ++iota, true);  // exclusive Range
-	this->addInfix("...", iota, true);  // Inclusive Range // (4+3)..10
+	this->addInfix("..", ++iota, true);  // exclusive Range // 0..3 => 0,1,2
+	this->addInfix("...", iota, true);  // Inclusive Range // 0...3 => 0,1,2,3
 
 	// Bitwise Shift Operators
 	this->addInfix("<<", ++iota, true);  // Bitwise left shift
-	this->addInfix(">>", iota, true);  // Bitwise right shift
+	this->addInfix(">>", iota, true);  // Bitwise right shift arithmetic
+	this->addInfix(">>>", iota, true);  // Bitwise right shift logical
 
 	// Bitwise Operators
 	this->addInfix("&", ++iota, true);  // Bitwise AND
@@ -185,7 +186,6 @@ OperatorRepository::OperatorRepository()
 	this->addInfix("^=", iota, false);  // Bitwise XOR and assign
 
 	// Member Access / Type Casting / Result Type
-	//this->addInfix("->", 14, true, nullptr);  // Member access through pointer
 	// 
 	//this->insertPrefix("copy", this->getPrecedence("="), false, nullptr);  // Copy (only with steel* checker)
 	//this->insertPrefix("move", this->getPrecedence("="), false, nullptr);  // Move (only with steel* checker)

@@ -10,7 +10,7 @@ namespace Preamble {
 		private:
 			SyntaxRepository& repo;
 			NodeBuilder builder;
-			
+
 			enum NodeKinds : uint64_t {
 				leaf = 0,
 				scope = 1,
@@ -30,6 +30,7 @@ namespace Preamble {
 				for_loop,
 				if_branch,
 				while_loop,
+				return_stmt,
 				const_mod,
 				mut_mod,
 				expression,
@@ -48,13 +49,15 @@ namespace Preamble {
 			Result<Ast::NodeIndex, ErrorT> requireName(TokenStream& head, Ast& ast);
 			//expression
 			Result<Ast::NodeIndex, ErrorT> parsePrimary(TokenStream& head, Ast& ast);
-			Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast);
+			Result<Ast::NodeIndex, ErrorT> parseExpresion(TokenStream& head, Ast& ast, bool parseType = false, bool beforeStatment = false);
 			Result<Ast::NodeIndex, ErrorT> parseType(TokenStream& head, Ast& ast);
 			Result<Ast::NodeIndex, ErrorT> parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output);
 			Result<Ast::NodeIndex, ErrorT> requireFunctionHeadArgs(TokenStream& head, Ast& ast);
 			//statement
 			Result<Ast::NodeIndex, ErrorT> parseIf(TokenStream& head, Ast& ast);
+			Result<Ast::NodeIndex, ErrorT> parseWhile(TokenStream& head, Ast& ast);
 			Result<Ast::NodeIndex, ErrorT> parseLet(TokenStream& body, Ast& ast);
+			Result<Ast::NodeIndex, ErrorT> parseReturn(TokenStream& body, Ast& ast);
 			Result<Ast::NodeIndex, ErrorT> parseStatement(TokenStream& body, Ast& ast);
 			Result<Ast::NodeIndex, ErrorT> parseBlockStatement(TokenStream& body, Ast& ast);
 

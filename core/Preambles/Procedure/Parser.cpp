@@ -238,11 +238,12 @@ OperatorPrecedence Parser::deducePrecedence(const OperatorRepository& repo, Ast&
 // TODO add stop token( so i dont need a parseType
 // TODO add StructLiterals are not allowed in `if` and `while` statemens (this case make errors awfull)
 // let a = vector(int){nullptr,0,0};
-Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast) {
+Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& ast, bool parseType, bool beforeStatment) {
 	// not Token?
 	//Ast::Node res;
 	//res.kind = (uint64_t)NodeKinds::expression;
 	std::vector<Ast::NodeIndex> output;
+	std::vector<Ast::NodeIndex> beforeStatementStracts;
 	int32_t precedence = 0;
 
 	bool lastIsValue = false;
@@ -274,7 +275,19 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			lastIsValue = true;
 			continue;
 		} //  
-		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
+		else if (lastIsValue and beforeStatment and head.check(Token::Type::parenthesis, "{")) {
+			auto left = head.optional(Token::Type::parenthesis, "{");
+
+			auto expr = parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
+			if (not expr) {
+				std::cout << "hint : did you forget `:` before `{` (" << left->value.start() << ")" << std::endl;
+				printError(expr);
+				return ErrorT{ head.peak()->value,"error in constructor: parametr expression","TODO" };
+			}
+			lastIsValue = true;
+			continue;
+		}
+		else if (lastIsValue and (not beforeStatment) and head.optional(Token::Type::parenthesis, "{")) { //constructor
 			auto expr = parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
 			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in constructor: parametr expression","TODO" }; }
 			lastIsValue = true;
@@ -291,6 +304,11 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 			lastIsValue = true;
 			continue;
 		}
+
+		else if ((parseType) and (head.peak()->value == "=" and head.peak()->kind == (Token::Type)::ProcedureTokenType::operator_t)) {
+			break;
+		}
+
 		//operators
 		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
 			if (output.size() > 0) {
@@ -303,6 +321,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 		}
 		break;//if token not handled stop parsing expression
 	}
+
 	reduce_output(repo.operators(), ast, output, INT32_MAX);
 	if (output.size() == 1) {
 		return (Ast::NodeIndex)output[0];
@@ -323,89 +342,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseExpresion(TokenStream& head, Ast& as
 
 Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseType(TokenStream& head, Ast& ast)
 {
-	// not Token?
-	//Ast::Node res;
-	//res.kind = (uint64_t)NodeKinds::expression;
-	std::vector<Ast::NodeIndex> output;
-	int32_t precedence = 0;
-
-	bool lastIsValue = false;
-	while (true) {
-		//value
-		if (not lastIsValue and head.optional(Token::Type::parenthesis, "(")) { // brackets
-			auto e = parseType(head, ast);
-			if (e) output.push_back(e);
-			auto t = head.require(Token::Type::parenthesis, ")");
-			if (not t) return (ErrorT)t;
-			lastIsValue = true;
-			continue;
-		}
-		else if (not lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array literal
-			std::vector<Ast::NodeIndex> temp;
-			do {
-				auto a = parseType(head, ast);
-				if (a) temp.push_back(a);
-				else break;
-			} while (head.optional((Token::Type)ProcedureTokenType::comma));
-			auto t = head.require(Token::Type::parenthesis, "]");
-			output.push_back(builder.createNode(NodeKinds::array_literal, temp));
-			lastIsValue = true;
-			continue;
-		}
-		else if (lastIsValue and head.optional(Token::Type::parenthesis, "(")) { //function_call or tuple
-			auto expr = parseExpressionListOperator(head, ast, NodeKinds::function_call, ")", output);
-			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in function call: parametr expression","TODO" }; }
-			lastIsValue = true;
-			continue;
-		} //  
-		else if (lastIsValue and head.optional(Token::Type::parenthesis, "{")) { //constructor
-			auto expr = parseExpressionListOperator(head, ast, NodeKinds::Object_construct, "}", output);
-			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in constructor: parametr expression","TODO" }; }
-			lastIsValue = true;
-			continue;
-		}
-		else if (lastIsValue and head.optional(Token::Type::parenthesis, "[")) { //array acess
-			auto expr = parseExpressionListOperator(head, ast, NodeKinds::array_acess, "]", output);
-			if (not expr) { printError(expr); return ErrorT{ head.peak()->value,"error in array acess: index expression","TODO" }; }
-			lastIsValue = true;
-			continue;
-		}
-		else if (auto t = isPrimaryExpresion(head)) {
-			output.emplace_back(builder.createLeaf(t.value()));
-			lastIsValue = true;
-			continue;
-		}
-		//operators
-		else if (head.peak()->value == "=" and head.peak()->kind == (Token::Type)::ProcedureTokenType::operator_t) {
-			break;
-		}
-		else if (auto t = head.optional((Token::Type)::ProcedureTokenType::operator_t)) {
-			if (output.size() > 0) {
-				auto pre = deducePrecedence(repo.operators(), ast, output, t->value.to_string());
-				reduce_output(repo.operators(), ast, output, pre);
-			}
-			output.emplace_back(builder.createLeaf(t.value()));
-			lastIsValue = false;
-			continue;
-		}
-		break;//if token not handled stop parsing expression
-	}
-	reduce_output(repo.operators(), ast, output, INT32_MAX);
-	if (output.size() == 1) {
-		return (Ast::NodeIndex)output[0];
-	}
-	else if (output.size() == 0) {
-		return builder.createNode(NodeKinds::empty_expression, {});
-	}
-	else {
-		auto err = min(ast, output[1]);
-		ASSERT(err != std::nullopt, "something fishy!!");
-		if (err) {
-			return ErrorT{ err.value(),std::format("Unexpected token {}, invalid type expression !!",err->to_string()),"TODO long error" };
-		}
-		else
-			UNREACHABLE("To remove warning");
-	}
+	return parseExpresion(head, ast, true, false);
 }
 
 // atom : type/*expresion that evaluated in compile time will result in Type*/
@@ -467,7 +404,7 @@ std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 Result<Ast::NodeIndex, ErrorT> Parser::parseIf(TokenStream& body, Ast& ast) {
 	auto startParam = body.require(Token::Type::atom, "if");
 	if (not startParam) { printError(startParam); return ErrorT{ body.peak()->value,"if statement needs to start with `if` keyword","TODO" }; }
-	auto cond_expression = parseExpresion(body, ast);
+	auto cond_expression = parseExpresion(body, ast, false, true);
 	if (not cond_expression) { printError(cond_expression); return ErrorT{ body.peak()->value,"if statement require a expresion after `if` keyword","TODO" }; }
 	auto thenKeyword = body.require((Token::Type)ProcedureTokenType::colon, ":");
 	if (not thenKeyword) { printError(thenKeyword); return ErrorT{ body.peak()->value,"if statement require a `:` after condition","TODO" }; }
@@ -511,6 +448,34 @@ Result<Ast::NodeIndex, ErrorT> Parser::parseLet(TokenStream& body, Ast& ast) {
 	return builder.createNode(NodeKinds::varible_declaration, { builder.createLeaf(varName),builder.createNode(NodeKinds::empty_expression,{}),initValue });
 }
 
+Result<Ast::NodeIndex, ErrorT> Parser::parseReturn(TokenStream& body, Ast& ast) {
+	auto startParam = body.require(Token::Type::atom, "return");
+	if (not startParam) { printError(startParam); return ErrorT{ body.peak()->value,"return statment needs to start with `return` keyword","TODO" }; }
+
+	auto ret_expression = parseExpresion(body, ast, false, true);
+	if (not ret_expression) { printError(ret_expression); return ErrorT{ body.peak()->value,"return statment require a expresion after `return` keyword","TODO" }; }
+
+	auto thenKeyword = body.require((Token::Type)ProcedureTokenType::semicolon, ";");
+	if (not thenKeyword) { printError(thenKeyword); return ErrorT{ body.peak()->value,"return statement require a `;` after expression","TODO" }; }
+
+	return builder.createNode(NodeKinds::return_stmt, { ret_expression });
+}
+
+Result<Ast::NodeIndex, ErrorT> Parser::parseWhile(TokenStream& body, Ast& ast) {
+	auto startParam = body.require(Token::Type::atom, "while");
+	if (not startParam) { printError(startParam); return ErrorT{ body.peak()->value,"while loop statment needs to start with `while` keyword","TODO" }; }
+	auto cond_expression = parseExpresion(body, ast, false, true);
+	if (not cond_expression) { printError(cond_expression); return ErrorT{ body.peak()->value,"while loop statement require a expresion after `while` keyword","TODO" }; }
+
+	auto thenKeyword = body.require((Token::Type)ProcedureTokenType::colon, ":");
+	if (not thenKeyword) { printError(thenKeyword); return ErrorT{ body.peak()->value,"while statement require a `:` after condition","TODO" }; }
+
+	auto while_body = parseStatement(body, ast);
+	if (not while_body) { printError(while_body); return ErrorT{ body.peak()->value,"error in while statement body","TODO" }; }
+
+	return builder.createNode(NodeKinds::while_loop, { cond_expression , while_body });
+}
+
 Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseStatement(TokenStream& body, Ast& ast)
 {
 	if (body.peak()->value == "if") {
@@ -518,6 +483,12 @@ Result<Ast::NodeIndex, ErrorT> Preamble::Procedure::Parser::parseStatement(Token
 	}
 	if (body.peak()->value == "let") {
 		return parseLet(body, ast);
+	}
+	if (body.peak()->value == "while") {
+		return parseWhile(body, ast);
+	}
+	if (body.peak()->value == "return") {
+		return parseReturn(body, ast);
 	}
 	if (body.peak()->value == "{" and body.peak()->kind == Token::Type::parenthesis) {
 		return parseBlockStatement(body, ast);
@@ -584,6 +555,8 @@ Preamble::Procedure::Parser::Parser(SyntaxRepository& repo) : repo(repo), builde
 	builder.addPolimorficNodeKind(NodeKinds::stmt_block, "block", NodeKinds::statement, { {"instruction",NodeKinds::statement} }, true);
 	builder.addPolimorficNodeKind(NodeKinds::varible_declaration, "varible_declaration", NodeKinds::statement, { {"varible_name",0},{"varible_type",NodeKinds::expression}, {"varible_initial_value",NodeKinds::expression} });
 	builder.addPolimorficNodeKind(NodeKinds::if_branch, "if", NodeKinds::statement, { {"cond",NodeKinds::expression},{"ifTrue",NodeKinds::statement}, {"ifFalse",NodeKinds::statement} });
+	builder.addPolimorficNodeKind(NodeKinds::while_loop, "while", NodeKinds::statement, { {"cond",NodeKinds::expression},{"body",NodeKinds::statement} });
+	builder.addPolimorficNodeKind(NodeKinds::return_stmt, "return", NodeKinds::statement, { {"ret",NodeKinds::expression} });
 	builder.addPolimorficNodeKind(NodeKinds::expression_stmt, "expression_stmt", NodeKinds::statement, { {"expr",NodeKinds::expression} });
 }
 

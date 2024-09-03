@@ -94,6 +94,11 @@ procedure addToList2(list : vector(int) , a : int){
 	z = 2**3**4**5 ;
 }
 
+procedure whileTest(list : vector(int) , a : int){
+	while true :
+		return 2;
+}
+
 build all{
 	compile(example1.dog)
 	compile(example2.dog)

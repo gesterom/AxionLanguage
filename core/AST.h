@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Token.h"
 #include "SyntaxRepository.h"
+#include "Token.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -21,6 +21,7 @@ struct Ast {
 	std::vector<Token> leafs; // nodeType == 0
 	std::vector<Node> nodes; // nodeType == 1
 	//std::vector<uint32_t> numbers; // nodeType == 1
+	CodeLocation span(Ast::NodeIndex index) const;
 };
 
 
@@ -35,4 +36,4 @@ struct PreambleNode {
 void cleanAst(Ast& ast);
 std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
 //std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
-std::string astToGraph(const PreambleNode& preamble,const SyntaxRepository& repo);
+std::string astToGraph(const PreambleNode& preamble, const SyntaxRepository& repo);

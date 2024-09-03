@@ -20,7 +20,7 @@ std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>&
 	return out;
 }
 
-std::string astToGraph(const PreambleNode& preamble,const SyntaxRepository& repo) {
+std::string astToGraph(const PreambleNode& preamble, const SyntaxRepository& repo) {
 	std::stringstream ss;
 	ss << "head : " << preamble.ast.headNode << std::endl;
 	ss << "body : " << preamble.ast.bodyNode << std::endl;
@@ -28,7 +28,7 @@ std::string astToGraph(const PreambleNode& preamble,const SyntaxRepository& repo
 	for (size_t i = 0; i < preamble.ast.nodes.size(); i++) {
 		for (size_t j = 0; j < preamble.ast.nodes[i].children.size(); j++) {
 			auto& child = preamble.ast.nodes[i].children[j];
-			ss << "\t" << "Node_"<< preamble.ast.nodes[i].kind<<"_" << i << " -> " << "Node_" << child.first << "_" << child.second << "[label=\"" << repo.nodeKindChilden(preamble.ast.nodes[i].kind,j) << "\"]" << std::endl;
+			ss << "\t" << "Node_" << preamble.ast.nodes[i].kind << "_" << i << " -> " << "Node_" << child.first << "_" << child.second << "[label=\"" << repo.nodeKindChilden(preamble.ast.nodes[i].kind, j) << "\"]" << std::endl;
 		}
 	}
 	for (size_t i = 0; i < preamble.ast.leafs.size(); i++) {
@@ -39,4 +39,29 @@ std::string astToGraph(const PreambleNode& preamble,const SyntaxRepository& repo
 	}
 	ss << "}";
 	return ss.str();
+}
+
+CodeLocation Ast::span(Ast::NodeIndex index) const
+{
+	std::optional<CodeLocation> res;
+	std::vector<Ast::NodeIndex> stack;
+	stack.push_back(index);
+	while (stack.size() > 0) {
+		auto current = stack[stack.size() - 1];
+		stack.pop_back();
+		if (current.first == 0) /*leaf*/ {
+			if (not res.has_value()) {
+				res = this->leafs[current.second].value;
+			}
+			else {
+				res = res->combaine(this->leafs[current.second].value);
+			}
+		}
+		else /*node*/ {
+			for (const auto& child : this->nodes[current.second].children) {
+				stack.push_back(child);
+			}
+		}
+	}
+	return res.value(); // if it dont have any tokens inside (how it was created)
 }

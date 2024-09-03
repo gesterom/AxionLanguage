@@ -8,8 +8,10 @@
 #include "VirtualFile.h"
 
 class CodeLocation {
-	std::string file_name;
+public:
 	using CodeLocationPoint = uint64_t;
+private:
+	std::string file_name;
 	CodeLocationPoint start_pos;// including
 	CodeLocationPoint end_pos;//excluding
 
@@ -23,10 +25,10 @@ class CodeLocation {
 #endif // DEBUG
 	explicit CodeLocation();
 public:
-
 	static CodeLocation null() noexcept;
 	explicit CodeLocation(std::string filename);
 	CodeLocation asLimiter() const noexcept;
+	CodeLocation combaine(const CodeLocation& other) noexcept;
 	std::string getFilename() const noexcept;
 	CodeLocation(const CodeLocation& other) noexcept;
 	CodeLocation operator=(const CodeLocation& other) noexcept;
@@ -34,8 +36,8 @@ public:
 	CodeLocation operator=(CodeLocation&& other) noexcept;
 	CodeLocation operator+=(char ch) noexcept;
 	CodeLocation consume(int64_t) noexcept;
-	uint64_t file_pointer_start() const;
-	uint64_t file_pointer_end() const;
+	CodeLocationPoint file_pointer_start() const;
+	CodeLocationPoint file_pointer_end() const;
 	CodeLocation moveStartToEnd() const noexcept;
 	CodeLocation move(uint64_t n) const noexcept;
 	CodeLocation substr(uint64_t n) const noexcept;

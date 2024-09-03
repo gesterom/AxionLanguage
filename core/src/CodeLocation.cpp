@@ -51,6 +51,14 @@ CodeLocation CodeLocation::asLimiter() const noexcept
 	return res;
 }
 
+CodeLocation CodeLocation::combaine(const CodeLocation& other) noexcept
+{
+	CodeLocation res = *this;
+	res.start_pos = std::min(this->start_pos, other.start_pos);
+	res.end_pos = std::max(this->end_pos, other.end_pos);
+	return res;
+}
+
 std::string CodeLocation::getFilename() const noexcept { return this->file_name; }
 
 CodeLocation::CodeLocation(const CodeLocation& other) noexcept {

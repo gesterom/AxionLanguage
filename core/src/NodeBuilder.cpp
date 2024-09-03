@@ -4,12 +4,12 @@
 #include <format>
 
 void printError(const std::optional<ErrorT>& err) {
-	if (err) 
+	if (err)
 		std::cout << "ERROR : " << err->loc.start() << "  -> " << err->oneLinerError << std::endl;
 }
 
 void printError(const Result<Token, ErrorT>& err) {
-	if (not err) 
+	if (not err)
 		std::cout << "ERROR : " << ((ErrorT)err).loc.start() << "  -> " << ((ErrorT)err).oneLinerError << std::endl;
 }
 
@@ -34,7 +34,7 @@ Ast::NodeIndex NodeBuilder::createLeaf(const Result<Token, ErrorT>& t) const
 
 Ast::NodeIndex NodeBuilder::createNode(ExternalNodeId _kind, std::vector<Ast::NodeIndex> elements) const
 {
-	ASSERT(ast!=nullptr,"AST not set up");
+	ASSERT(ast != nullptr, "AST not set up");
 	NodeKindIndex kind = translator.at(_kind);
 	//fix it so it referes through a repo
 	auto rule = repo.nodeKindRule(kind);
@@ -74,7 +74,7 @@ Ast::NodeIndex NodeBuilder::createNode(ExternalNodeId _kind, std::vector<Ast::No
 
 Ast& NodeBuilder::getAst() const
 {
-	ASSERT(ast != nullptr,"Null ptr dereference");
+	ASSERT(ast != nullptr, "Null ptr dereference");
 	return *(this->ast);
 }
 
@@ -83,20 +83,7 @@ void NodeBuilder::setAst(Ast* _ast)
 	this->ast = _ast;
 }
 
-NodeKindIndex NodeBuilder::addNodeKind(ExternalNodeId externalEnum,std::string name, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
-	std::vector<SyntaxRepository::ChildDescription> translated;
-	for (const auto& i : rule) {
-		if (i.nodeKind == 0) {
-			translated.push_back(SyntaxRepository::ChildDescription{ i.name,0 });
-		}
-		else {
-			translated.push_back(SyntaxRepository::ChildDescription{i.name,translator[i.nodeKind]});
-		}
-	}
-	translator.emplace(externalEnum, repo.addNodeKind(name, translated,repetable ));
-	return translator[externalEnum];
-}
-NodeKindIndex NodeBuilder::addPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, NodeKindIndex parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
+NodeKindIndex NodeBuilder::addNodeKind(ExternalNodeId externalEnum, std::string name, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
 	std::vector<SyntaxRepository::ChildDescription> translated;
 	for (const auto& i : rule) {
 		if (i.nodeKind == 0) {
@@ -106,17 +93,30 @@ NodeKindIndex NodeBuilder::addPolimorficNodeKind(ExternalNodeId externalEnum, st
 			translated.push_back(SyntaxRepository::ChildDescription{ i.name,translator[i.nodeKind] });
 		}
 	}
-	translator.emplace(externalEnum, repo.addPolimorficNodeKind(name,translator[parent], translated, repetable));
+	translator.emplace(externalEnum, repo.addNodeKind(name, translated, repetable));
+	return translator[externalEnum];
+}
+NodeKindIndex NodeBuilder::addPolimorficNodeKind(ExternalNodeId externalEnum, std::string name, ExternalNodeId parent, std::vector<SyntaxRepository::ChildDescription> rule, bool repetable) {
+	std::vector<SyntaxRepository::ChildDescription> translated;
+	for (const auto& i : rule) {
+		if (i.nodeKind == 0) {
+			translated.push_back(SyntaxRepository::ChildDescription{ i.name,0 });
+		}
+		else {
+			translated.push_back(SyntaxRepository::ChildDescription{ i.name,translator[i.nodeKind] });
+		}
+	}
+	translator.emplace(externalEnum, repo.addPolimorficNodeKind(name, translator[parent], translated, repetable));
 	return translator[externalEnum];
 }
 void NodeBuilder::addLeafToPolimorficNodeKind(std::string name, ExternalNodeId parent) {
-	repo.addLeafToPolimorficNodeKind(name,translator[parent]);
+	repo.addLeafToPolimorficNodeKind(name, translator[parent]);
 }
 std::string NodeBuilder::nodeKind(ExternalNodeId nodeKind)const {
 	return repo.nodeKind(translator.at(nodeKind));
 }
 std::string NodeBuilder::nodeKindChilden(ExternalNodeId nodeKind, uint32_t childrenIndex)const {
-	return repo.nodeKindChilden(translator.at(nodeKind),childrenIndex);
+	return repo.nodeKindChilden(translator.at(nodeKind), childrenIndex);
 }
 
 //
