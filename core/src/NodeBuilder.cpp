@@ -8,10 +8,7 @@ void printError(const std::optional<ErrorT>& err) {
 		std::cout << "ERROR : " << err->loc.start() << "  -> " << err->oneLinerError << std::endl;
 }
 
-void printError(const Result<Token, ErrorT>& err) {
-	if (not err)
-		std::cout << "ERROR : " << ((ErrorT)err).loc.start() << "  -> " << ((ErrorT)err).oneLinerError << std::endl;
-}
+
 
 NodeBuilder::NodeBuilder(SyntaxRepository& repo, Ast* ast) : repo(repo), ast(ast)
 {
@@ -117,6 +114,11 @@ std::string NodeBuilder::nodeKind(ExternalNodeId nodeKind)const {
 }
 std::string NodeBuilder::nodeKindChilden(ExternalNodeId nodeKind, uint32_t childrenIndex)const {
 	return repo.nodeKindChilden(translator.at(nodeKind), childrenIndex);
+}
+
+NodeKindIndex NodeBuilder::translate(ExternalNodeId nodeKind)
+{
+	return translator.at(nodeKind);
 }
 
 //

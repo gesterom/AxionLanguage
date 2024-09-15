@@ -6,9 +6,9 @@
 #include <optional>
 #include <string>
 
+#include "CompileTimeInterpreter.h"
 #include "MetaLexer.h"
 #include "MetaParser.h"
-
 
 
 struct cliArgs {
@@ -74,9 +74,12 @@ int main(int argc, char** args)
 	for (int file_count = 1; file_count < argc and std::string(args[file_count]) != "-o"; file_count++) {// FIXME -o makes output 
 		MetaLexer lexer(repo, args[file_count]);
 		MetaParser parser(repo);
+		CompileTimeInterpreter interpreter;
 		while (auto preamble = parser.parseProgram(lexer)) {
-			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt)
+			if (preamble->ast.headNode != std::nullopt and preamble->ast.bodyNode != std::nullopt) {
 				std::cout << astToGraph(preamble.value(), repo) << std::endl;
+				interpreter.execute(preamble.value(), repo);
+			}
 		}
 	}
 }

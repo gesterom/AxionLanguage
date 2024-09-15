@@ -170,6 +170,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AST.cpp" />
+    <ClCompile Include="CompileTimeInterpreter.cpp" />
     <ClCompile Include="Preambles\Function\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\Lexer.cpp" />
     <ClCompile Include="Preambles\Procedure\OperatorRepository.cpp" />
@@ -193,6 +194,7 @@
   <ItemGroup>
     <ClInclude Include="AST.h" />
     <ClInclude Include="CallStackTrace.h" />
+    <ClInclude Include="CompileTimeInterpreter.h" />
     <ClInclude Include="headers\CodeLocation.h" />
     <ClInclude Include="headers\Enumerate.h" />
     <ClInclude Include="headers\MetaLexer.h" />

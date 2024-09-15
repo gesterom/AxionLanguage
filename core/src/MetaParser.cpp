@@ -35,19 +35,19 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 	while (auto a = lexer.lex()) {
 		if (a->kind == Token::Type::comment) continue;
 		if (skip == true and a->kind == Token::Type::preamble) skip = false;
-		if (skip) { 
-			std::cout << "Error Recovery: "<<a->value<<" (";
-			if (preambleToken.has_value()) {
-				std::cout<< repo.to_string(repo.getPeambuleIndex(preambleToken->value),a->kind) ;
-			}
-			else {
-				std::cout << repo.to_string(0,a->kind) ;
-			}
-			std::cout<<")"<<std::endl;
-			continue; 
+		if (skip) {
+			//std::cout << "Error Recovery: "<<a->value<<" (";
+			//if (preambleToken.has_value()) {
+			//	std::cout<< repo.to_string(repo.getPeambuleIndex(preambleToken->value),a->kind) ;
+			//}
+			//else {
+			//	std::cout << repo.to_string(0,a->kind) ;
+			//}
+			//std::cout<<")"<<std::endl;
+			continue;
 		}
 
-		if (a->kind == Token::Type::preamble) { 
+		if (a->kind == Token::Type::preamble) {
 			preambleToken = a;
 			addToHead = true;
 			addToBody = false;
@@ -92,7 +92,7 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 			else
 				head.push_back(a.value());
 		}
-		if (a.value().value == "}" and paramCount == 0 and not addToBody) 
+		if (a.value().value == "}" and paramCount == 0 and not addToBody)
 			skip = true;
 		if (addToBody) {
 			body.push_back(a.value());
@@ -112,8 +112,8 @@ std::optional<PreambleNode> MetaParser::parseProgram(MetaLexer& lexer)
 				else {
 					head.clear();
 					body.clear();
-					addToHead=false;
-					addToBody=false;
+					addToHead = false;
+					addToBody = false;
 				}
 			}
 		}

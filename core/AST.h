@@ -2,11 +2,11 @@
 
 #include "SyntaxRepository.h"
 #include "Token.h"
+#include <functional>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
 
 struct Ast {
 
@@ -24,6 +24,8 @@ struct Ast {
 	CodeLocation span(Ast::NodeIndex index) const;
 };
 
+bool isLeaf(Ast::NodeIndex);
+bool isLeaf(std::optional<Ast::NodeIndex>);
 
 class IParser;
 struct PreambleNode {
@@ -37,3 +39,10 @@ void cleanAst(Ast& ast);
 std::ostream& operator<<(std::ostream& out, const std::optional<Ast::NodeIndex>& a);
 //std::ostream& ast_to_string(std::ostream& out, IParser* p, Ast& ast);
 std::string astToGraph(const PreambleNode& preamble, const SyntaxRepository& repo);
+
+void astTraversal(
+	Ast ast,
+	std::optional<Ast::NodeIndex> root,
+	std::function<void(Ast, Ast::NodeIndex)> preVisitExecute,
+	std::function<void(Ast, Ast::NodeIndex)> postVisitExecute
+);

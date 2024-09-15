@@ -99,7 +99,13 @@ procedure whileTest(list : vector(int) , a : int){
 		return 2;
 }
 
-build all{
-	compile(example1.dog)
-	compile(example2.dog)
+build build_cpp() {
+	gcc("example1.cpp");
+	gcc("example2.cpp");
+}
+
+build all() {
+	let x = 3*4+12;
+	compile("example1.dog");
+	compile("example2.dog");
 }

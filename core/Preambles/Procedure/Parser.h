@@ -5,43 +5,42 @@
 
 namespace Preamble {
 	namespace Procedure {
+		enum NodeKinds : NodeBuilder::ExternalNodeId {
+			leaf = 0,
+			scope = 1,
+			empty_scope_path,
+			scope_path,
+			name,
+			type,
+			function_head_args_definition,
+			function_head,
+			prefix_operator,
+			infix_operator,
+			suffix_operator,
+			function_call,
+			array_acess,
+			Object_construct,
+			varible_declaration,
+			for_loop,
+			if_branch,
+			while_loop,
+			return_stmt,
+			const_mod,
+			mut_mod,
+			expression,
+			empty_expression,
+			expression_list,
+			array_literal,
+			varible,
+			statement, empty_stmt,
+			expression_stmt,
+			stmt_block,
+		};
 
 		class Parser : public IParser {
 		private:
 			SyntaxRepository& repo;
 			NodeBuilder builder;
-
-			enum NodeKinds : uint64_t {
-				leaf = 0,
-				scope = 1,
-				empty_scope_path,
-				scope_path,
-				name,
-				type,
-				function_head_args_definition,
-				function_head,
-				prefix_operator,
-				infix_operator,
-				suffix_operator,
-				function_call,
-				array_acess,
-				Object_construct,
-				varible_declaration,
-				for_loop,
-				if_branch,
-				while_loop,
-				return_stmt,
-				const_mod,
-				mut_mod,
-				expression,
-				empty_expression,
-				expression_list,
-				array_literal,
-				varible,
-				statement, empty_stmt,
-				expression_stmt,
-				stmt_block
-			};
 
 			void reduce_output(const OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& last, int32_t new_precedence);
 			OperatorPrecedence deducePrecedence(const OperatorRepository& repo, Ast& ast, std::vector<Ast::NodeIndex>& output, std::string representation);
@@ -66,8 +65,10 @@ namespace Preamble {
 		public:
 			Parser(SyntaxRepository& repo);
 			virtual Ast parse(TokenStream& head, TokenStream& body);
+			virtual NodeKindIndex translate(NodeBuilder::ExternalNodeId nodeId);
 			//virtual std::string NodeKind_toString(uint64_t n) const;
 			virtual ~Parser();
 		};
 	}
 }
+//Procedure::Procedure::NodeKinds -> 

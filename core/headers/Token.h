@@ -38,11 +38,11 @@ struct Token {
 	//combine preamble_token and kind into one
 	CodeLocation value;
 
-	#ifdef createToken
-		std::string file;
-		int32_t line;
-		std::string func;
-	#endif // createToken
+#ifdef createToken
+	std::string file;
+	int32_t line;
+	std::string func;
+#endif // createToken
 
 };
 
@@ -63,11 +63,11 @@ bool operator<(const Token& a, const Token& b);
 
 
 struct ErrorT {
-	#ifdef newErrorT
+#ifdef newErrorT
 	std::string fileName;
 	int32_t line;
 	std::string func_name;
-	#endif
+#endif
 	CodeLocation loc;
 	std::string oneLinerError;
 	std::string msg;

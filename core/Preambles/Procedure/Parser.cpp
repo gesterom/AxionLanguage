@@ -20,7 +20,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::requireName(TokenStream& head, Ast& ast) 
 		}
 		atoms.emplace_back(t2);
 	}
-	if (atoms.size() == 0) return ErrorT{ head.peak(-1).value().value,"expected id","" };
+	if (atoms.size() == 0) return ErrorT{ head.peak(-1).value().value,"Expected id","" };
 	Token last = atoms.at(atoms.size() - 1);
 	std::vector<Ast::NodeIndex> path;
 	for (int i = 0; i < atoms.size() - 1; i++) {
@@ -52,7 +52,7 @@ Result<Ast::NodeIndex, ErrorT> Parser::parsePrimary(TokenStream& head, Ast& ast)
 		head.consume();
 		return builder.createLeaf(t.value());
 	}
-	return ErrorT{ head.peak(0)->value,std::format("Expected primary Expresion get {}",head.peak()->value.to_string()),"TODO long error" };
+	return ErrorT{ head.peak(0)->value,std::format("Expected primary Expresion; Found {}",head.peak()->value.to_string()),"TODO long error" };
 }
 
 Result<Ast::NodeIndex, ErrorT> Parser::parseExpressionListOperator(TokenStream& head, Ast& ast, NodeKinds kind, std::string endToken, std::vector<Ast::NodeIndex>& output) {
@@ -365,27 +365,58 @@ std::optional<Ast::NodeIndex> Parser::parseHead(TokenStream& head, Ast& ast) {
 	std::vector<ErrorT> errors;
 	std::vector<Ast::NodeIndex> res;
 	res.resize(3);
-	if (auto name = requireName(head, ast)) {
+	auto name = requireName(head, ast);
+	if (name) {
 		res[0] = name; // name
 	}
-	else { return std::nullopt; }
-	if (not head.require(Token::Type::parenthesis, "(")) return std::nullopt;
+	else {
+		printError(name);
+		return std::nullopt;
+	}
+
+	if (not head.require(Token::Type::parenthesis, "(")) {
+		auto nextToken = head.peak();
+		if (nextToken) {
+			auto err = ErrorT{ nextToken->value ,std::format("Expected `(`; Found {} !!", nextToken->value.to_string()),"TODO long error" };
+			printError(std::optional(err));
+		}
+		else {
+			auto err = ErrorT{ head.peak(-1)->value ,std::format("Expected `(`; Found end of head !!", head.peak(-1)->value.to_string()),"TODO long error" };
+			printError(std::optional(err));
+		}
+		return std::nullopt;
+	}
 	auto args = requireFunctionHeadArgs(head, ast);
-	if (not args) return std::nullopt;
+	if (not args) {
+		printError((ErrorT)args);
+		return std::nullopt;
+	}
 	res[1] = args;
 
-	if (not head.require(Token::Type::parenthesis, ")")) return std::nullopt;
-
+	if (not head.require(Token::Type::parenthesis, ")")) {
+		auto err = ErrorT{ head.peak(-1).value().value,std::format("Expected `)`; Found {} !!",head.peak().value().value.to_string()),"TODO long error" };
+		printError(err);
+		return std::nullopt;
+	}
 	if (head.optional((Token::Type)ProcedureTokenType::operator_t, "->")) {
 		auto retT = parseType(head, ast);
-		if (not retT)
+		if (retT) {
 			res[2] = retT;
-		else return std::nullopt;
+		}
+		else {
+			printError((ErrorT)retT);
+			return std::nullopt;
+		}
 	}
 	else {
 		res[2] = builder.createNode(NodeKinds::empty_expression, {});
 	}
-	if (head.requireEmpty()) return std::nullopt; //TODO Better error : "unexpected tockens"
+	if (head.requireEmpty()) {
+		std::cout << "Expected end of the head found sometihing" << std::endl;
+		auto err = ErrorT{ head.peak().value().value,std::format("Expected end of `Head` but found {} !!",head.peak().value().value.to_string()),"TODO long error" };
+		printError(err);
+		return std::nullopt;
+	} //TODO Better error : "unexpected tockens"
 	return builder.createNode(NodeKinds::function_head, res);
 }
 
@@ -569,6 +600,11 @@ Ast Preamble::Procedure::Parser::parse(TokenStream& head, TokenStream& body)
 	ast.bodyNode = parseBody(body, ast);
 	builder.setAst(nullptr);
 	return ast;
+}
+
+NodeKindIndex Preamble::Procedure::Parser::translate(NodeBuilder::ExternalNodeId nodeId)
+{
+	return builder.translate(nodeId);
 }
 
 Preamble::Procedure::Parser::~Parser()

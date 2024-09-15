@@ -7,7 +7,12 @@
 #include <unordered_map>
 #include <vector>
 
-void printError(const Result<Token, ErrorT>& err);
+template<typename T>
+void printError(const Result<T, ErrorT>& err) {
+	if (not err)
+		std::cout << "ERROR : " << ((ErrorT)err).loc.start() << "  -> " << ((ErrorT)err).oneLinerError << std::endl;
+}
+
 void printError(const std::optional<ErrorT>& err);
 
 class NodeBuilder
@@ -28,5 +33,7 @@ public:
 	void addLeafToPolimorficNodeKind(std::string name, ExternalNodeId parent);
 	std::string nodeKind(ExternalNodeId nodeKind)const;
 	std::string nodeKindChilden(ExternalNodeId nodeKind, uint32_t childrenIndex)const;
+
+	NodeKindIndex translate(ExternalNodeId nodeKind);
 
 };

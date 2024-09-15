@@ -8,6 +8,7 @@
 #include "AST.h"
 #include "CodeLocation.h"
 #include "MetaLexer.h"
+#include "NodeBuilder.h"
 #include "TODO.h"
 #include "Token.h"
 #include "TokenStream.h"	
@@ -33,6 +34,7 @@ public:
 class IParser {
 public:
 	virtual Ast parse(TokenStream& head, TokenStream& body) = 0;
+	virtual NodeKindIndex translate(NodeBuilder::ExternalNodeId node) = 0;
 	//virtual std::string NodeKind_toString(uint64_t n) const = 0;
 	virtual ~IParser() noexcept {}
 };
@@ -45,8 +47,8 @@ public:
 	IParser* parser = nullptr;
 	~PreambleDefinition() noexcept {
 		//if (lexer != nullptr)
-		delete lexer;
+		//delete lexer;
 		//if (parser != nullptr)
-		delete parser;
+		//delete parser;
 	}
 };

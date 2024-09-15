@@ -37,10 +37,10 @@ std::string SyntaxRepository::nodeKindChilden(NodeKindIndex nodeKind, uint64_t c
 {
 	auto it = nodeConstructionRules.find(nodeKind);
 	ASSERT(it != nodeConstructionRules.end(), std::format("Kind not registered : {}", nodeKind));
-	if(isRepetableNodeRule(nodeKind)){
-		return it->second[childrenIndex % it->second.size()].name+"_"+std::to_string(childrenIndex);
+	if (isRepetableNodeRule(nodeKind)) {
+		return it->second[childrenIndex % it->second.size()].name + "_" + std::to_string(childrenIndex);
 	}
-	ASSERT(childrenIndex < it->second.size(), std::format("Kind {} dont have chldren number {}", nodeKind,childrenIndex));
+	ASSERT(childrenIndex < it->second.size(), std::format("Kind {} dont have chldren number {}", nodeKind, childrenIndex));
 	return it->second[childrenIndex].name;
 }
 
@@ -140,7 +140,7 @@ std::string SyntaxRepository::to_string(PreamleIndex preambleIndex, Token::Type 
 	else if (vec.size() - 1 > 100000) TODO("Too much preambles");
 	else if (preambleIndex < (int64_t)(vec.size() % 100000)) {
 		//ASSERT(vec.at(preambleIndex)->lexer != nullptr, "Internal Error : Lexer shoude be init");
-		if (vec.at(preambleIndex)->lexer == nullptr) return "<Lexer nil "+std::to_string(type)+">";
+		if (vec.at(preambleIndex)->lexer == nullptr) return "<Lexer nil " + std::to_string(type) + ">";
 		return vec.at(preambleIndex)->lexer->to_string(type);
 	}
 	return "<Incorect Preamble Index>";
@@ -153,15 +153,17 @@ SyntaxRepository::SyntaxRepository()
 		if (vec.at(vec.size() - 1)->lexer != nullptr)
 			vec.at(vec.size() - 1)->lexer->setPreambleIndex((int32_t)vec.size() - 1);
 		};
+	auto lex = new Preamble::Procedure::Lexer(operatorRepo);
+	auto par = new Preamble::Procedure::Parser(*this);
 	addPreamble(new PreambleDefinition{ "<Meta>" });
 	addPreamble(new PreambleDefinition{ "extension" }); // load something like type or agents or sal // extends syntax of core language
-	addPreamble(new PreambleDefinition{ "procedure",new Preamble::Procedure::Lexer(operatorRepo),new Preamble::Procedure::Parser(*this) });
+	addPreamble(new PreambleDefinition{ "procedure",lex,par });
 	addPreamble(new PreambleDefinition{ "function",new Preamble::Function::Lexer() });
 	addPreamble(new PreambleDefinition{ "type",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.distinct",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.alias",new Preamble::Type::Lexer() });
 	addPreamble(new PreambleDefinition{ "type.interface",nullptr }); //
-	addPreamble(new PreambleDefinition{ "build",new Preamble::Procedure::Lexer(operatorRepo),new Preamble::Procedure::Parser(*this) }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
+	addPreamble(new PreambleDefinition{ "build",lex,par }); // runed to compile similar to nobuild(https://github.com/tsoding/nobuild)
 	//addPreamble(new PreambleDefinition{ "build.procedure",nullptr }); // build time procedure
 	addPreamble(new PreambleDefinition{ "sql",nullptr }); // sql scrip
 	addPreamble(new PreambleDefinition{ "sql.query",nullptr }); // sql quer
